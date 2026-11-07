@@ -73,6 +73,7 @@ the specific permission on every call.
 Read more:
 
 - [Architecture overview](./docs/architecture/overview.md)
+- [Design system](./docs/design-system.md)
 - [Marketplace protocol](./docs/architecture/marketplace.md)
 - [Security model](./docs/architecture/security-model.md)
 - [Migration status](./docs/architecture/migration.md)
@@ -104,6 +105,7 @@ cargo clippy --workspace --all-targets
 Contributor docs:
 
 - [Architecture overview](./docs/architecture/overview.md)
+- [Design system](./docs/design-system.md)
 - [Security model](./docs/architecture/security-model.md)
 - [Built-in tools registry](./apps/desktop/src/tools/registry.ts)
 - CLI: [shared/cli.md](./docs/shared/cli.md)

@@ -388,24 +388,27 @@ export default function App() {
             <button
               type="button"
               className={view === 'tools' ? 'nav active' : 'nav'}
+              aria-current={view === 'tools' ? 'page' : undefined}
               onClick={() => setView('tools')}
             >
-              Tools
+              {t('nav.tools')}
             </button>
             <button
               type="button"
               className={view === 'market' ? 'nav active' : 'nav'}
+              aria-current={view === 'market' ? 'page' : undefined}
               onClick={() => setView('market')}
             >
-              Marketplace
+              {t('nav.market')}
               <span className="pill">{plugins.length}</span>
             </button>
             <button
               type="button"
               className={view === 'settings' ? 'nav active' : 'nav'}
+              aria-current={view === 'settings' ? 'page' : undefined}
               onClick={() => setView('settings')}
             >
-              Settings
+              {t('nav.settings')}
             </button>
           </nav>
 
@@ -440,15 +443,10 @@ export default function App() {
                 >
                   {busy ? t('action.working') : t('action.installZip')}
                 </button>
-                <button
-                  type="button"
-                  className="ghost"
-                  disabled={busy}
-                  onClick={() => void onInstallFolder()}
-                >
+                <button type="button" disabled={busy} onClick={() => void onInstallFolder()}>
                   {t('action.installFolder')}
                 </button>
-                <button type="button" className="ghost" onClick={() => registryInput.current?.click()}>
+                <button type="button" onClick={() => registryInput.current?.click()}>
                   {t('action.validateRegistry')}
                 </button>
                 <input

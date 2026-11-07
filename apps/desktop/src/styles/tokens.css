@@ -1,0 +1,132 @@
+/* ==========================================================================
+   Design tokens — single source of truth for colors, type, space, and motion.
+   Applies to <html data-theme="dark|light">. Keep in sync with
+   marketplace/shared/theme/variables.css for plugin iframes.
+   ========================================================================== */
+
+:root {
+  color-scheme: dark;
+
+  /* Typography */
+  --font-sans:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', 'Noto Sans SC', 'PingFang SC',
+    'Microsoft YaHei', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  --font: var(--font-sans);
+  --mono: var(--font-mono);
+
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 14px;
+  --text-md: 15px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.55;
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 680;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  /* Shape and elevation */
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-full: 999px;
+
+  --control-height: 34px;
+  --sidebar-width: 248px;
+  --content-max: 1280px;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 35%);
+  --shadow-md: 0 10px 30px rgb(0 0 0 / 35%);
+  --shadow-lg: 0 28px 70px rgb(0 0 0 / 55%);
+  --focus-ring: 0 0 0 3px rgb(110 160 255 / 30%);
+
+  --transition-fast: 120ms ease;
+  --transition: 180ms ease;
+
+  /* Surfaces and text (dark) */
+  --bg: #0a0e15;
+  --bg-subtle: #0d121b;
+  --bg-elevated: #121826;
+  --bg-hover: #1b2435;
+  --surface-2: #172033;
+  --surface-3: #1e293d;
+
+  --border: #253048;
+  --border-strong: #33415c;
+
+  --text: #e8edf7;
+  --text-muted: #9aa7bd;
+  --text-faint: #6d7b92;
+
+  /* Accent: links/icons use --accent, filled buttons use --accent-strong */
+  --accent: #6ea0ff;
+  --accent-strong: #2f6fed;
+  --accent-hover: #4b86ff;
+  --accent-contrast: #ffffff;
+  --accent-soft: rgb(110 160 255 / 14%);
+
+  --ok: #3ddc97;
+  --ok-soft: rgb(61 220 151 / 12%);
+  --warn: #f4b74a;
+  --warn-soft: rgb(244 183 74 / 12%);
+  --bad: #ff6b7a;
+  --bad-soft: rgb(255 107 122 / 12%);
+
+  --overlay: rgb(4 8 15 / 65%);
+  --scrollbar: #2b3850;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --shadow-sm: 0 1px 2px rgb(15 23 42 / 6%);
+  --shadow-md: 0 10px 30px rgb(15 23 42 / 10%);
+  --shadow-lg: 0 28px 70px rgb(15 23 42 / 18%);
+  --focus-ring: 0 0 0 3px rgb(37 99 235 / 20%);
+
+  --bg: #f4f6fa;
+  --bg-subtle: #eef2f8;
+  --bg-elevated: #ffffff;
+  --bg-hover: #e9eefa;
+  --surface-2: #f7f9fd;
+  --surface-3: #eef2f9;
+
+  --border: #dde4ef;
+  --border-strong: #c5d0e2;
+
+  --text: #111a2c;
+  --text-muted: #59667c;
+  --text-faint: #7d8aa0;
+
+  --accent: #1f5fe0;
+  --accent-strong: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-contrast: #ffffff;
+  --accent-soft: rgb(37 99 235 / 10%);
+
+  --ok: #0f8a5f;
+  --ok-soft: rgb(15 138 95 / 10%);
+  --warn: #9a6400;
+  --warn-soft: rgb(154 100 0 / 10%);
+  --bad: #c62d43;
+  --bad-soft: rgb(198 45 67 / 10%);
+
+  --overlay: rgb(15 23 42 / 40%);
+  --scrollbar: #c2cee0;
+}
