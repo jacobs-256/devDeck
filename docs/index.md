@@ -20,12 +20,13 @@ If you build and publish marketplace plugins:
 
 ## 3) Core Developers / Contributors
 
-If you work on DevToolBox core (Electron main/preload/renderer) and built-in tool modules:
+If you work on the Rust host, renderer, or built-in tools:
 
-- [Core Developer Guide](core-dev/guide.md)
-- [Architecture](core-dev/architecture.md)
-- [Codebase Map](core-dev/codebase.md)
-- [Built-in Modules](core-dev/built-in-modules.md)
+- [Architecture Overview](architecture/overview.md)
+- [Security Model](architecture/security-model.md)
+- [Marketplace Protocol](architecture/marketplace.md)
+- [Releasing](architecture/release.md)
+- [CLI](shared/cli.md) · [Troubleshooting](shared/troubleshooting.md)
 
 ## Policies and Governance
 

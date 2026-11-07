@@ -76,7 +76,7 @@ Rules enforced by `devtoolbox-market` during extraction:
   "permissions": ["storage:kv", "http:proxy"],
   "httpDomains": ["api.ip2location.io", "ipinfo.io"],
   "envAllowlist": [],
-  "minAppVersion": "2.1.0"
+  "minAppVersion": "3.0.0"
 }
 ```
 

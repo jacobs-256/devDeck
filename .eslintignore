@@ -1,18 +1,10 @@
 node_modules
 apps/desktop/dist
-apps/desktop/dist-electron
+packages/*/dist
 apps/desktop/release
-dist
-dist-electron
-release
+target
 docs-site/site
 docs-site/.venv
 docs-site
 marketplace
 marketplace/modules/*/package
-
-# Rust / Tauri build output
-target
-
-# Design assets (not part of the build)
-design

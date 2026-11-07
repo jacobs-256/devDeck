@@ -44,17 +44,16 @@ crates/                    无框架依赖的策略层
 
 ## 目录结构
 
-| 路径                           | 用途                                        |
-| ------------------------------ | ------------------------------------------- |
-| `apps/desktop/src`             | React 外壳、内置工具、插件桥                |
-| `apps/desktop/src-tauri`       | Tauri 配置、Rust 宿主、capabilities         |
-| `crates/devtoolbox-contract`   | 共享词汇：id、清单、权限、注册表、错误      |
-| `crates/devtoolbox-capability` | 能力代理与文件系统沙箱                      |
-| `crates/devtoolbox-market`     | 包校验、解包、安装状态                      |
-| `packages/plugin-sdk`          | 面向插件作者的 npm SDK                      |
-| `marketplace/`                 | 官方插件源码与打包/签名工具                 |
-| `docs/`                        | 文档（含本中文镜像）                        |
-| `core/`                        | 旧 Electron 实现（冻结，见 legacy-removal） |
+| 路径                           | 用途                                   |
+| ------------------------------ | -------------------------------------- |
+| `apps/desktop/src`             | React 外壳、内置工具、插件桥           |
+| `apps/desktop/src-tauri`       | Tauri 配置、Rust 宿主、capabilities    |
+| `crates/devtoolbox-contract`   | 共享词汇：id、清单、权限、注册表、错误 |
+| `crates/devtoolbox-capability` | 能力代理与文件系统沙箱                 |
+| `crates/devtoolbox-market`     | 包校验、解包、安装状态                 |
+| `packages/plugin-sdk`          | 面向插件作者的 npm SDK                 |
+| `marketplace/`                 | 官方插件源码与打包/签名工具            |
+| `docs/`                        | 文档（含本中文镜像）                   |
 
 ## 信任边界
 

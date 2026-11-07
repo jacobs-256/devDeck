@@ -1,24 +1,25 @@
 # Dependencies
 node_modules/
 
-# Build output
-dist/
-dist-electron/
+# Renderer build output
+apps/desktop/dist/
+packages/*/dist/
 
 # Rust / Tauri build output
 /target/
 apps/desktop/src-tauri/gen/
 apps/desktop/src-tauri/target/
 
-# Marketplace release staging
-marketplace/release-dist/
-
-# Release artifacts
-release/
-
 # Marketplace build output
 marketplace/modules/*/package/
 marketplace/modules/*/dist/
+
+# Marketplace staging and signing
+marketplace/release-dist/
+marketplace/.local-dist/
+marketplace/.signing/
+marketplace/registry.local.json
+.signing/
 
 # OS files
 .DS_Store
@@ -34,20 +35,11 @@ Thumbs.db
 .env
 .env.*
 
-# Backup builtin key (generated in CI)
-key.txt
-
-# Marketplace local dev artifacts
-marketplace/.local-dist/
-marketplace/.signing/
-.signing/
-marketplace/registry.local.json
+# Local diagnostics output
+.devtoolbox-diagnostics/
 
 # Docs site build output
 docs-site/site/
 
 # Docs local venv
 docs-site/.venv/
-
-# Local diagnostics output
-.devtoolbox-diagnostics/

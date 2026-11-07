@@ -78,13 +78,6 @@ module.exports = {
       },
     },
     {
-      files: ['core/main/ipc/marketplace.ts'],
-      rules: {
-        '@typescript-eslint/no-unnecessary-type-assertion': 'off',
-        'prefer-const': 'off',
-      },
-    },
-    {
       files: ['**/*.config.{ts,cts,mts}', 'apps/desktop/vite.config.ts', 'apps/desktop/vitest.config.ts'],
       parserOptions: {
         project: './tsconfig.eslint.json',

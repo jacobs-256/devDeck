@@ -89,7 +89,6 @@ Commands:
   plugin <market-id|all>         Build + pack marketplace plugin(s) into a local registry zip
   package <macos|windows|all> [arch]   Package installers (.dmg/.exe)
   check                          Run local quality/security checks (JS + Rust)
-  tool new                       Create a new built-in tool template (delegates to pnpm new:tool)
   doctor                         Print environment info
   help
 EOF
@@ -266,9 +265,9 @@ cmd_clear() {
     print_ok "Local registry initialized"
   fi
 
-  if confirm "7) Clear build artifacts (dist / dist-electron / release)" "n"; then
-    rm -rf "$ROOT_DIR/dist" "$ROOT_DIR/dist-electron" "$ROOT_DIR/release" 2>/dev/null || true
-    print_ok "Build artifacts cleared"
+  if confirm "7) Clear Tauri bundle output (target/release/bundle)" "n"; then
+    rm -rf "$ROOT_DIR/target/release/bundle" 2>/dev/null || true
+    print_ok "Bundle output cleared"
   fi
 
   print_ok "Done"
@@ -807,11 +806,6 @@ cmd_check() {
   print_ok "Checks passed"
 }
 
-cmd_tool_new() {
-  ensure_pnpm
-  run_pnpm new:tool
-}
-
 main() {
   local cmd="${1:-help}"
   shift || true
@@ -825,14 +819,6 @@ main() {
     plugin) cmd_plugin "$@" ;;
     package) cmd_package "$@" ;;
     check) cmd_check ;;
-    tool)
-      local sub="${1:-}"
-      shift || true
-      case "$sub" in
-        new) cmd_tool_new ;;
-        *) print_error "Unknown tool subcommand: ${sub:-}"; usage; exit 1 ;;
-      esac
-      ;;
     *) print_error "Unknown command: $cmd"; usage; exit 1 ;;
   esac
 }

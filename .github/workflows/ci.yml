@@ -35,9 +35,6 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Lint Modules
-        run: pnpm lint:modules
-
       - name: Lint
         run: pnpm lint
 
@@ -58,9 +55,6 @@ jobs:
 
       - name: Desktop tool tests
         run: pnpm --filter @devtoolbox/desktop test
-
-      - name: Legacy Electron build (frozen reference)
-        run: pnpm legacy:build
 
       - name: Scaffold template builds
         run: |

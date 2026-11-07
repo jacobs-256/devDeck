@@ -56,7 +56,8 @@
   --shadow-float: 0 8px 24px #00000099;
 
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
-  --font-family-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'SF Mono', Consolas, 'Courier New', monospace;
+  --font-family-mono:
+    'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'SF Mono', Consolas, 'Courier New', monospace;
   --font-size-base: 0.8125rem;
   --font-size-small: 0.75rem;
   --font-size-xs: 0.6875rem;

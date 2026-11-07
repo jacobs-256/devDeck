@@ -57,7 +57,6 @@ makes it testable and reusable by CLI tooling.
 | `packages/plugin-sdk`          | Published npm SDK used by plugin authors                         |
 | `marketplace/`                 | First-party plugin sources and release tooling                   |
 | `docs/`                        | Documentation (this file included)                               |
-| `core/`                        | Legacy Electron implementation (frozen; see `legacy-removal.md`) |
 
 ## Process and trust boundaries
 

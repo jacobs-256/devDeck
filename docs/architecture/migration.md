@@ -1,14 +1,14 @@
 # Migration: Electron → Rust + Tauri 2
 
-This branch (`rust`) rewrites the desktop shell while keeping the product
-usable. The legacy Electron implementation under `core/` is frozen and remains
-the reference for behavior until the migration completes.
+The rewrite landed on the `rust` branch in **3.0.0**. The Electron shell and
+`core/` were removed; everything below is implemented in `apps/desktop`,
+`crates/`, and `packages/plugin-sdk`.
 
 ## Status matrix
 
-| Area                            | Electron (legacy)                  | Rust + Tauri (this branch)                         | State                   |
+| Area                            | Electron (2.0.x)                   | Rust + Tauri (3.0.0)                               | State                   |
 | ------------------------------- | ---------------------------------- | -------------------------------------------------- | ----------------------- |
-| Shell & packaging               | electron-builder, ~239 MB `.app`   | Tauri 2, `bundle.targets = dmg/app/nsis`           | ✅ scaffold complete    |
+| Shell & packaging               | electron-builder, ~239 MB `.app`   | Tauri 2, `bundle.targets = dmg/app/nsis`           | ✅ done                 |
 | Manifest contract               | TS types in `electron-api.ts`      | `devtoolbox-contract` crate, schema v2 + v1 compat | ✅ implemented & tested |
 | Permission model                | ad-hoc checks in `marketplace.ts`  | `devtoolbox-capability` broker + allowlists        | ✅ implemented & tested |
 | Package verification            | sha256 in Node script              | SHA-256 + Ed25519 in `devtoolbox-market`           | ✅ implemented & tested |
@@ -24,59 +24,53 @@ the reference for behavior until the migration completes.
 | File dialogs (`fs:dialog`)      | `dialog.showOpenDialog`            | token-based open/save + read/write + plugin data   | ✅ implemented & tested |
 | Registry fetching               | HTTP fetch in main process         | source store + fetch + signature policy + install  | ✅ implemented & tested |
 | Auto-update                     | `electron-updater`                 | `tauri-plugin-updater` + signed CI release         | ✅ implemented          |
-| Built-in tools (27)             | React under `core/renderer`        | all 27 ported with unit tests                      | ✅ done                 |
+| Built-in tools (27)             | React under `core/renderer`        | all 27 ported with model/host tests                | ✅ done                 |
 | i18n / themes                   | `core/renderer/i18n`, `theme`      | Shell, Marketplace, all 27 tool bodies translated  | ✅ done                 |
-| Plugin author docs              | `docs/plugin-dev/*` (Electron era) | SDK 2.0 guide + scaffold + legacy banners          | ✅ done                 |
+| Plugin author docs              | `docs/plugin-dev/*` (Electron era) | SDK 2.0 guide + scaffold + packaging docs          | ✅ done                 |
 
 Legend: ✅ done and tested · 🟡 partial · ⬜ pending.
 
-## What is already runnable
+## What is runnable
 
 ```bash
-# Everything below was run on this branch (arm64 macOS, 2026-11-07)
-cargo test -p devtoolbox-contract -p devtoolbox-capability -p devtoolbox-market
+# Rust crates + host
+cargo test --workspace
+cargo clippy --workspace --all-targets
 
-# Tauri host
-cargo check -p devtoolbox-desktop
+# Renderer, SDK, tests
+pnpm install
+pnpm build
+pnpm test
+pnpm lint
 
-# Renderer
-pnpm --filter @devtoolbox/desktop build
+# Desktop dev loop and packaging
+pnpm dev
+pnpm package:mac        # .app + .dmg
+pnpm package:win        # NSIS, run on Windows
 
-# Plugin SDK
-pnpm --filter @devtoolbox/plugin-sdk build
-
-# Desktop dev loop
-pnpm --filter @devtoolbox/desktop tauri dev
-
-# Bundle (verified)
-pnpm --filter @devtoolbox/desktop tauri build --bundles dmg
-# → target/release/bundle/dmg/DevToolBox_2.1.0_aarch64.dmg (2.1 MB)
+# Marketplace and updater rehearsals
+pnpm marketplace:acceptance
+pnpm release:rehearse
 ```
 
-Measured bundle sizes on this branch:
+Measured on arm64 macOS (3.0.0):
 
-| Artifact     | Electron 2.0.3 | Rust + Tauri 2.1.0   |
-| ------------ | -------------- | -------------------- |
-| `.app`       | 239 MB         | 4.0 MB               |
-| `.dmg`       | 95 MB          | 2.1 MB               |
-| Debug `.app` | —              | 40 MB (no LTO/strip) |
+| Artifact     | Electron 2.0.3 | Rust + Tauri 3.0.0 |
+| ------------ | -------------- | ------------------ |
+| `.app`       | 239 MB         | 8.35 MB            |
+| `.dmg`       | 95 MB          | 5.44 MB            |
+| Debug `.app` | —              | ~40 MB (no LTO)    |
 
-## Migration order
+## What remains (operational, not code)
 
-1. **Tool port — done.** All 27 built-in tools are ported
-   (`apps/desktop/src/tools/`), each with model or host tests. Privileged tools
-   call host commands (`tcp_ping`, `traceroute`, MQTT) instead of reaching for
-   the network directly.
-2. **Network capabilities are complete.** `net:socket` (TCP client/server, UDP,
-   event push) and `net:ssh` (SSH shell/exec, SFTP, TOFU host keys) are
-   implemented with SDK 1.x aliases. Next: keyboard-interactive auth and SSH
-   agent forwarding.
-3. **Updater — done.** `tauri-plugin-updater` is wired with a signed feed; see
-   [Releasing](release.md). `electron-updater` can be removed with `core/`.
-4. **i18n and theming parity.** Port `core/renderer/i18n` and theme variables.
-5. **Legacy removal.** Delete `core/`, `electron-builder.yml`, `build/`, and the
-   Electron-era scripts once every tool is ported and the Marketplace has at
-   least one release published from the new pipeline.
+1. **Publish app release** — push a `v3.0.0` tag after configuring
+   `TAURI_SIGNING_PRIVATE_KEY` / `..._PASSWORD`; the workflow creates a signed
+   draft release with updater artifacts.
+2. **Publish marketplace** — push a `marketplace-v*` tag after configuring
+   `MARKETPLACE_SIGNING_KEY`; the workflow packs, signs, verifies, and uploads
+   `registry.json` + package ZIPs.
+3. **Platform smoke** — macOS arm64 has been built and launched locally;
+   Windows/macOS x64 paths run in the release matrix.
 
 ## Compatibility guarantees
 
@@ -89,23 +83,18 @@ Measured bundle sizes on this branch:
 
 ## Risks and mitigations
 
-| Risk                                                   | Mitigation                                                                  |
-| ------------------------------------------------------ | --------------------------------------------------------------------------- |
-| WebView differences (WKWebView / WebView2 / WebKitGTK) | Per-platform smoke tests before release; avoid Chromium-only APIs           |
-| Tool port regressions                                  | Port one tool at a time with its existing tests; keep a manual checklist    |
-| Plugins relying on Electron-only behavior              | Keep the bridge wire format stable; log `capability.list` during migration  |
-| Windows WebView2 availability                          | Tauri bundler ships the bootstrapper; document minimum Win 10 build         |
-| Larger diff than one review                            | Migration proceeds capability-by-capability; legacy code stays until parity |
+| Risk                                                   | Mitigation                                                                 |
+| ------------------------------------------------------ | -------------------------------------------------------------------------- |
+| WebView differences (WKWebView / WebView2 / WebKitGTK) | Per-platform smoke tests before release; avoid Chromium-only APIs          |
+| Plugins relying on Electron-only behavior              | Bridge wire format is stable; legacy SDK aliases stay in place             |
+| Windows WebView2 availability                          | Tauri bundler ships the bootstrapper; document the minimum Win 10 build    |
+| Updater or marketplace key loss                        | Keys live in CI secrets; rotation is documented in [Releasing](release.md) |
 
 ## Documentation tasks
 
-- [x] `docs/zh-CN/architecture/overview.md`
-- [x] `docs/zh-CN/architecture/marketplace.md`
-- [x] `docs/zh-CN/architecture/security-model.md`
-- [x] `docs/zh-CN/architecture/migration.md`
-- [x] `docs/zh-CN/plugin-dev/marketplace-v2.md`
-- [ ] Rewrite `docs/plugin-dev/guide.md` and `docs/plugin-dev/sdk.md` for SDK 2.0
-- [x] Rewrite `docs/core-dev/architecture.md` to point here
-- [ ] Update `docs/core-dev/installation-from-source.md` with the Rust toolchain
+- [x] `docs/zh-CN/architecture/*` mirrors
+- [x] `docs/plugin-dev/guide.md` and `sdk.md` for SDK 2.0
+- [x] Marketplace protocol, security model, release guide
+- [x] Legacy removal completed (3.0.0)
 
 > 中文镜像：[docs/zh-CN/architecture/migration.md](../zh-CN/architecture/migration.md)

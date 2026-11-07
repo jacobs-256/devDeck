@@ -1,1 +1,0 @@
-export { useSplitPane } from './useSplitPane';

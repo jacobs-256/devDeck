@@ -1,32 +1,30 @@
 # Repository Scripts
 
-These scripts support development and contributor workflows for DevToolBox.
+Scripts used by development, CI, and release workflows.
 
-## Overview
+## Marketplace and release
 
-- `lint-modules.mjs`: Validates the structure and metadata of tool modules.
-- `new-tool.mjs`: Generates a new tool module scaffold under `core/renderer/components/ModuleTools/`.
-- `exec-without-node-options.mjs`: Runs a command with `NODE_OPTIONS` cleared (helps avoid issues with injected node options).
-- `prune-broken-pnpm-links.mjs`: Removes broken pnpm hoisted symlinks before Electron packaging.
+- `lint-marketplace.mjs` — validates every `marketplace/modules/*/manifest.json`
+  (required fields, permission strings, entry file).
+- `marketplace-acceptance.sh` — builds a plugin, packs and signs it with a
+  throwaway key through the release pipeline, serves the artifacts on loopback,
+  and installs them through the host (`pnpm marketplace:acceptance`).
+- `updater-rehearsal.sh` — builds updater artifacts with the real signing key,
+  verifies the minisign signature against the pinned public key, and writes a
+  `latest.json` draft (`pnpm release:rehearse`).
+- `verify-updater-artifact.mjs` — standalone minisign verifier used by the
+  rehearsal script (supports `Ed` and `ED` modes).
+
+## Architecture guard
+
+- `check-legacy-imports.mjs` — fails if the Tauri app, SDK, or marketplace
+  modules import `core/` or Electron (`pnpm lint:legacy`, part of `pnpm lint`).
 
 ## Usage
 
 ```bash
-# Validate module structure (used by CI)
-pnpm lint:modules
-
-# Create a new tool module (interactive)
-pnpm new:tool
-
-# Create a new tool module (non-interactive examples)
-pnpm new:tool TimestampConverter --category dev-tools
-pnpm new:tool UrlCodec --id url-encode --with-help
-
-# Clean broken pnpm hoisted symlinks before packaging
-pnpm prune:pnpm-links
+pnpm lint:manifests          # validate marketplace module manifests
+pnpm lint:legacy             # ensure the new architecture stays decoupled
+pnpm marketplace:acceptance  # signed end-to-end marketplace rehearsal
+pnpm release:rehearse        # updater artifact + latest.json rehearsal
 ```
-
-## Notes for Contributors
-
-- Scripts should remain dependency-free (plain Node.js) unless there is a strong reason to add dependencies.
-- Do not add scripts that require private credentials or internal infrastructure.

@@ -1290,7 +1290,7 @@ dependencies = [
 
 [[package]]
 name = "devtoolbox-capability"
-version = "2.1.0"
+version = "3.0.0"
 dependencies = [
  "devtoolbox-contract",
  "serde",
@@ -1302,7 +1302,7 @@ dependencies = [
 
 [[package]]
 name = "devtoolbox-contract"
-version = "2.1.0"
+version = "3.0.0"
 dependencies = [
  "semver",
  "serde",
@@ -1314,7 +1314,7 @@ dependencies = [
 
 [[package]]
 name = "devtoolbox-desktop"
-version = "2.1.0"
+version = "3.0.0"
 dependencies = [
  "base64 0.22.1",
  "devtoolbox-capability",
@@ -1349,7 +1349,7 @@ dependencies = [
 
 [[package]]
 name = "devtoolbox-market"
-version = "2.1.0"
+version = "3.0.0"
 dependencies = [
  "base64 0.22.1",
  "devtoolbox-contract",

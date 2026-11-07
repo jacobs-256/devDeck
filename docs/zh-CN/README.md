@@ -23,4 +23,4 @@
 | `architecture/security-model.md`        | ✅        |
 | `architecture/migration.md`             | ✅        |
 | `plugin-dev/marketplace-v2.md`          | ✅        |
-| `users/*`、`governance/*`、`core-dev/*` | ⬜ 待翻译 |
+| `users/*`、`governance/*`                | ⬜ 待翻译 |

@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to build (e.g. v2.1.0); required for manual runs'
+        description: 'Tag to build (e.g. v3.0.0); required for manual runs'
         required: false
 
 permissions:

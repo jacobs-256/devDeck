@@ -1,7 +1,18 @@
 {
-  "extends": "../tsconfig.json",
   "compilerOptions": {
-    "noEmit": true
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "types": ["node"]
   },
-  "include": ["modules/**/*", "scripts/**/*", "types/**/*.d.ts"]
+  "include": ["modules/**/*", "scripts/**/*", "types/**/*.d.ts"],
+  "exclude": ["modules/*/package", "modules/*/node_modules"]
 }

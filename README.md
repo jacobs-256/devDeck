@@ -94,10 +94,6 @@ pnpm build          # renderer + plugin SDK production build
 pnpm test           # host + renderer unit tests
 ```
 
-The legacy Electron shell is frozen and only reachable through explicit
-`legacy:*` scripts (`pnpm legacy:dev`, `pnpm legacy:build`,
-`pnpm legacy:package:mac`).
-
 Run the policy crates and their tests:
 
 ```bash
@@ -105,13 +101,11 @@ cargo test -p devtoolbox-contract -p devtoolbox-capability -p devtoolbox-market
 cargo clippy --workspace --all-targets
 ```
 
-`core/` is kept only as a reference implementation for the migration; the Tauri
-app never imports from it. See
-[migration.md](./docs/architecture/migration.md) for the remaining cleanup.
-
 Contributor docs:
 
-- Core dev guide: [core-dev/guide.md](./docs/core-dev/guide.md)
+- [Architecture overview](./docs/architecture/overview.md)
+- [Security model](./docs/architecture/security-model.md)
+- [Built-in tools registry](./apps/desktop/src/tools/registry.ts)
 - CLI: [shared/cli.md](./docs/shared/cli.md)
 - Troubleshooting: [shared/troubleshooting.md](./docs/shared/troubleshooting.md)
 
@@ -122,7 +116,6 @@ cargo fmt --all -- --check
 cargo clippy --workspace --all-targets
 cargo test --workspace
 pnpm lint
-pnpm lint:modules
 pnpm typecheck
 pnpm test
 pnpm build
@@ -138,8 +131,8 @@ pnpm package:mac
 pnpm package:win
 ```
 
-Artifacts land in `target/release/bundle/`. A debug bundle is roughly **40 MB**
-versus ~239 MB for the old Electron `.app`.
+Artifacts land in `target/release/bundle/`; the release `.dmg` is about **5.4 MB**
+on macOS arm64.
 
 Releases are produced by `.github/workflows/tauri-release.yml` with signed
 updater artifacts; see [Releasing](docs/architecture/release.md). In-app updates
@@ -181,7 +174,7 @@ Then open **Marketplace → Registries**, paste the URL of your `registry.json`
 
 - Contributing guide: [contributing.md](./docs/governance/contributing.md)
 - Roadmap: [roadmap.md](./docs/governance/roadmap.md)
-- Built-in modules: [built-in-modules.md](./docs/core-dev/built-in-modules.md)
+- Built-in tools: [`apps/desktop/src/tools`](./apps/desktop/src/tools)
 - Code of conduct: [code-of-conduct.md](./docs/governance/code-of-conduct.md)
 - Security policy: [security.md](./docs/governance/security.md)
 - Support: [support.md](./docs/governance/support.md)
@@ -193,8 +186,8 @@ devtoolbox/
 ├── apps/desktop/                      Tauri 2 app (React renderer + src-tauri host)
 ├── crates/                            Rust workspace: contract, capability, market
 ├── packages/plugin-sdk/               Published @devtoolbox/plugin-sdk
-├── core/                              Legacy Electron app (frozen during migration)
 ├── marketplace/                       Plugin workspace + pack/sign/registry tooling
+├── scripts/                           Dev, acceptance, and release helpers
 ├── docs/                              Documentation source (MkDocs)
 ├── docs-site/                         MkDocs site config
 ├── .github/                           CI / release workflows

@@ -34,20 +34,32 @@ pnpm build
 - Do not commit secrets (tokens, private keys, certificates).
 - For UI changes, include screenshots or screen recordings when possible.
 
-## Add a Tool Module
+## Add a Built-in Tool
+
+Built-in tools live in `apps/desktop/src/tools/`:
+
+1. Add `<tool>/<Tool>.tsx` and a pure model (`*.model.ts`) with Vitest tests
+   under `module-tools/`.
+2. Register it in `apps/desktop/src/tools/registry.ts` (id, name, description,
+   category, i18n keys, component).
+3. Add `tool.<id>.name` / `tool.<id>.desc` to both dictionaries in
+   `apps/desktop/src/i18n/index.tsx`.
+4. If the tool needs privileges, call a Rust command — never reach for the
+   network or filesystem directly.
 
 References:
 
-- [dev-guide.md](../core-dev/guide.md)
-- [module-api.md](../core-dev/module-api.md)
-- [ui-guidelines.md](../core-dev/ui-guidelines.md)
-- [ipc-api.md](../core-dev/ipc-api.md)
-- [codebase.md](../core-dev/codebase.md)
-- Marketplace plugin SDK: [plugin-sdk.md](../plugin-dev/sdk.md)
+- [Architecture overview](../architecture/overview.md)
+- [Security model](../architecture/security-model.md)
+- [Built-in tools registry](../../apps/desktop/src/tools/registry.ts)
 
-You can also generate a starter template:
+## Add a Marketplace Plugin
+
+Use the scaffold, then follow the authoring guide:
 
 ```bash
-pnpm new:tool
-pnpm new:tool TimestampConverter --category dev-tools
+node marketplace/scripts/create.mjs --id market-my-tool --name "My Tool"
 ```
+
+- [Plugin developer guide](../plugin-dev/guide.md)
+- [SDK 2.0 authoring](../plugin-dev/marketplace-v2.md)
