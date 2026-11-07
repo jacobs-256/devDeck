@@ -27,11 +27,3 @@ export const CATEGORY_LABELS: Record<ToolCategory, string> = {
 };
 
 export const CATEGORY_ORDER: ToolCategory[] = ['encoding', 'crypto', 'network', 'text', 'data'];
-
-export const CATEGORY_KEYS: Record<ToolCategory, MessageKey> = {
-  encoding: 'toolCategory.encoding',
-  crypto: 'toolCategory.crypto',
-  network: 'toolCategory.network',
-  text: 'toolCategory.text',
-  data: 'toolCategory.data',
-};

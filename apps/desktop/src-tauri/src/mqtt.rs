@@ -55,7 +55,6 @@ impl MqttEvent {
 struct Session {
     client: AsyncClient,
     task: tokio::task::JoinHandle<()>,
-    broker: String,
 }
 
 /// Owns MQTT sessions for the app.
@@ -68,13 +67,6 @@ impl std::fmt::Debug for MqttManager {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("MqttManager").finish_non_exhaustive()
     }
-}
-
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct MqttSessionInfo {
-    pub session_id: String,
-    pub broker: String,
 }
 
 fn parse_broker(raw: &str) -> Result<(String, u16, bool), DevToolboxError> {
@@ -255,14 +247,7 @@ impl MqttManager {
         self.sessions
             .lock()
             .map_err(|_| DevToolboxError::Internal("MQTT session lock poisoned".to_string()))?
-            .insert(
-                session_id.clone(),
-                Session {
-                    client,
-                    task,
-                    broker: broker.to_string(),
-                },
-            );
+            .insert(session_id.clone(), Session { client, task });
 
         Ok(session_id)
     }
@@ -314,21 +299,6 @@ impl MqttManager {
         let _ = session.client.disconnect().await;
         session.task.abort();
         Ok(())
-    }
-
-    pub fn list(&self) -> Vec<MqttSessionInfo> {
-        let Ok(sessions) = self.sessions.lock() else {
-            return Vec::new();
-        };
-        let mut items: Vec<MqttSessionInfo> = sessions
-            .iter()
-            .map(|(session_id, session)| MqttSessionInfo {
-                session_id: session_id.clone(),
-                broker: session.broker.clone(),
-            })
-            .collect();
-        items.sort_by(|a, b| a.session_id.cmp(&b.session_id));
-        items
     }
 }
 
@@ -417,6 +387,5 @@ mod tests {
                 .code(),
             "not_found"
         );
-        assert!(manager.list().is_empty());
     }
 }

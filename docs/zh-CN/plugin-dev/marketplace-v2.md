@@ -150,11 +150,20 @@ pnpm dev
 pnpm build
 ```
 
-本地加载方式：
+本地迭代通过本地签名注册表加载：
 
-1. **文件夹（最快）**：Marketplace 顶部点「安装文件夹」，选择包含 `manifest.json` 与 `package/` 的目录。安装来源标记为「开发」，可重复安装以获取最新构建。
-2. **打包安装**：Marketplace → Install .zip。
-3. **手动**：把目录复制到应用数据目录的 `plugins/<id>/`（启动时会做状态校准）。
+```bash
+pnpm --filter @devtoolbox/marketplace pack market-my-plugin
+DEVTOOLBOX_SIGNING_KEY=$(cat .signing/my-key.txt) \
+  pnpm --filter @devtoolbox/marketplace sign .local-dist/market-my-plugin-0.1.0.zip
+pnpm --filter @devtoolbox/marketplace registry market-my-plugin \
+  --base-url http://127.0.0.1:8765 --out .local-dist/registry.json
+
+# 托管 .local-dist，然后在应用市场添加 http://127.0.0.1:8765/registry.json
+python3 -m http.server 8765 --directory marketplace/.local-dist
+```
+
+`scripts/marketplace-acceptance.sh` 会自动完成同样的全流程。
 
 ## 打包、签名、发布
 

@@ -168,9 +168,8 @@ DEVTOOLBOX_SIGNING_KEY=$(cat .signing/key.txt) \
 pnpm --filter @devtoolbox/marketplace registry --all --out release-dist/registry.json
 ```
 
-Then open **Marketplace → Registries**, paste the URL of your `registry.json`
-(the same file `registry.mjs` produced), and install from the catalog. Local
-`.zip` files can be installed directly with **Install .zip**.
+Then open **Marketplace**, add the URL of your `registry.json` in the registry
+bar, and install from the catalog.
 
 ## Contributing
 

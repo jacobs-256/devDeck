@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { dictionariesForTests, translate } from '../i18n';
 import { filterTools, groupTools, TOOLS } from './registry';
-import { CATEGORY_KEYS, CATEGORY_ORDER } from './types';
+import { CATEGORY_ORDER } from './types';
 
 describe('tool registry', () => {
   it('keeps ids unique', () => {
@@ -20,9 +20,6 @@ describe('tool registry', () => {
   });
 
   it('covers every category', () => {
-    for (const tool of TOOLS) {
-      expect(CATEGORY_KEYS[tool.category]).toBeDefined();
-    }
     const grouped = groupTools(TOOLS);
     expect(grouped.map((group) => group.category)).toEqual(
       CATEGORY_ORDER.filter((category) => grouped.some((group) => group.category === category)),

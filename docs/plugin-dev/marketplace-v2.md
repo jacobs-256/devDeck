@@ -307,12 +307,20 @@ pnpm dev                      # Vite preview; SDK calls fail outside the host
 pnpm build
 ```
 
-Two ways to load your plugin while iterating:
+Load your plugin while iterating through a local signed registry:
 
-1. **Packaged:** zip `manifest.json` and `package/`, then use _Install .zip_ in
-   the Marketplace view.
-2. **Folder:** build the DevToolBox host with your plugin folder copied into
-   `plugins/<id>/` under the app data directory.
+```bash
+pnpm --filter @devtoolbox/marketplace pack market-my-plugin
+DEVTOOLBOX_SIGNING_KEY=$(cat .signing/my-key.txt) \
+  pnpm --filter @devtoolbox/marketplace sign .local-dist/market-my-plugin-0.1.0.zip
+pnpm --filter @devtoolbox/marketplace registry market-my-plugin \
+  --base-url http://127.0.0.1:8765 --out .local-dist/registry.json
+
+# serve .local-dist, then add http://127.0.0.1:8765/registry.json
+python3 -m http.server 8765 --directory marketplace/.local-dist
+```
+
+`scripts/marketplace-acceptance.sh` automates the same flow end to end.
 
 The host logs every permission failure with a code, so check
 `<app-data>/logs/plugins.log` when a call is denied.

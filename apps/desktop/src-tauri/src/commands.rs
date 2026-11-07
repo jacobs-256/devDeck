@@ -4,26 +4,21 @@
 //! `plugin_sdk_call`, and the remaining commands are plain host management
 //! (list/install/enable/disable/uninstall/inspect).
 
-use devtoolbox_capability::GrantSummary;
-use devtoolbox_contract::{DevToolboxError, EntryStatus, RegistryIndex, ValidationIssue};
-use devtoolbox_market::{
-    InstallOptions, InstallSource, InstalledPlugin, RegistrySource, SourceStore,
-};
+use devtoolbox_contract::{DevToolboxError, EntryStatus};
+use devtoolbox_market::{InstalledPlugin, RegistrySource, SourceStore};
 use serde::Serialize;
-use serde_json::{json, Value};
+use serde_json::Value;
 use tauri::{AppHandle, State};
 
 use crate::certs::{
     self, CertificateInfo, CertificateMaterial, CsrMaterial, KeyAlgorithm, KeyMaterial,
     SubjectInput,
 };
-use crate::mqtt::{validate_broker, MqttSessionInfo};
+use crate::mqtt::validate_broker;
 use crate::ping::{self, PingReport};
 use crate::registry::{self, Catalog};
-use crate::state::{now_ms, AppState, CachedRegistryInfo};
+use crate::state::{now_ms, AppState};
 use crate::traceroute::{self, TraceReport};
-
-const MAX_LOCAL_PACKAGE_BYTES: u64 = 512 * 1024 * 1024;
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -35,15 +30,6 @@ pub struct AppInfo {
     pub data_dir: String,
     pub theme: String,
     pub language: String,
-}
-
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RegistryReport {
-    pub valid: bool,
-    pub name: Option<String>,
-    pub plugin_count: usize,
-    pub issues: Vec<ValidationIssue>,
 }
 
 #[tauri::command]
@@ -63,86 +49,6 @@ pub fn app_info(app: AppHandle, state: State<'_, AppState>) -> AppInfo {
 #[tauri::command]
 pub fn plugin_list(state: State<'_, AppState>) -> Result<Vec<InstalledPlugin>, DevToolboxError> {
     Ok(state.market()?.list())
-}
-
-#[tauri::command]
-pub fn plugin_install_zip(
-    state: State<'_, AppState>,
-    bytes: Vec<u8>,
-    expected_sha256: Option<String>,
-    allow_downgrade: Option<bool>,
-) -> Result<InstalledPlugin, DevToolboxError> {
-    let mut options = InstallOptions::new();
-    options.expected_sha256 = expected_sha256;
-    options.allow_downgrade = allow_downgrade.unwrap_or(false);
-
-    let installed = {
-        let mut market = state.market()?;
-        market.install_zip(
-            &bytes,
-            InstallSource::LocalFile("renderer upload".to_string()),
-            &options,
-            now_ms(),
-        )?
-    };
-    state.rebuild_grants()?;
-    Ok(installed)
-}
-
-#[tauri::command]
-pub fn plugin_install_file(
-    state: State<'_, AppState>,
-    path: String,
-) -> Result<InstalledPlugin, DevToolboxError> {
-    let metadata = std::fs::metadata(&path)?;
-    if !metadata.is_file() {
-        return Err(DevToolboxError::InvalidArgument(format!(
-            "'{path}' is not a file"
-        )));
-    }
-    if metadata.len() > MAX_LOCAL_PACKAGE_BYTES {
-        return Err(DevToolboxError::InvalidArgument(
-            "package exceeds the 512 MiB limit".to_string(),
-        ));
-    }
-    let bytes = std::fs::read(&path)?;
-
-    let installed = {
-        let mut market = state.market()?;
-        market.install_zip(
-            &bytes,
-            InstallSource::LocalFile(path),
-            &InstallOptions::default(),
-            now_ms(),
-        )?
-    };
-    state.rebuild_grants()?;
-    Ok(installed)
-}
-
-#[tauri::command]
-pub fn plugin_install_folder(
-    state: State<'_, AppState>,
-    path: String,
-) -> Result<InstalledPlugin, DevToolboxError> {
-    let source = std::path::PathBuf::from(&path);
-    if !source.is_dir() {
-        return Err(DevToolboxError::InvalidArgument(format!(
-            "'{path}' is not a directory"
-        )));
-    }
-
-    let installed = {
-        let mut market = state.market()?;
-        market.install_dir(
-            &source,
-            InstallSource::Development,
-            &InstallOptions::default(),
-            now_ms(),
-        )?
-    };
-    state.rebuild_grants()?;
-    Ok(installed)
 }
 
 #[tauri::command]
@@ -182,29 +88,6 @@ pub fn plugin_set_enabled(
 }
 
 #[tauri::command]
-pub fn plugin_capabilities(
-    state: State<'_, AppState>,
-    plugin_id: String,
-) -> Result<Option<GrantSummary>, DevToolboxError> {
-    let id = state.parse_plugin_id(&plugin_id)?;
-    Ok(state.broker()?.summary(&id))
-}
-
-#[tauri::command]
-pub fn registry_validate(bytes: Vec<u8>) -> Result<RegistryReport, DevToolboxError> {
-    let index: RegistryIndex = serde_json::from_slice(&bytes).map_err(|err| {
-        DevToolboxError::InvalidManifest(format!("malformed registry.json: {err}"))
-    })?;
-    let issues = index.validate();
-    Ok(RegistryReport {
-        valid: issues.iter().all(|issue| !issue.is_error()),
-        name: index.name.clone(),
-        plugin_count: index.plugins.len(),
-        issues,
-    })
-}
-
-#[tauri::command]
 pub fn theme_set(state: State<'_, AppState>, theme: String) -> Result<(), DevToolboxError> {
     state.set_theme(&theme)
 }
@@ -212,32 +95,6 @@ pub fn theme_set(state: State<'_, AppState>, theme: String) -> Result<(), DevToo
 #[tauri::command]
 pub fn language_set(state: State<'_, AppState>, language: String) -> Result<(), DevToolboxError> {
     state.set_language(&language)
-}
-
-#[tauri::command]
-pub fn diagnostics(state: State<'_, AppState>) -> Result<Value, DevToolboxError> {
-    let plugins = state.market()?.list();
-    let broker = state.broker()?;
-    let grants: Vec<Value> = plugins
-        .iter()
-        .map(|plugin| {
-            let summary = broker.summary(&plugin.manifest.id);
-            json!({
-                "id": plugin.manifest.id.as_str(),
-                "name": plugin.manifest.name,
-                "version": plugin.manifest.version,
-                "enabled": plugin.enabled,
-                "granted": summary.map(|grant| grant.permissions),
-            })
-        })
-        .collect();
-
-    Ok(json!({
-        "dataDir": state.root().display().to_string(),
-        "theme": state.theme(),
-        "pluginCount": plugins.len(),
-        "plugins": grants,
-    }))
 }
 
 #[tauri::command]
@@ -294,11 +151,6 @@ pub async fn mqtt_disconnect(
     session_id: String,
 ) -> Result<(), DevToolboxError> {
     state.mqtt().disconnect(&session_id).await
-}
-
-#[tauri::command]
-pub fn mqtt_list(state: State<'_, AppState>) -> Result<Vec<MqttSessionInfo>, DevToolboxError> {
-    Ok(state.mqtt().list())
 }
 
 #[tauri::command]
@@ -368,13 +220,6 @@ pub fn registry_list_sources(
     state: State<'_, AppState>,
 ) -> Result<Vec<RegistrySource>, DevToolboxError> {
     Ok(state.sources()?.list())
-}
-
-#[tauri::command]
-pub fn registry_cache_status(
-    state: State<'_, AppState>,
-) -> Result<Vec<CachedRegistryInfo>, DevToolboxError> {
-    Ok(state.registry_cache_status())
 }
 
 #[tauri::command]

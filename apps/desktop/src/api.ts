@@ -4,19 +4,11 @@ import { invoke } from '@tauri-apps/api/core';
 import type { Language } from './i18n';
 import type {
   AppInfo,
-  CachedRegistryInfo,
   Catalog,
-  Diagnostics,
-  GrantSummary,
   InstalledPlugin,
-  RegistryReport,
   RegistrySource,
   Theme,
 } from './types';
-
-export function isTauri(): boolean {
-  return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
-}
 
 export function appInfo(): Promise<AppInfo> {
   return invoke<AppInfo>('app_info');
@@ -24,26 +16,6 @@ export function appInfo(): Promise<AppInfo> {
 
 export function listPlugins(): Promise<InstalledPlugin[]> {
   return invoke<InstalledPlugin[]>('plugin_list');
-}
-
-export function installFromBytes(
-  bytes: Uint8Array,
-  expectedSha256: string | null = null,
-  allowDowngrade = false,
-): Promise<InstalledPlugin> {
-  return invoke<InstalledPlugin>('plugin_install_zip', {
-    bytes: Array.from(bytes),
-    expectedSha256,
-    allowDowngrade,
-  });
-}
-
-export function installFromFolder(path: string): Promise<InstalledPlugin> {
-  return invoke<InstalledPlugin>('plugin_install_folder', { path });
-}
-
-export function installFromPath(path: string): Promise<InstalledPlugin> {
-  return invoke<InstalledPlugin>('plugin_install_file', { path });
 }
 
 export function uninstallPlugin(pluginId: string): Promise<void> {
@@ -54,24 +26,12 @@ export function setPluginEnabled(pluginId: string, enabled: boolean): Promise<In
   return invoke<InstalledPlugin>('plugin_set_enabled', { pluginId, enabled });
 }
 
-export function pluginCapabilities(pluginId: string): Promise<GrantSummary | null> {
-  return invoke<GrantSummary | null>('plugin_capabilities', { pluginId });
-}
-
-export function validateRegistry(bytes: Uint8Array): Promise<RegistryReport> {
-  return invoke<RegistryReport>('registry_validate', { bytes: Array.from(bytes) });
-}
-
 export function setTheme(theme: Theme): Promise<void> {
   return invoke<void>('theme_set', { theme });
 }
 
 export function setLanguage(language: Language): Promise<void> {
   return invoke<void>('language_set', { language });
-}
-
-export function diagnostics(): Promise<Diagnostics> {
-  return invoke<Diagnostics>('diagnostics');
 }
 
 /**
@@ -122,6 +82,3 @@ export function installFromRegistry(
   });
 }
 
-export function cacheStatus(): Promise<CachedRegistryInfo[]> {
-  return invoke<CachedRegistryInfo[]>('registry_cache_status');
-}

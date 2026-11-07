@@ -326,8 +326,8 @@ pnpm --filter @devtoolbox/marketplace pack ${id}
 pnpm --filter @devtoolbox/marketplace registry ${id} --out release-dist/registry.json
 \`\`\`
 
-Then add the registry in **Marketplace → Registries** (or install the ZIP
-directly with **Install .zip**).
+Then add the registry URL in **Marketplace** and install the plugin from the
+catalog.
 
 ## Permissions
 

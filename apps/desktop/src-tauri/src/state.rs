@@ -28,16 +28,6 @@ pub fn now_ms() -> u64 {
 #[derive(Debug, Clone)]
 pub struct CachedRegistry {
     pub index: RegistryIndex,
-    pub fetched_at_ms: u64,
-}
-
-/// Renderer-friendly description of a cached registry.
-#[derive(Debug, Clone, serde::Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CachedRegistryInfo {
-    pub source_id: String,
-    pub fetched_at_ms: u64,
-    pub releases: usize,
 }
 
 /// Process-wide application state managed by Tauri.
@@ -138,13 +128,7 @@ impl AppState {
     /// Remember a freshly fetched registry for this session.
     pub fn cache_registry(&self, source_id: &str, index: RegistryIndex) {
         if let Ok(mut cache) = self.registry_cache.lock() {
-            cache.insert(
-                source_id.to_string(),
-                CachedRegistry {
-                    index,
-                    fetched_at_ms: now_ms(),
-                },
-            );
+            cache.insert(source_id.to_string(), CachedRegistry { index });
         }
     }
 
@@ -153,22 +137,6 @@ impl AppState {
             .lock()
             .ok()
             .and_then(|cache| cache.get(source_id).map(|cached| cached.index.clone()))
-    }
-
-    pub fn registry_cache_status(&self) -> Vec<CachedRegistryInfo> {
-        let Ok(cache) = self.registry_cache.lock() else {
-            return Vec::new();
-        };
-        let mut status: Vec<CachedRegistryInfo> = cache
-            .iter()
-            .map(|(source_id, cached)| CachedRegistryInfo {
-                source_id: source_id.clone(),
-                fetched_at_ms: cached.fetched_at_ms,
-                releases: cached.index.plugins.len(),
-            })
-            .collect();
-        status.sort_by(|a, b| a.source_id.cmp(&b.source_id));
-        status
     }
 
     pub fn evict_registry(&self, source_id: &str) {

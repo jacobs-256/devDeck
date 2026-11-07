@@ -80,8 +80,7 @@ export function UpdateCard({ currentVersion }: UpdateCardProps) {
     <div className="card">
       <h2>{t('update.title')}</h2>
       <p className="muted small">
-        Current version: <code>{currentVersion ?? 'unknown'}</code>. Updates are downloaded from GitHub
-        Releases and verified with the update signing key.
+        {t('update.current', { version: currentVersion ?? t('update.unknown') })} {t('update.explanation')}
       </p>
 
       <div className="field-row">

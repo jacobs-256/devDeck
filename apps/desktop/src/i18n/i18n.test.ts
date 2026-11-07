@@ -14,12 +14,14 @@ describe('i18n', () => {
   });
 
   it('interpolates variables', () => {
-    expect(translate('en', 'sources.installedCount', { count: 3 })).toBe('3 installed');
-    expect(translate('zh-CN', 'catalog.updateTo', { version: '1.2.0' })).toBe('更新到 1.2.0');
+    expect(translate('en', 'tool.mqtt.messages', { count: 3 })).toBe('Messages (3)');
+    expect(translate('zh-CN', 'tool.uuid.countLabel', { count: 2 })).toBe('2 个 UUID');
   });
 
   it('leaves unknown placeholders untouched', () => {
-    expect(translate('en', 'sources.added', { other: 'x' })).toBe('Added registry “{name}”');
+    expect(translate('en', 'tool.base64.stats', { other: 'x' })).toBe(
+      'Input: {input} bytes · Output: {output} characters',
+    );
   });
 
   it('falls back to the key for unknown messages', () => {

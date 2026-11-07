@@ -55,52 +55,13 @@ export interface AppInfo {
   language: Language;
 }
 
-export interface ValidationIssue {
-  severity: 'error' | 'warning';
-  field: string;
-  code: string;
-  message: string;
-}
-
-export interface RegistryReport {
-  valid: boolean;
-  name?: string;
-  pluginCount: number;
-  issues: ValidationIssue[];
-}
-
-export interface GrantSummary {
-  pluginId: string;
-  permissions: PluginPermission[];
-  httpDomains: string[];
-  envAllowlist: string[];
-  grantedAtMs: number;
-}
-
 export interface SdkError {
   code: string;
   message: string;
   details?: unknown;
 }
 
-export interface Diagnostics {
-  dataDir: string;
-  theme: string;
-  pluginCount: number;
-  plugins: Array<{
-    id: string;
-    name: string;
-    version: string;
-    enabled: boolean;
-    granted?: PluginPermission[];
-  }>;
-}
-
 export type Theme = 'light' | 'dark';
-
-export function authorName(author: PluginAuthor): string {
-  return typeof author === 'string' ? author : author.name;
-}
 
 export interface RegistrySource {
   id: string;
@@ -132,10 +93,4 @@ export interface SourceError {
 export interface Catalog {
   entries: CatalogEntry[];
   errors: SourceError[];
-}
-
-export interface CachedRegistryInfo {
-  sourceId: string;
-  fetchedAtMs: number;
-  releases: number;
 }

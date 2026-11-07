@@ -40,7 +40,3 @@ export function CopyButton({ value, label }: { value: string; label?: string }) 
     </button>
   );
 }
-
-export function ErrorText({ children }: { children: string }) {
-  return <p className="error-text">{children}</p>;
-}
