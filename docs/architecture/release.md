@@ -25,18 +25,20 @@ pnpm --filter @devtoolbox/desktop exec tauri signer generate \
 ## Cut a release
 
 ```bash
-# 1. Bump versions (app + tauri.conf.json share one version)
+# 1. Bump the version in all four places
+#    package.json, apps/desktop/package.json,
+#    apps/desktop/src-tauri/tauri.conf.json, Cargo.toml [workspace.package]
 pnpm version minor --no-git-tag-version
-# update apps/desktop/src-tauri/tauri.conf.json "version" too
 
 # 2. Verify
-./cli.sh check
-pnpm --filter @devtoolbox/desktop build
+pnpm lint && pnpm typecheck && pnpm test
+cargo fmt --all -- --check && cargo clippy --workspace --all-targets
+cargo test --workspace
 
 # 3. Tag and push
 git add -A
-git commit -m "chore(release): 2.2.0"
-git tag v2.2.0
+git commit -m "chore(release): 3.1.0"
+git tag v3.1.0
 git push origin HEAD --tags
 ```
 
@@ -163,9 +165,12 @@ manually.
 
 ## Checklist
 
-- [ ] Version bumped in `package.json`, `apps/desktop/package.json`, and
-      `apps/desktop/src-tauri/tauri.conf.json`
-- [ ] `./cli.sh check` passes
+- [ ] Version bumped in `package.json`, `apps/desktop/package.json`,
+      `apps/desktop/src-tauri/tauri.conf.json`, and `Cargo.toml`
+- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test` pass
+- [ ] `cargo fmt --check`, `cargo clippy`, `cargo test --workspace` pass
+- [ ] `pnpm package:mac` (or CI) produced the expected installers
 - [ ] Release draft contains macOS + Windows installers and `.sig` files
 - [ ] `latest.json` points at the new version
 - [ ] Draft published
+- [ ] Optional: `marketplace-v<version>` tagged and the signed registry published

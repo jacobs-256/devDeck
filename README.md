@@ -1,203 +1,169 @@
-# DevToolBox — Plugin-first, all-in-one Desktop Toolbox
+# DevToolBox
 
-[![CI](https://github.com/XthingsJacobs/devToolBox/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/XthingsJacobs/devToolBox/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/XthingsJacobs/devToolBox/actions/workflows/codeql.yml/badge.svg?branch=dev)](https://github.com/XthingsJacobs/devToolBox/actions/workflows/codeql.yml)
-![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)
+A plugin-first desktop toolbox for developers: 27 built-in utilities, a signed
+plugin marketplace, and a Rust host packaged with **Tauri 2** for macOS and
+Windows.
 
-DevToolBox is a cross-platform desktop toolbox built with **Rust + Tauri 2** on the host and **React + TypeScript + Vite** in the UI.
+- **Small footprint** — ~5.5 MB DMG instead of ~95 MB with the old Electron shell.
+- **Secure by design** — plugins run in a sandboxed iframe with a strict CSP and
+  reach privileged capabilities only through a permission broker.
+- **Open marketplace** — registry sources, Ed25519 package and registry
+  signatures, and documented authoring/publishing steps.
+- **Bilingual UI** — English and Simplified Chinese, dark and light themes.
+- **Legacy layout** — the sidebar, tool workspace, tabs, dashboard, marketplace,
+  and settings screens match the original Electron application.
 
-It aims to be a plugin-first, all-in-one workspace for everyday developer utilities:
+## Install
 
-- Built-in tool modules: formatter, codec, crypto, network, MQTT, JWT, diff, etc.
-- Marketplace plugins: install, update, and build your own tools as plugins
-- One app, one search, one workspace: keep common utilities together instead of scattered scripts
+Download the latest release from
+[GitHub Releases](https://github.com/XthingsJacobs/devToolBox/releases):
 
-## Get Started (Users)
+- **macOS** — open the DMG and drag DevToolBox into Applications.
+- **Windows** — run the NSIS installer.
 
-- Download: https://github.com/XthingsJacobs/devToolBox/releases
-- Install plugins: Modules → Marketplace → Refresh → Install
-- User docs: [docs/index.md](./docs/index.md) → [users/guide.md](./docs/users/guide.md)
+Updates are verified with the updater signing key and can be checked from
+**Settings → Updates**.
 
-- **Bilingual UI** — English and Simplified Chinese across the shell, Marketplace, and all 27 tools
-- **Plugin marketplace** — signed registries, consent screen, developer folder install
+## Built-in tools (27)
 
-## Featured Tools
+| Category  | Tools                                                                                                        |
+| --------- | ------------------------------------------------------------------------------------------------------------ |
+| Developer | JSON Formatter, JSON ↔ YAML, JSON ↔ XML, HTML Editor, JS Formatter, Regex Tester, UUID Generator             |
+| Text      | Base64, URL Codec, Unicode Inspector, Pinyin Converter, QR Code, Wi-Fi QR, Markdown Preview, Text Diff       |
+| Network   | IP Calculator, TCP Ping, MQTT Client, Tracert, WebSocket Tester                                              |
+| Security  | Key Pair, CA Generator, CSR Generator, Issue Certificate, Certificate Viewer, JWT Decoder, String Encryption |
 
-Built-in tool modules worth trying first (Rust + Tauri branch):
+All tools run locally. Network and certificate operations are implemented in
+Rust (TCP handshake, MQTT client, certificate generation/parsing, SSH/SFTP) or
+in the renderer (WebSocket, downloads), never through remote services.
 
-- Base64 / Base64URL codec
-- JSON formatter, minifier, and key sorter
-- JWT decoder with expiry checks
-- IPv4 / CIDR calculator
-- Regex tester with groups and replace
-- UUID v4 / v7 generator
-- URL percent-encoder and query parser
-- Markdown preview with sanitized rendering
-- Text diff by line/word/character with unified patch
-- QR code generator (SVG)
-- JSON ↔ YAML / JSON ↔ XML converters
-- Unicode inspector (escape, code point, UTF-8/16 sizes)
-- Pinyin converter with tone marks, numbers, and initials
-- Wi-Fi QR code builder
-- Key pair / CA / CSR / certificate issuance and viewer (Rust `rcgen` + `x509-parser`)
-- HTML editor with sandboxed preview
-- JS beautifier/minifier (terser loaded on demand)
-- AES-256-GCM string encryption
-- TCP ping (handshake latency) and WebSocket tester
-- MQTT client (subscribe/publish with live log)
-- Traceroute (OS `traceroute`/`tracert`, validated host)
+## Marketplace
 
-Marketplace plugins in this repo (examples):
+Plugins are self-contained web apps served by the host over `plugin://` and
+rendered in an iframe. Every capability is declared in `manifest.json` and
+enforced by the Rust broker.
 
-- `market-ip-lookup`: IP geolocation lookup with multi-provider fallback
-- `market-exchange-rate`: FX rates + currency conversion
-- `market-matter-catalog`: Matter device type → cluster requirements lookup
+- Authoring guide: [plugin-dev/marketplace-v2.md](docs/plugin-dev/marketplace-v2.md)
+- Protocol: [architecture/marketplace.md](docs/architecture/marketplace.md)
+- SDK: [plugin-dev/sdk.md](docs/plugin-dev/sdk.md)
+- Packaging and signing: [plugin-dev/packaging.md](docs/plugin-dev/packaging.md)
 
-## Architecture
+Quick flow:
 
-The application is split into a thin web layer and a Rust policy layer:
+```bash
+# Scaffold (manifest + Vite + SDK demo)
+node marketplace/scripts/create.mjs --id market-my-tool --name "My Tool"
 
-| Path                           | Role                                                       |
-| ------------------------------ | ---------------------------------------------------------- |
-| `apps/desktop/src`             | React shell, built-in tools, plugin bridge                 |
-| `apps/desktop/src-tauri`       | Tauri host: commands, SDK dispatcher, `plugin://` protocol |
-| `crates/devtoolbox-contract`   | Manifest, permission, registry, and error contracts        |
-| `crates/devtoolbox-capability` | Capability broker, HTTP allowlists, path sandbox           |
-| `crates/devtoolbox-market`     | Package verification (SHA-256 + Ed25519), install state    |
-| `packages/plugin-sdk`          | `@devtoolbox/plugin-sdk` for Marketplace plugin authors    |
+# Build, pack, sign
+pnpm --filter @devtoolbox/plugin-market-my-tool build
+pnpm --filter @devtoolbox/marketplace pack market-my-tool
+DEVTOOLBOX_SIGNING_KEY=$(cat .signing/my-key.txt) \
+  pnpm --filter @devtoolbox/marketplace sign .local-dist/market-my-tool-0.1.0.zip
 
-Every plugin capability flows through **one gated command**
-(`plugin_sdk_call`); the host re-checks the installed manifest, enablement, and
-the specific permission on every call.
+# Local registry + serve
+pnpm --filter @devtoolbox/marketplace registry market-my-tool \
+  --base-url http://127.0.0.1:8765 --out .local-dist/registry.json
+python3 -m http.server 8765 --directory marketplace/.local-dist
+```
 
-Read more:
+Then add `http://127.0.0.1:8765/registry.json` in **Marketplace** and install the
+plugin. `scripts/marketplace-acceptance.sh` automates the full signed flow.
 
-- [Architecture overview](./docs/architecture/overview.md)
-- [Design system](./docs/design-system.md)
-- [Marketplace protocol](./docs/architecture/marketplace.md)
-- [Security model](./docs/architecture/security-model.md)
-- [Migration status](./docs/architecture/migration.md)
+## Get started (contributors)
 
-## Get Started (Contributors)
-
-Requirements:
-
-- Node.js 20+
-- pnpm 10+
-- Rust 1.90+ (`rustup` default toolchain) with the platform Tauri prerequisites
-
-Run the Tauri app locally:
+Requirements: Node.js 20+, pnpm 10+, Rust 1.90+ with the platform Tauri
+prerequisites.
 
 ```bash
 pnpm install
 pnpm dev            # Tauri 2 desktop app
 pnpm build          # renderer + plugin SDK production build
-pnpm test           # host + renderer unit tests
-```
-
-Run the policy crates and their tests:
-
-```bash
-cargo test -p devtoolbox-contract -p devtoolbox-capability -p devtoolbox-market
-cargo clippy --workspace --all-targets
-```
-
-Contributor docs:
-
-- [Architecture overview](./docs/architecture/overview.md)
-- [Design system](./docs/design-system.md)
-- [Security model](./docs/architecture/security-model.md)
-- [Built-in tools registry](./apps/desktop/src/tools/registry.ts)
-- CLI: [shared/cli.md](./docs/shared/cli.md)
-- Troubleshooting: [shared/troubleshooting.md](./docs/shared/troubleshooting.md)
-
-Quality gates:
-
-```bash
-cargo fmt --all -- --check
-cargo clippy --workspace --all-targets
+pnpm test           # renderer/tool tests
 cargo test --workspace
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm build
 ```
 
-Packaging (Tauri 2):
+Common commands:
+
+| Command                            | Runs                                                  |
+| ---------------------------------- | ----------------------------------------------------- |
+| `pnpm dev`                         | `tauri dev` for `apps/desktop`                        |
+| `pnpm build`                       | renderer production build + SDK build                 |
+| `pnpm typecheck`                   | renderer and SDK TypeScript checks                    |
+| `pnpm test`                        | Vitest for renderer and tools                         |
+| `pnpm lint`                        | manifestation validation, legacy-import guard, ESLint |
+| `pnpm package:mac` / `package:win` | Tauri installers for the host OS                      |
+| `pnpm marketplace:acceptance`      | end-to-end signed marketplace rehearsal               |
+| `pnpm release:rehearse`            | updater artifact + `latest.json` rehearsal            |
+
+The Rust workspace:
 
 ```bash
-# macOS .app + .dmg
-pnpm package:mac
-
-# Windows NSIS installer (run on Windows)
-pnpm package:win
+cargo test --workspace
+cargo clippy --workspace --all-targets
+cargo fmt --all -- --check
 ```
 
-Artifacts land in `target/release/bundle/`; the release `.dmg` is about **5.4 MB**
-on macOS arm64.
+## Keyboard shortcuts
 
-Releases are produced by `.github/workflows/tauri-release.yml` with signed
-updater artifacts; see [Releasing](docs/architecture/release.md). In-app updates
-live in **Settings → Updates**.
+| Shortcut                         | Action                                                 |
+| -------------------------------- | ------------------------------------------------------ |
+| `Cmd/Ctrl+K`                     | Global tool search                                     |
+| `Cmd/Ctrl+,`                     | Settings                                               |
+| `Cmd/Ctrl+W`                     | Close the active tool tab                              |
+| `Esc`                            | Close search/dialog, exit tool fullscreen              |
+| `↑` / `↓` / `Enter`              | Navigate and open search results                       |
+| `Cmd/Ctrl+F`                     | JSON Formatter: find in output · MQTT: filter messages |
+| `Enter`                          | TCP Ping: probe · Tracert: trace                       |
+| `Cmd/Ctrl+C/V/X/A`, `Cmd/Ctrl+Z` | Native edit roles                                      |
+| `Cmd+Q`                          | Quit (macOS)                                           |
 
-## Plugin Development (Marketplace)
+The native menu also exposes Settings, theme, language, and About. See
+[design-system.md](docs/design-system.md) for the full UI specification.
 
-A plugin is a self-contained web UI that runs in a sandboxed iframe and reaches
-the host only through `@devtoolbox/plugin-sdk`. Every capability is declared in
-`manifest.json` and enforced by the Rust capability broker.
-
-- Authoring guide: [marketplace-v2.md](./docs/plugin-dev/marketplace-v2.md)
-- Protocol spec: [marketplace.md](./docs/architecture/marketplace.md)
-- SDK package: [`packages/plugin-sdk`](./packages/plugin-sdk/README.md)
-
-Quick flow:
-
-```bash
-# Scaffold a new plugin (manifest + Vite + SDK demo)
-pnpm --filter @devtoolbox/marketplace create --id market-<id> --name "My Tool"
-
-# Build the plugin web app
-pnpm --filter ./marketplace/modules/market-<id> build
-
-# Package (+ sign) into marketplace/.local-dist
-pnpm --filter @devtoolbox/marketplace pack market-<id>
-DEVTOOLBOX_SIGNING_KEY=$(cat .signing/key.txt) \
-  pnpm --filter @devtoolbox/marketplace sign .local-dist/market-<id>-<version>.zip
-
-# Generate registry.json
-pnpm --filter @devtoolbox/marketplace registry --all --out release-dist/registry.json
-```
-
-Then open **Marketplace**, add the URL of your `registry.json` in the registry
-bar, and install from the catalog.
-
-## Contributing
-
-- Contributing guide: [contributing.md](./docs/governance/contributing.md)
-- Roadmap: [roadmap.md](./docs/governance/roadmap.md)
-- Built-in tools: [`apps/desktop/src/tools`](./apps/desktop/src/tools)
-- Code of conduct: [code-of-conduct.md](./docs/governance/code-of-conduct.md)
-- Security policy: [security.md](./docs/governance/security.md)
-- Support: [support.md](./docs/governance/support.md)
-
-## Repository Layout
+## Repository layout
 
 ```text
 devtoolbox/
-├── apps/desktop/                      Tauri 2 app (React renderer + src-tauri host)
-├── crates/                            Rust workspace: contract, capability, market
-├── packages/plugin-sdk/               Published @devtoolbox/plugin-sdk
-├── marketplace/                       Plugin workspace + pack/sign/registry tooling
-├── scripts/                           Dev, acceptance, and release helpers
-├── docs/                              Documentation source (MkDocs)
-├── docs-site/                         MkDocs site config
-├── .github/                           CI / release workflows
-├── Cargo.toml                         Rust workspace
-├── cli.sh                             Repo CLI helpers
-├── package.json
+├── apps/desktop/                 Tauri app (React renderer + src-tauri host)
+│   ├── src/legacy/               Restored main-branch shell and pages
+│   ├── src/tools/               27 built-in tools + registry/tests
+│   ├── src/theme/               Legacy color/type tokens and globals
+│   └── src-tauri/               Rust host, plugin protocol, commands
+├── crates/                      Rust workspace
+│   ├── devtoolbox-contract/     Manifest, permissions, registry, errors
+│   ├── devtoolbox-capability/   Broker, allowlists, path sandbox
+│   └── devtoolbox-market/       SHA-256/Ed25519, ZIP safety, install state
+├── packages/plugin-sdk/         Published @devtoolbox/plugin-sdk (2.0)
+├── marketplace/                 Plugin workspace + pack/sign/registry tooling
+├── scripts/                     Acceptance, updater rehearsal, guards
+├── docs/                        Documentation (English + 中文)
+├── docs-site/                   MkDocs configuration
+├── .github/workflows/           CI, Tauri release, marketplace release
+├── Cargo.toml                   Rust workspace
+├── cli.sh                       Repository CLI helpers
 └── pnpm-workspace.yaml
 ```
 
+## Documentation
+
+- [Documentation index](docs/index.md)
+- [Architecture](docs/architecture/overview.md)
+- [Development guide](docs/development.md) — secondary development, adding tools,
+  commands, capabilities, and tests
+- [Design system](docs/design-system.md)
+- [Marketplace protocol](docs/architecture/marketplace.md)
+- [Security model](docs/architecture/security-model.md)
+- [Migration record](docs/architecture/migration.md)
+- [Releasing](docs/architecture/release.md)
+- [中文文档](docs/zh-CN/README.md)
+
+## Contributing
+
+- [Contributing](CONTRIBUTING.md) · [detailed workflow](docs/governance/contributing.md)
+- [Code of conduct](CODE_OF_CONDUCT.md)
+- [Security policy](SECURITY.md)
+- [Roadmap](docs/governance/roadmap.md)
+
 ## License
 
-Apache-2.0
+Apache-2.0. See [LICENSE](LICENSE) and [NOTICE](docs/NOTICE).

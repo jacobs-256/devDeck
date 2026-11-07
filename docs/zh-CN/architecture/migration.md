@@ -6,26 +6,26 @@
 
 ## 状态矩阵
 
-| 模块                    | Electron（2.0.x）                              | Rust + Tauri（3.0.0）                                | 状态          |
-| ----------------------- | ---------------------------------------------- | ---------------------------------------------------- | ------------- |
-| 外壳与打包              | electron-builder，239 MB `.app` / 95 MB `.dmg` | Tauri 2，8.35 MB `.app` / 5.44 MB `.dmg`（arm64）    | ✅ 已完成     |
-| 清单契约                | TS 类型                                        | `devtoolbox-contract`，schema 2 + v1 兼容            | ✅ 实现并测试 |
-| 权限模型                | `marketplace.ts` 内联判断                      | `devtoolbox-capability` 代理 + 白名单                | ✅ 实现并测试 |
-| 包校验                  | Node 脚本 sha256                               | SHA-256 + Ed25519                                    | ✅ 实现并测试 |
-| 安装/卸载/启用          | 3020 行 `marketplace.ts`                       | `devtoolbox-market::store`                           | ✅ 实现并测试 |
-| 插件资源服务            | Electron 窗口                                  | `plugin://` 协议                                     | ✅ 实现       |
-| 插件桥                  | `postMessage` + 115 IPC                        | `postMessage` + 单一 `plugin_sdk_call`               | ✅ 实现       |
-| SDK 1.x 兼容            | 不适用                                         | 旧方法别名 + 旧响应形状                              | ✅ 实现并测试 |
-| 示例插件                | SDK 1.x shim                                   | `market-emoji-search`、`market-ip-lookup` 升级到 2.0 | ✅ 已迁移     |
-| 存储/日志/主题/打开链接 | 专用 IPC                                       | 权限后置的 SDK 方法                                  | ✅ 实现       |
-| HTTP 代理               | `plugin:httpRequest`                           | `http.rs` 逐跳白名单                                 | ✅ 实现       |
-| SSH/SFTP/TCP/UDP        | `ssh2`, `net`                                  | socket + SSH shell/exec + SFTP + 测试内服务端        | ✅ 实现并测试 |
-| 文件对话框与读写        | `dialog`                                       | token 化 `fs:*` + 插件数据沙箱                       | ✅ 实现并测试 |
-| 注册表拉取              | 主进程 HTTP                                    | 来源管理 + 拉取 + 签名策略 + 按源安装                | ✅ 实现并测试 |
-| 自动更新                | `electron-updater`                             | `tauri-plugin-updater` + 签名发布                    | ✅ 已接入     |
-| 内置工具（27）          | `core/renderer`                                | 27 个全部迁移，带模型/宿主测试                       | ✅ 完成       |
-| i18n / 主题             | `core/renderer/i18n`                           | 壳层、市场与 27 个工具正文全部中/英                  | ✅ 完成       |
-| 插件作者文档            | 旧 SDK 文档                                    | SDK 2.0 指南 + 脚手架 + 打包文档                     | ✅ 完成       |
+| 模块                    | Electron（2.0.x）                              | Rust + Tauri（3.0.0）                             | 状态          |
+| ----------------------- | ---------------------------------------------- | ------------------------------------------------- | ------------- |
+| 外壳与打包              | electron-builder，239 MB `.app` / 95 MB `.dmg` | Tauri 2，8.35 MB `.app` / 5.46 MB `.dmg`（arm64） | ✅ 已完成     |
+| 清单契约                | TS 类型                                        | `devtoolbox-contract`，schema 2 + v1 兼容         | ✅ 实现并测试 |
+| 权限模型                | `marketplace.ts` 内联判断                      | `devtoolbox-capability` 代理 + 白名单             | ✅ 实现并测试 |
+| 包校验                  | Node 脚本 sha256                               | SHA-256 + Ed25519                                 | ✅ 实现并测试 |
+| 安装/卸载/启用          | 3020 行 `marketplace.ts`                       | `devtoolbox-market::store`                        | ✅ 实现并测试 |
+| 插件资源服务            | Electron 窗口                                  | `plugin://` 协议                                  | ✅ 实现       |
+| 插件桥                  | `postMessage` + 115 IPC                        | `postMessage` + 单一 `plugin_sdk_call`            | ✅ 实现       |
+| SDK 1.x 兼容            | 不适用                                         | 旧方法别名 + 旧响应形状                           | ✅ 实现并测试 |
+| 示例插件                | SDK 1.x shim                                   | 六个示例插件升级到 SDK 2.0（全部构建通过）        | ✅ 已迁移     |
+| 存储/日志/主题/打开链接 | 专用 IPC                                       | 权限后置的 SDK 方法                               | ✅ 实现       |
+| HTTP 代理               | `plugin:httpRequest`                           | `http.rs` 逐跳白名单                              | ✅ 实现       |
+| SSH/SFTP/TCP/UDP        | `ssh2`, `net`                                  | socket + SSH shell/exec + SFTP + 测试内服务端     | ✅ 实现并测试 |
+| 文件对话框与读写        | `dialog`                                       | token 化 `fs:*` + 插件数据沙箱                    | ✅ 实现并测试 |
+| 注册表拉取              | 主进程 HTTP                                    | 来源管理 + 拉取 + 签名策略 + 按源安装             | ✅ 实现并测试 |
+| 自动更新                | `electron-updater`                             | `tauri-plugin-updater` + 签名发布                 | ✅ 已接入     |
+| 内置工具（27）          | `core/renderer`                                | 27 个全部迁移，带模型/宿主测试                    | ✅ 完成       |
+| i18n / 主题             | `core/renderer/i18n`                           | 壳层、市场与 27 个工具正文全部中/英               | ✅ 完成       |
+| 插件作者文档            | 旧 SDK 文档                                    | SDK 2.0 指南 + 脚手架 + 打包文档                  | ✅ 完成       |
 
 图例：✅ 完成并测试 · 🟡 部分 · ⬜ 待办。
 
@@ -48,7 +48,7 @@ pnpm marketplace:acceptance
 pnpm release:rehearse
 ```
 
-实测体积（arm64 macOS，3.0.0）：`.app` 8.35 MB、`.dmg` 5.44 MB；debug `.app` 约 40 MB。
+实测体积（arm64 macOS，3.0.0）：`.app` 8.35 MB、`.dmg` 5.46 MB；debug `.app` 约 40 MB。
 
 ## 剩余事项（运维动作，非代码）
 

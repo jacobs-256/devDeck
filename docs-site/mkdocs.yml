@@ -36,9 +36,10 @@ nav:
   - Plugin Developers:
       - Plugin Dev Guide: plugin-dev/guide.md
       - Marketplace Authoring (SDK 2.0): plugin-dev/marketplace-v2.md
-      - Plugin SDK Contract: plugin-dev/sdk.md
-      - Marketplace Packaging: plugin-dev/packaging.md
+      - SDK Reference: plugin-dev/sdk.md
+      - Packaging & Signing: plugin-dev/packaging.md
   - Developers:
+      - Development Guide: development.md
       - Design System: design-system.md
       - CLI: shared/cli.md
       - Troubleshooting: shared/troubleshooting.md
@@ -46,9 +47,13 @@ nav:
       - Overview: architecture/overview.md
       - Marketplace Protocol: architecture/marketplace.md
       - Security Model: architecture/security-model.md
-      - Migration Status: architecture/migration.md
+      - Migration Record: architecture/migration.md
       - Releasing: architecture/release.md
   - 中文文档:
+      - 中文索引: zh-CN/README.md
+      - 用户指南: zh-CN/users/guide.md
+      - 常见问题: zh-CN/users/faq.md
+      - 二次开发指南: zh-CN/development.md
       - 架构总览: zh-CN/architecture/overview.md
       - Marketplace 协议: zh-CN/architecture/marketplace.md
       - 安全模型: zh-CN/architecture/security-model.md

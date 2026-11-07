@@ -1,139 +1,65 @@
 # CLI Guide (`cli.sh`)
 
-The repository provides `cli.sh` as a unified command entry for local development, packaging, and quality checks.
-
-## Quick Start
-
-Make the script executable (first time only):
+`cli.sh` is a thin wrapper around the repository's pnpm/Cargo commands.
 
 ```bash
 chmod +x ./cli.sh
-```
-
-Show help:
-
-```bash
 ./cli.sh help
-```
-
-Check local environment (Node/pnpm/Git):
-
-```bash
-./cli.sh doctor
 ```
 
 ## Commands
 
+| Command                                    | Action                                                                               |
+| ------------------------------------------ | ------------------------------------------------------------------------------------ |
+| `./cli.sh doctor`                          | Print Node, pnpm, Git, and Rust versions                                             |
+| `./cli.sh dev`                             | `pnpm dev` (Tauri dev loop)                                                          |
+| `./cli.sh build`                           | Renderer + Plugin SDK build                                                          |
+| `./cli.sh check`                           | `pnpm lint`, `pnpm typecheck`, `pnpm test`, plus Rust checks when Cargo is available |
+| `./cli.sh clear`                           | Interactive local data/artifact cleanup                                              |
+| `./cli.sh plugin create`                   | Scaffold a marketplace plugin                                                        |
+| `./cli.sh plugin [<id>\|all]`              | Build + pack plugin(s) into `marketplace/registry.local.json`                        |
+| `./cli.sh package [macos\|windows] [arch]` | Tauri installer for the current OS                                                   |
+
+## Development
+
 ```bash
 ./cli.sh dev
 ./cli.sh build
-./cli.sh plugin create
-./cli.sh plugin
-./cli.sh plugin <market-id>
-./cli.sh plugin all
-./cli.sh package <macos|windows|all> [arm64|x64|universal]
 ./cli.sh check
-./cli.sh tool new
 ```
 
-## Common Workflows
+`check` runs the same gates as CI where possible; Rust checks are skipped if
+`cargo` is not installed.
 
-### Run in Development
-
-```bash
-./cli.sh dev
-```
-
-### Build (no installer)
+## Packaging
 
 ```bash
-./cli.sh build
-```
-
-### Package Installer
-
-macOS (arm64):
-
-```bash
-./cli.sh package macos arm64
-```
-
-macOS (x64):
-
-```bash
+./cli.sh package macos                 # .app + .dmg
+./cli.sh package macos arm64           # aarch64 target
 ./cli.sh package macos x64
-```
-
-macOS (universal):
-
-```bash
 ./cli.sh package macos universal
+./cli.sh package windows               # NSIS, run on Windows
 ```
 
-Windows:
-
-```bash
-./cli.sh package windows
-```
-
-All:
-
-```bash
-./cli.sh package all
-```
-
-Interactive packaging:
-
-```bash
-./cli.sh package
-```
-
-Notes:
-
-- macOS artifacts are written to `release/` as `*.dmg`
-- Windows artifacts are written to `release/` as `*.exe`
-- Packaging Windows on macOS may require `wine` + `mono` (otherwise use Windows or CI)
-
-### Quality Gates
-
-```bash
-./cli.sh check
-```
-
-This runs:
-
-- `pnpm lint`
-- `pnpm typecheck`
-- `pnpm test`
+Artifacts land in `target/release/bundle/` (`macos/`, `dmg/`, or `nsis/`).
+Tauri builds are per-OS; `all` is not supported by the CLI. Use the GitHub
+release workflow to build macOS and Windows in parallel.
 
 ## Marketplace
 
-Marketplace plugin development lives in `marketplace/`:
-
 ```bash
-pnpm -C marketplace build
-```
-
-Create a new marketplace plugin template (interactive):
-
-```bash
-./cli.sh plugin create
-```
-
-Build + pack a marketplace plugin into a local registry zip:
-
-```bash
-./cli.sh plugin
-./cli.sh plugin <market-id>
-```
-
-Running `./cli.sh plugin` without arguments lists marketplace plugins from `marketplace/modules`, lets you
-choose one, choose `All`, or input a plugin ID manually.
-
-Build + pack all marketplace plugins into `marketplace/registry.local.json`:
-
-```bash
+./cli.sh plugin create            # interactive scaffold
+./cli.sh plugin                   # choose a plugin, then build + pack
+./cli.sh plugin market-emoji-search
 ./cli.sh plugin all
 ```
 
-See also: [Marketplace Packaging](../plugin-dev/packaging.md)
+Packaging writes `marketplace/registry.local.json` and ZIPs under
+`marketplace/.local-dist/`. Signing and registry publishing use the
+`marketplace` package scripts; see
+[Packaging and signing](../plugin-dev/packaging.md).
+
+## Related
+
+- [Development guide](../development.md)
+- [Troubleshooting](troubleshooting.md)

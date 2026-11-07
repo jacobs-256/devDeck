@@ -32,7 +32,9 @@ hostile code.
 │   ├─ sdk.rs                  ONE gated dispatcher for plugins   │
 │   ├─ protocol.rs             plugin:// asset server             │
 │   ├─ http.rs, logs.rs        capability implementations         │
-│   └─ state.rs, storage.rs    runtime state                      │
+│   ├─ socket.rs, ssh.rs       TCP/UDP, SSH/SFTP sessions         │
+│   ├─ mqtt.rs, certs.rs       MQTT client, X.509 utilities       │
+│   └─ state.rs, storage.rs    runtime state and settings         │
 ├─────────────────────────────────────────────────────────────────┤
 │ crates/                     framework-free policy crates        │
 │   ├─ devtoolbox-contract     manifest, permissions, registry    │
@@ -49,14 +51,37 @@ makes it testable and reusable by CLI tooling.
 
 | Path                           | Purpose                                                          |
 | ------------------------------ | ---------------------------------------------------------------- |
-| `apps/desktop/src`             | React shell, built-in tool pages, plugin bridge                  |
+| `apps/desktop/src`             | React renderer: legacy shell/pages, 27 tools, plugin bridge      |
+| `apps/desktop/src/legacy`      | Sidebar, dashboard, tools workspace, module center, settings     |
+| `apps/desktop/src/theme`       | Legacy color/type tokens and global styles                       |
 | `apps/desktop/src-tauri`       | Tauri configuration, Rust host, capabilities                     |
 | `crates/devtoolbox-contract`   | Shared vocabulary: ids, manifests, permissions, registry, errors |
 | `crates/devtoolbox-capability` | Capability broker and filesystem sandbox                         |
 | `crates/devtoolbox-market`     | Package verification, extraction, install state                  |
 | `packages/plugin-sdk`          | Published npm SDK used by plugin authors                         |
-| `marketplace/`                 | First-party plugin sources and release tooling                   |
+| `marketplace/`                 | Plugin workspace, pack/sign/registry tooling                     |
+| `scripts/`                     | Acceptance, updater rehearsal, legacy-import guard               |
 | `docs/`                        | Documentation (this file included)                               |
+
+## UI shell
+
+The renderer keeps the original Electron layout (`main` branch), restored in
+`apps/desktop/src/legacy/`:
+
+- **Sidebar** — Dashboard, Tools, Marketplace, Settings; collapsible to an icon
+  rail; tool categories appear while Tools is active.
+- **Dashboard** — search, category quick-nav, frequently used tools, app/screen/
+  runtime widgets.
+- **Tools workspace** — 252px tool list panel, browser-style tabs, tool header
+  with fullscreen toggle; tools stay mounted while switching tabs.
+- **Module center** — installed/marketplace tabs, registry bar, filters, cards.
+- **Settings** — secondary navigation, theme/language, registries (including
+  trust options), updates, about.
+- **Global search** (`Cmd/Ctrl+K`) and About dialog.
+
+The native Tauri menu mirrors the legacy menu (Settings `Cmd+,`, edit roles,
+theme/language, About). The shortcut contract is documented in the
+[design system](../design-system.md).
 
 ## Process and trust boundaries
 
@@ -75,11 +100,9 @@ makes it testable and reusable by CLI tooling.
 
 ## One dispatcher, not sixty commands
 
-The legacy Electron host exposed 63 bespoke IPC channels. Adding a capability
-meant touching the contract, the preload bridge, the main-process handler, and
-the renderer service.
-
-The Tauri host replaces that with a single gated method:
+The old Electron host exposed one IPC channel per feature. Adding a capability
+meant touching the contract, preload bridge, main-process handler, and renderer
+service. The Tauri host replaces that with a single gated method:
 
 ```rust
 #[tauri::command]
@@ -90,6 +113,19 @@ async fn plugin_sdk_call(plugin_id, method, params) -> Result<Value, DevToolboxE
 `params` is a JSON object, and the broker enforces the permission before the
 implementation runs. New capabilities are additive: one match arm plus one
 permission, with no new IPC surface.
+
+## Command surface
+
+The renderer can only call the commands registered in `lib.rs`:
+
+`app_info`, `plugin_list`, `plugin_uninstall`, `plugin_set_enabled`,
+`cert_generate_key|ca|csr`, `cert_issue`, `cert_parse`, `tcp_ping`,
+`mqtt_connect|subscribe|publish|disconnect`, `traceroute`,
+`registry_list_sources|add_source|remove_source|refresh`,
+`plugin_install_from_registry`, `theme_set`, `language_set`, and
+`plugin_sdk_call`.
+
+Everything a plugin does funnels through `plugin_sdk_call`.
 
 ## Install flow
 
@@ -153,7 +189,7 @@ Built-in tools are renderer-only and should not need Rust at all.
 apps/desktop/src/tools/
 ├── registry.ts              the single place a tool is registered
 ├── types.ts                 ToolDefinition / categories
-├── components.tsx           CopyButton, ErrorText
+├── components.tsx           CopyButton
 └── module-tools/<tool>/
     ├── <tool>.model.ts      pure logic (no React, no window.*)
     ├── <tool>.model.test.ts Vitest unit tests
@@ -163,11 +199,16 @@ apps/desktop/src/tools/
 Rules:
 
 - keep logic in the `.model.ts` file so it is testable in Node;
-- register the tool once in `registry.ts` with keywords for search;
+- register the tool once in `registry.ts` with keywords, i18n keys, and category;
+- map the category and icon in `apps/desktop/src/legacy/data.tsx`;
+- add `tool.<id>.name` / `.desc` keys to both dictionaries;
 - tools that need privileges (files, network, SSH) call a host command — never
-  `fetch`, `fs`, or Electron APIs directly;
+  `fetch`, `fs`, or host APIs directly;
+- controls inside `.tool-body` use `styles/tool-compat.css`;
 - add at least one test per model file; `pnpm --filter @devtoolbox/desktop test`
   runs them.
+
+Step-by-step instructions live in the [development guide](../development.md).
 
 ## Testing strategy
 
@@ -176,7 +217,7 @@ Rules:
 | Contract   | Unit tests for ids, manifests, permissions, registry, path sandbox                             | `crates/*/src/**` `#[cfg(test)]` |
 | Capability | Unit tests for every allowlist rule and each failure mode                                      | `crates/devtoolbox-capability`   |
 | Market     | End-to-end install tests against in-memory ZIP fixtures, including zip-slip and zip-bomb cases | `crates/devtoolbox-market`       |
-| Host       | `cargo check` / `cargo clippy`; command behavior is thin by construction                       | CI                               |
+| Host       | Command behavior, sockets, MQTT, certificates, SSH end-to-end against an in-process server     | `apps/desktop/src-tauri/src`     |
 | Renderer   | `tsc --noEmit` + `vite build` + Vitest for pure helpers                                        | `apps/desktop`                   |
 
 Security-relevant rules are tested **in the crate that enforces them**, not
@@ -197,9 +238,11 @@ the theme and applied on startup.
 
 ## Related documents
 
+- [Development guide](../development.md)
+- [Design system](../design-system.md)
 - [Marketplace protocol](marketplace.md)
 - [Security model](security-model.md)
-- [Migration status](migration.md)
+- [Migration record](migration.md)
 - [Plugin authoring guide](../plugin-dev/marketplace-v2.md)
 
 > 中文镜像：[docs/zh-CN/architecture/overview.md](../zh-CN/architecture/overview.md)

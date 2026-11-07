@@ -1,73 +1,132 @@
-# Marketplace Packaging (Local Development)
+# Packaging and Signing
 
-DevToolBox marketplace plugins are built and packaged from the monorepo under:
+Marketplace artifacts are built from `marketplace/` and published as a signed
+`registry.json` plus signed ZIP packages.
 
-`marketplace/`
+## 1. Naming
 
-## Naming Conventions
+- `manifest.id` must be kebab-case and start with `market-`.
+- Workspace package: `@devtoolbox/plugin-<manifest.id>`.
+- Package file: `<manifest.id>-<version>.zip`.
 
-- Marketplace plugin `manifest.id` must start with `market-`.
-
-## Create a Plugin Template
-
-```bash
-./cli.sh plugin create
-```
-
-## Local Build
-
-Example (your plugin):
+## 2. Build
 
 ```bash
-pnpm --filter @devtoolbox/plugin-<market-id> build
+# Scaffold
+node marketplace/scripts/create.mjs --id market-my-tool --name "My Tool"
+
+# Build the plugin web app (outputs package/)
+pnpm --filter @devtoolbox/plugin-market-my-tool build
 ```
 
-The build output is written to the plugin `package/` directory defined by its manifest entry.
+The build output directory is the first segment of `manifest.entry`
+(usually `package/`).
 
-## Network Tools (Socket)
-
-For TCP/UDP-style tools, plugins must use the host-provided socket capability (plugins run in an iframe and cannot use Node network APIs directly).
-
-- Manifest permissions: include `net:socket`
-- SDK methods: call `sdk.socket.*` and subscribe to `domain: 'socket'` events
-- Contract details: see `docs/plugin-dev/sdk.md`
-
-## Remote Development Tools (SSH / SFTP)
-
-For SSH terminals and SFTP file browsers, use the host-managed SSH capability.
-
-- Manifest permissions: include `net:ssh`
-- Use the `sdk.ssh.*` methods and subscribe to `domain: 'ssh'` events
-- The host supports password, OpenSSH private key, SSH agent, and keyboard-interactive authentication
-- Contract details: see `docs/plugin-dev/sdk.md`
-
-## Local Install via Registry
-
-DevToolBox installs marketplace plugins via a `registry.json`. For local development, you can generate a local zip and a `file://` registry:
+## 3. Pack
 
 ```bash
-node marketplace/scripts/pack-local.mjs <market-id>
+pnpm --filter @devtoolbox/marketplace pack market-my-tool
 ```
 
-This produces:
+`pack-local.mjs` validates the manifest and entry, stages `manifest.json` +
+`package/`, and writes:
 
-- `marketplace/registry.local.json`
-- `marketplace/.local-dist/<plugin>-<version>.zip`
+- `marketplace/.local-dist/market-my-tool-<version>.zip`
+- `marketplace/registry.local.json` (unpublished local index)
 
-Then in DevToolBox:
+## 4. Sign
 
-- Settings → Marketplace Registry URL → paste the `file:///.../registry.local.json` URL
-- Modules → Refresh → Install
-
-## Notes
-
-- In development, `file://` registry and download URLs are allowed.
-- In packaged builds, only `https://` registry and download URLs are allowed.
-
-## Shortcut
-
-Build + pack into local registry (interactive):
+Generate a signing key once per marketplace:
 
 ```bash
-./cli.sh plugin <market-id>
+pnpm --filter @devtoolbox/marketplace keygen --out .signing/marketplace-key.txt
 ```
+
+Sign each package and the registry:
+
+```bash
+export DEVTOOLBOX_SIGNING_KEY="$(cat .signing/marketplace-key.txt)"
+
+pnpm --filter @devtoolbox/marketplace sign \
+  marketplace/.local-dist/market-my-tool-1.0.0.zip
+
+pnpm --filter @devtoolbox/marketplace registry --all \
+  --base-url https://example.com/marketplace \
+  --out release-dist/registry.json
+
+pnpm --filter @devtoolbox/marketplace sign release-dist/registry.json
+
+# Verify locally (authoritative verification still happens in Rust)
+PNPM_PUB=$(node marketplace/scripts/sign.mjs public-key)
+pnpm --filter @devtoolbox/marketplace verify \
+  release-dist/registry.json release-dist/registry.json.sig --pubkey "$PNPM_PUB"
+```
+
+Signature format matches `crates/devtoolbox-market/src/signing.rs`:
+
+- Ed25519, 32-byte public key, standard Base64;
+- key id = first 16 hex characters of `sha256(public_key)`;
+- package signatures are embedded per registry entry, with a detached
+  `<file>.sig` alongside each ZIP and `registry.json.sig` for the registry.
+
+## 5. Publish
+
+Upload the whole `release-dist/` directory to any HTTPS static host (GitHub
+Releases, S3, nginx):
+
+```text
+registry.json
+registry.json.sig
+market-my-tool-1.0.0.zip
+market-my-tool-1.0.0.zip.sig
+```
+
+`downloadUrl` in the registry must point at the ZIP; `--base-url` controls this.
+
+The repository workflow `.github/workflows/marketplace-release.yml` automates
+build → pack → sign → verify → GitHub Release upload. It requires the
+`MARKETPLACE_SIGNING_KEY` secret and uses `make_latest: false` so app updates are
+unaffected.
+
+## 6. Local development
+
+Use a throwaway key and serve the artifacts over loopback:
+
+```bash
+./scripts/marketplace-acceptance.sh market-emoji-search
+# or manually: pack, sign, registry --base-url http://127.0.0.1:8765,
+# python3 -m http.server 8765 --directory marketplace/.local-dist
+```
+
+Then add `http://127.0.0.1:8765/registry.json` in **Marketplace**. For signature
+enforcement, open **Settings → Registries → Trust options** and paste the public
+key.
+
+## 7. Registry schema
+
+```json
+{
+  "schemaVersion": 2,
+  "name": "My Marketplace",
+  "plugins": [
+    {
+      "manifest": { "schemaVersion": 2, "id": "market-my-tool", "...": "..." },
+      "downloadUrl": "https://example.com/marketplace/market-my-tool-1.0.0.zip",
+      "sha256": "64 lowercase hex chars",
+      "size": 12345,
+      "publishedAt": "2026-11-07T00:00:00Z",
+      "status": "active",
+      "signature": { "keyId": "8a1f0c2d4e6b8a90", "signature": "base64" }
+    }
+  ]
+}
+```
+
+Source-level trust is configured in Settings:
+
+- no key → digest-only (SHA-256 still verified);
+- public key → signature checked when present;
+- public key + **require signature** → missing/invalid signatures are rejected.
+
+Keys and registries are documented in
+[Marketplace protocol](../architecture/marketplace.md).

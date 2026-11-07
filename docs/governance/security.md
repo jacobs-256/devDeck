@@ -19,6 +19,12 @@ We will acknowledge receipt and work on a fix as soon as possible.
 
 ## Security Boundaries
 
-- The renderer process must not execute arbitrary commands.
-- File read/write operations must be user-initiated via explicit UI flows.
-- IPC surface area should remain minimal and whitelisted via preload.
+- The renderer never executes arbitrary commands; every privileged operation is a
+  typed Tauri command in `apps/desktop/src-tauri/src/commands.rs`.
+- Plugins run in a sandboxed iframe with `connect-src 'none'` and reach the host
+  only through `plugin_sdk_call`, which re-checks permissions on every call.
+- File access is token-based and user-initiated; paths are sandboxed.
+- Registry and package signatures are verified before install; updater artifacts
+  are verified against the embedded public key.
+- The full model is documented in
+  [architecture/security-model.md](../architecture/security-model.md).

@@ -9,7 +9,7 @@
 
 Please include:
 
-- DevToolBox version / build number
+- DevToolBox version (for example 3.0.0)
 - OS and architecture
 - Steps to reproduce
 - Screenshots or logs when relevant

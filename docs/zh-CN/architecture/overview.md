@@ -44,16 +44,32 @@ crates/                    无框架依赖的策略层
 
 ## 目录结构
 
-| 路径                           | 用途                                   |
-| ------------------------------ | -------------------------------------- |
-| `apps/desktop/src`             | React 外壳、内置工具、插件桥           |
-| `apps/desktop/src-tauri`       | Tauri 配置、Rust 宿主、capabilities    |
-| `crates/devtoolbox-contract`   | 共享词汇：id、清单、权限、注册表、错误 |
-| `crates/devtoolbox-capability` | 能力代理与文件系统沙箱                 |
-| `crates/devtoolbox-market`     | 包校验、解包、安装状态                 |
-| `packages/plugin-sdk`          | 面向插件作者的 npm SDK                 |
-| `marketplace/`                 | 官方插件源码与打包/签名工具            |
-| `docs/`                        | 文档（含本中文镜像）                   |
+| 路径                           | 用途                                         |
+| ------------------------------ | -------------------------------------------- |
+| `apps/desktop/src`             | React 渲染层：legacy 外壳、27 个工具、插件桥 |
+| `apps/desktop/src/legacy`      | 侧边栏、首页、工具页、应用市场、设置         |
+| `apps/desktop/src/theme`       | legacy 颜色/字体 token 与全局样式            |
+| `apps/desktop/src-tauri`       | Tauri 配置、Rust 宿主、capabilities          |
+| `crates/devtoolbox-contract`   | 共享词汇：id、清单、权限、注册表、错误       |
+| `crates/devtoolbox-capability` | 能力代理与文件系统沙箱                       |
+| `crates/devtoolbox-market`     | 包校验、解包、安装状态                       |
+| `packages/plugin-sdk`          | 面向插件作者的 npm SDK                       |
+| `marketplace/`                 | 插件工作区、打包/签名/注册表工具             |
+| `scripts/`                     | 验收、更新演练、legacy 导入守卫              |
+| `docs/`                        | 文档（含本中文镜像）                         |
+
+## 界面外壳
+
+渲染层保留原 Electron 应用的布局（`main` 分支），位于 `apps/desktop/src/legacy/`：
+
+- **侧边栏**：首页、工具、应用市场、设置；可折叠为图标栏；工具页显示分类。
+- **首页**：搜索、分类快捷入口、常用工具、应用/屏幕/运行环境信息卡。
+- **工具工作区**：252px 工具列表 + 浏览器式标签页 + 56px 工具头（全屏开关），切换标签保持挂载。
+- **应用市场**：已安装/市场标签、注册表栏、筛选、模块卡片。
+- **设置**：二级导航、主题/语言、注册表（含 Trust options）、更新、关于。
+- **全局搜索**（`Cmd/Ctrl+K`）与关于对话框。
+
+原生 Tauri 菜单提供设置（`Cmd+,`）、编辑角色、主题/语言与关于。快捷键契约见[设计规范](../design-system.md)。
 
 ## 信任边界
 
@@ -75,6 +91,8 @@ async fn plugin_sdk_call(plugin_id, method, params) -> Result<Value, DevToolboxE
 - 能力代理在执行前校验权限
 
 新增能力 = 一个 match 分支 + 一条权限，不新增 IPC 表面。
+
+渲染层可调用的宿主命令固定为 `lib.rs` 中注册的列表：应用信息、插件管理、证书、TCP Ping、MQTT、Tracert、注册表来源、按源安装、主题/语言，以及 `plugin_sdk_call`。
 
 ## 安装流程
 
@@ -147,10 +165,17 @@ apps/desktop/src/tools/
 
 ## 测试策略
 
-| 层     | 测试                                                                      | 位置                           |
-| ------ | ------------------------------------------------------------------------- | ------------------------------ |
-| 契约   | id、清单、权限、注册表、路径沙箱单测                                      | `crates/*/src`                 |
-| 能力   | 每条白名单规则与失败分支                                                  | `crates/devtoolbox-capability` |
-| 市场   | 内存 ZIP 的端到端安装（含 zip-slip、签名、降级）                          | `crates/devtoolbox-market`     |
-| 宿主   | `cargo test -p devtoolbox-desktop`（socket 回环、文件 token、注册表拉取） | `apps/desktop/src-tauri`       |
-| 渲染层 | `tsc --noEmit` + `vite build` + 工具 model 单测                           | `apps/desktop`                 |
+| 层     | 测试                                                        | 位置                           |
+| ------ | ----------------------------------------------------------- | ------------------------------ |
+| 契约   | id、清单、权限、注册表、路径沙箱单测                        | `crates/*/src`                 |
+| 能力   | 每条白名单规则与失败分支                                    | `crates/devtoolbox-capability` |
+| 市场   | 内存 ZIP 的端到端安装（含 zip-slip、签名、降级）            | `crates/devtoolbox-market`     |
+| 宿主   | socket 回环、文件 token、注册表拉取、MQTT、证书、SSH 端到端 | `apps/desktop/src-tauri`       |
+| 渲染层 | `tsc --noEmit` + `vite build` + 工具 model 单测             | `apps/desktop`                 |
+
+## 相关文档
+
+- [二次开发指南](../development.md)
+- [设计规范](../design-system.md)
+- [Marketplace 协议](marketplace.md)
+- [安全模型](security-model.md)

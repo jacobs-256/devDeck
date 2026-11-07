@@ -20,7 +20,7 @@
 3. **文件访问基于 token。** 插件拿不到路径；对话框返回绑定 `(插件, 路径, 可写)` 的令牌，跨插件使用被拒，只读令牌不可写，禁用/卸载即回收。
 4. **路径不会逃出沙箱。** 构造时 `resolve_within` 拒绝绝对路径、`..`、Windows 分隔符与 NUL；使用时 `ensure_within` 解析符号链接后再次校验。
 5. **网络按 host 逐跳白名单。** `authorize_http` 要求 `http:proxy`/`http:external`，仅允许 http/https，拒绝内嵌凭据；重定向不自动跟随，每一跳重新授权。
-6. **包在解压前完成校验。** SHA-256 与可选 Ed25519 针对原始字节校验；解压时执行路径/类型/资源限制并核对声明大小。
+6. **包在解压前完成校验。** SHA-256 与可选 Ed25519 针对原始字节校验；注册表本身的分离签名在解析前校验；解压时执行路径/类型/资源限制并核对声明大小。
 7. **升级原子化且默认拒绝降级。** staging 校验通过后 rename 替换；拒绝旧版本覆盖新版本。
 8. **插件代码无法访问宿主文档。** `plugin://` 独立 scheme + 无 `allow-same-origin` 的沙箱 iframe；父页面只接受来自该 iframe 的 `event.source` 消息。
 9. **宿主表面保持最小。** 插件能力只有一个 `plugin_sdk_call`；不存在通用「读文件 / 执行命令 / 请求 URL」命令。
@@ -51,7 +51,21 @@
 
 每个 `plugin://` 响应都带严格 `Content-Security-Policy`，其中 `connect-src 'none'`，因此插件文档内的 `fetch`、`XMLHttpRequest`、`WebSocket`、`EventSource` 都会失败。网络访问必须走能力代理（`http.request`、`socket.*`、`ssh.*`），在那里执行权限、白名单与限额检查。内联脚本仍被允许（已发布插件带有内联主题引导），但没有网络原语就无法外传数据。
 
-执行位置：`apps/desktop/src-tauri/src/protocol.rs`。
+执行位置：`apps/desktop/src-tauri/src/protocol.rs`、`apps/desktop/src/components/PluginView.tsx`。
+
+插件文档 CSP 为：
+
+```
+default-src 'self' data: blob:;
+script-src 'self' 'unsafe-inline';
+connect-src 'none';
+frame-src 'none';
+object-src 'none';
+base-uri 'none';
+form-action 'none'
+```
+
+应用本身的 CSP 在 `tauri.conf.json`，仅额外放开内置 WebSocket 测试所需的 `ws:` / `wss:`。
 
 ## 插件不能做什么
 
@@ -59,10 +73,10 @@
 - 在没有 `net:socket` / `net:ssh` 的情况下打开套接字或 SSH；
 - 访问 `httpDomains` 之外的 host；
 - 读取 `envAllowlist` 之外的环境变量；
-- 执行程序、加载本地库或使用 Electron/Node API；
+- 执行程序、加载本地库或使用宿主/原生 API；
 - 修改自身权限，或通过安装后改清单扩权；
 - 访问其他插件的存储、日志或授权。
 
 ## 漏洞上报
 
-请阅读 [安全策略](../governance/security.md) 并私下报告，不要为绕过上述不变量开公开 issue。
+请阅读 [安全策略](../../governance/security.md) 并私下报告，不要为绕过上述不变量开公开 issue。

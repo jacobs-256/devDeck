@@ -1,30 +1,33 @@
 # Roadmap
 
-This roadmap focuses on DevToolBox as a plugin-first, all-in-one desktop toolbox for general developers.
+DevToolBox is a Rust + Tauri 2 desktop toolbox with 27 built-in tools and an open
+plugin marketplace.
 
-## Now (Stabilize & Adoption)
+## Now (3.x stabilization)
 
-- Improve first-run experience (download, install, update, diagnostics)
-- Harden marketplace registry and plugin installation reliability
-- Publish clear plugin authoring tutorials and best practices
-- Curate a small set of high-quality plugins as references
+- Windows and Linux smoke testing across the release matrix
+- More example plugins and authoring tutorials (SDK 2.0)
+- Polish the marketplace UX (search, categories, source management)
+- Keep the legacy layout and shortcut contract stable while the host evolves
 
-## Next (Plugin Ecosystem)
+## Next (ecosystem)
 
-- Plugin Gallery page (discoverability, screenshots, tags)
-- Plugin submission workflow (validation, review checklist, CI helpers)
-- Optional plugin signing / provenance checks
-- Better plugin UX primitives (shared UI components, i18n helpers)
+- Plugin gallery with screenshots, tags, and curated collections
+- Submission workflow: registry validation, signing checks, review checklist
+- Shared plugin UI kit and i18n helpers for third-party authors
+- Richer registry discovery (multiple official sources, update channels)
 
-## Later (Power Features)
+## Later (power features)
 
-- More “workflow” tools (collections, saved presets, exports)
-- Shared workspace sync (optional) for team usage
-- Advanced network diagnostics and protocol tooling via plugins
+- Workspace presets and tool collections
+- Optional team sync for shared plugin settings
+- Additional host capabilities behind the existing permission model
+  (clipboard read, notifications, path reveal/open)
+- Plugin provenance and publisher profiles
 
-## How to Help
+## How to help
 
-- Pick a `good first issue` or `help wanted` issue
-- Propose a plugin idea via feature request
-- Build a plugin and submit it for inclusion in the gallery
-
+- Pick a `good first issue` or `help wanted` issue.
+- Build a plugin and publish a signed registry.
+- Improve docs (English and Chinese) or the plugin examples.
+- Report bugs with version, OS, and reproduction steps.

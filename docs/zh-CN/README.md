@@ -2,7 +2,15 @@
 
 本目录是英文文档的中文镜像，路径与 `docs/` 保持一致。若内容不一致，以英文源文档为准。
 
-## 架构
+## 用户
+
+- [用户指南](users/guide.md)
+- [常见问题](users/faq.md)
+
+## 开发
+
+- [二次开发指南](development.md)
+- [设计规范](design-system.md)
 
 - [架构总览](architecture/overview.md)
 - [Marketplace 协议](architecture/marketplace.md)
@@ -16,11 +24,14 @@
 
 ## 翻译进度
 
-| 英文页面                                | 中文镜像  |
-| --------------------------------------- | --------- |
-| `architecture/overview.md`              | ✅        |
-| `architecture/marketplace.md`           | ✅        |
-| `architecture/security-model.md`        | ✅        |
-| `architecture/migration.md`             | ✅        |
-| `plugin-dev/marketplace-v2.md`          | ✅        |
-| `users/*`、`governance/*`                | ⬜ 待翻译 |
+| 英文页面                         | 中文镜像 |
+| -------------------------------- | -------- |
+| `architecture/overview.md`       | ✅       |
+| `architecture/marketplace.md`    | ✅       |
+| `architecture/security-model.md` | ✅       |
+| `architecture/migration.md`      | ✅       |
+| `plugin-dev/marketplace-v2.md`   | ✅       |
+| `zh-CN/development.md`           | ✅       |
+| `zh-CN/design-system.md`         | ✅       |
+| `users/guide.md`、`users/faq.md` | ✅       |
+| `governance/*`                   | 英文为准 |

@@ -1,61 +1,64 @@
 # Contributing
 
-Thanks for contributing to DevToolBox.
+Thanks for contributing to DevToolBox. The app is a Rust + Tauri 2 host with a
+React renderer and an open plugin marketplace.
 
-## Development Environment
+## Development environment
 
-- Node.js 20+
-- macOS / Windows / Linux are supported for development (packaging requires the target OS)
+- Node.js 20+, pnpm 10+
+- Rust 1.90+ with the platform Tauri prerequisites
+- macOS, Windows, or Linux for development; packaging must run on the target OS
 
-## Run Locally
+## Run locally
 
 ```bash
 pnpm install
-pnpm dev
+pnpm dev            # tauri dev
 ```
 
-## Quality Gates
+See the [development guide](../development.md) for architecture and debugging.
+
+## Quality gates
 
 ```bash
-pnpm lint
-pnpm lint:modules
-pnpm format
-pnpm format:check
+pnpm lint           # manifests, legacy-import guard, ESLint
 pnpm typecheck
 pnpm test
 pnpm build
+
+cargo fmt --all -- --check
+cargo clippy --workspace --all-targets
+cargo test --workspace
 ```
 
-## PR Guidelines
+Optional end-to-end checks:
 
-- Base branch: `dev`
-- Workflow: fork from `dev` → create feature branch → open PR back to `dev`
-- Keep each PR focused (one feature / one refactor / one bug fix).
-- Do not commit secrets (tokens, private keys, certificates).
-- For UI changes, include screenshots or screen recordings when possible.
+```bash
+pnpm marketplace:acceptance
+pnpm release:rehearse
+```
 
-## Add a Built-in Tool
+## Pull requests
 
-Built-in tools live in `apps/desktop/src/tools/`:
+- Base branch: `main`.
+- Fork `main`, create a focused feature branch, and open the PR against `main`.
+- Keep each PR to one feature, refactor, or bug fix.
+- Add tests for behavior changes; UI changes should include screenshots.
+- Update the English docs and the `docs/zh-CN` mirror when behavior changes.
+- Never commit secrets, `.signing/`, or build artifacts.
 
-1. Add `<tool>/<Tool>.tsx` and a pure model (`*.model.ts`) with Vitest tests
-   under `module-tools/`.
-2. Register it in `apps/desktop/src/tools/registry.ts` (id, name, description,
-   category, i18n keys, component).
-3. Add `tool.<id>.name` / `tool.<id>.desc` to both dictionaries in
-   `apps/desktop/src/i18n/index.tsx`.
-4. If the tool needs privileges, call a Rust command — never reach for the
-   network or filesystem directly.
+## Add a built-in tool
 
-References:
+1. Add `module-tools/<tool>/<Tool>.tsx`, a pure model, and Vitest tests.
+2. Register it in `apps/desktop/src/tools/registry.ts` with i18n keys,
+   category, and keywords.
+3. Map the category/icon in `apps/desktop/src/legacy/data.tsx`.
+4. Add `tool.<id>.name` / `.desc` (and UI keys) to both dictionaries.
+5. Use a Rust command for files, network, or SSH — never direct host access.
 
-- [Architecture overview](../architecture/overview.md)
-- [Security model](../architecture/security-model.md)
-- [Built-in tools registry](../../apps/desktop/src/tools/registry.ts)
+Full steps: [development guide §5](../development.md#5-add-a-built-in-tool).
 
-## Add a Marketplace Plugin
-
-Use the scaffold, then follow the authoring guide:
+## Add a marketplace plugin
 
 ```bash
 node marketplace/scripts/create.mjs --id market-my-tool --name "My Tool"
@@ -63,3 +66,11 @@ node marketplace/scripts/create.mjs --id market-my-tool --name "My Tool"
 
 - [Plugin developer guide](../plugin-dev/guide.md)
 - [SDK 2.0 authoring](../plugin-dev/marketplace-v2.md)
+- [Packaging and signing](../plugin-dev/packaging.md)
+
+## Documentation
+
+- [Documentation index](../index.md)
+- [Architecture](../architecture/overview.md)
+- [Design system](../design-system.md)
+- [中文文档](../zh-CN/README.md)

@@ -103,8 +103,12 @@ SHA-256 and optional Ed25519 are checked against the raw bytes before the ZIP
 reader sees them. Extraction then enforces path safety, entry-type safety, and
 resource limits while streaming, comparing declared and actual sizes.
 
+The registry document itself carries a detached Ed25519 signature when the
+source has a pinned public key; requiring it is a per-source setting. Signatures
+are verified against the exact bytes before parsing.
+
 Enforced in: `crates/devtoolbox-market/src/signing.rs`,
-`crates/devtoolbox-market/src/package.rs`.
+`crates/devtoolbox-market/src/package.rs`, `apps/desktop/src-tauri/src/registry.rs`.
 
 ### 6. Upgrades are atomic and never silently downgrade
 
@@ -124,7 +128,7 @@ messages whose `event.source` is that exact iframe.
 React-rendered HTML goes through the same escaping rules as the rest of the app;
 plugins cannot inject into the host DOM.
 
-Enforced in: `apps/desktop/src/components/PluginFrame.tsx`,
+Enforced in: `apps/desktop/src/components/PluginView.tsx`,
 `apps/desktop/src-tauri/src/protocol.rs`, `apps/desktop/src-tauri/tauri.conf.json`.
 
 ### 8. The host surface stays small
@@ -143,13 +147,29 @@ Enforced by review: `apps/desktop/src-tauri/src/commands.rs`.
 default-src 'self';
 script-src 'self';
 style-src 'self' 'unsafe-inline';
-img-src 'self' data: blob: plugin:;
-frame-src 'self' plugin:;
-connect-src 'self' ipc:;
+img-src 'self' data: blob: plugin: http://plugin.localhost;
+frame-src 'self' plugin: http://plugin.localhost;
+font-src 'self' data:;
+connect-src 'self' ipc: http://ipc.localhost ws: wss:
+```
+
+The `ws:`/`wss:` entries exist for the built-in WebSocket tester; the plugin
+document itself is served with a stricter policy:
+
+```
+default-src 'self' data: blob:;
+script-src 'self' 'unsafe-inline';
+connect-src 'none';
+frame-src 'none';
+object-src 'none';
+base-uri 'none';
+form-action 'none'
 ```
 
 `style-src 'unsafe-inline'` is required by React inline styles and plugin CSS
-injection; scripts and frames are locked down. Adding a remote origin here is a
+injection; scripts and frames are locked down. Inline scripts in plugins are
+allowed only because published plugins bootstrap the theme inline and cannot
+exfiltrate data without a network primitive. Adding a remote origin here is a
 security change and needs review.
 
 ## Resource limits
@@ -173,7 +193,7 @@ security change and needs review.
 - Open a TCP/UDP socket or SSH session without `net:socket` / `net:ssh`.
 - Reach a host not listed in `httpDomains`.
 - Read environment variables not listed in `envAllowlist`.
-- Execute a program, load a native library, or access Electron/Node APIs.
+- Execute a program, load a native library, or access host/native APIs.
 - Change its own permissions, or survive a manifest edit after install.
 - Access another plugin's storage, logs, or grants.
 

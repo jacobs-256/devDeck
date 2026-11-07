@@ -1,170 +1,186 @@
-# Marketplace Plugin Developer Guide
+# Plugin Developer Guide
 
-> **Note:** This guide covers the Electron-era (SDK 1.x) plugin runtime. New
-> plugins should use [Marketplace Authoring (SDK 2.0)](marketplace-v2.md).
+DevToolBox plugins are small web applications that run in a sandboxed iframe and
+reach the host only through the SDK. This guide covers the runtime, manifest,
+permissions, local development, and publishing. For a step-by-step tutorial see
+[Marketplace Authoring (SDK 2.0)](marketplace-v2.md).
 
-This guide is for developers who create DevToolBox marketplace plugins.
+## 1. Runtime model
 
-Marketplace plugins run inside an isolated iframe runtime. Plugins must not call Electron/Node APIs directly. All privileged operations must go through the host-provided SDK.
+- The plugin is served from `plugin://localhost/<id>/<entry>` by the Rust host.
+- The iframe uses `sandbox="allow-scripts allow-forms allow-popups"` with an
+  opaque origin, so plugin JS cannot read the host DOM or `localStorage`.
+- The plugin document CSP sets `connect-src 'none'`: `fetch`, XHR, and WebSocket
+  inside the plugin are blocked. Network access must go through `sdk.http`,
+  `sdk.socket`, or `sdk.ssh`.
+- Calls travel by `postMessage` to the host renderer, which invokes the single
+  gated `plugin_sdk_call` command. The host re-checks installation, enablement,
+  and permissions on every call.
+- Events (socket data, SSH output) are pushed back as `devtoolbox:event`
+  messages; use `onSocketEvent` / `onSshEvent`.
 
-## Quick Start
+## 2. Scaffold
 
-### Prerequisites
-
-- Node.js 20 (see `.nvmrc`)
-- pnpm 10
-
-### Create a Plugin Template
-
-```bash
-./cli.sh plugin create
-```
-
-This creates a new workspace package under:
-
-- `marketplace/modules/market-<your-id>/`
-- package name convention: `@devtoolbox/plugin-market-<your-id>`
-
-### Develop and Build
+Inside the repository:
 
 ```bash
-pnpm --filter @devtoolbox/plugin-market-<your-id> build
+node marketplace/scripts/create.mjs --id market-my-tool --name "My Tool"
+pnpm --filter @devtoolbox/plugin-market-my-tool build
 ```
 
-The plugin build output is written to the `package/` directory inside the plugin folder (the path is controlled by `manifest.entry` and Vite `outDir`).
-
-### Install Locally (file:// registry)
-
-```bash
-node marketplace/scripts/pack-local.mjs market-<your-id>
-```
-
-This generates:
-
-- `marketplace/registry.local.json`
-- `marketplace/.local-dist/market-<your-id>-<version>.zip`
-
-Then in DevToolBox (development builds):
-
-- Settings → Marketplace (Dev) → Registry URL → paste the `file:///.../marketplace/registry.local.json` URL
-- Modules → Refresh → Install
-
-## Plugin Package Layout
-
-A marketplace plugin is distributed as a zip file with:
-
-- `manifest.json` at the package root
-- an entry folder that contains the built web assets
-
-Example:
+The scaffold creates:
 
 ```text
-market-foo-1.0.0.zip
+marketplace/modules/market-my-tool/
+├── manifest.json
+├── index.html
+├── package.json
+├── src/
+│   ├── App.tsx
+│   ├── main.tsx
+│   ├── sdk.ts          re-exports @devtoolbox/plugin-sdk
+│   └── style.css
+└── vite.config.ts
+```
+
+Standalone plugins can depend on `@devtoolbox/plugin-sdk@2` from npm and build
+with any bundler; the package shape is `manifest.json` + an entry folder.
+
+## 3. manifest.json
+
+```json
+{
+  "schemaVersion": 2,
+  "id": "market-my-tool",
+  "name": "My Tool",
+  "description": "What the plugin does",
+  "version": "1.0.0",
+  "sdkVersion": "2.0",
+  "entry": "package/index.html",
+  "categoryId": "text-tools",
+  "author": "Your Name",
+  "license": "MIT",
+  "homepage": "https://example.com",
+  "repository": "https://github.com/example/my-tool",
+  "keywords": ["example"],
+  "permissions": ["storage:kv"],
+  "httpDomains": [],
+  "envAllowlist": []
+}
+```
+
+Rules (enforced by `crates/devtoolbox-contract/src/manifest.rs`):
+
+- `id` is kebab-case and starts with `market-`.
+- `version` is SemVer; `(id, version)` must be unique per registry.
+- `entry` is a relative path inside the package.
+- `permissions` must be known permission ids.
+- `httpDomains` entries are exact hosts or `*.example.com` wildcards; they are
+  required for `http:*`.
+- `envAllowlist` lists exact environment variable names for `system:env:read`.
+- Schema 1 manifests install with a `legacy_sdk` warning; see §9.
+
+## 4. Permissions
+
+| Permission                              | Grants                                                  |
+| --------------------------------------- | ------------------------------------------------------- |
+| `storage:kv`                            | Host-owned key/value store                              |
+| `http:proxy`                            | `sdk.http.request` through the host                     |
+| `http:external`                         | Direct HTTP from the plugin webview (subject to CORS)   |
+| `fs:dialog`                             | Open/save dialogs                                       |
+| `fs:read` / `fs:write`                  | Read/write files selected through dialogs (token-based) |
+| `fs:plugin-data`                        | Plugin data directory                                   |
+| `net:socket`                            | TCP/UDP client and server                               |
+| `net:ssh`                               | SSH terminals, exec, SFTP                               |
+| `system:openExternal`                   | Open http(s) links in the browser                       |
+| `system:revealPath` / `system:openPath` | Reveal/open user-selected paths                         |
+| `system:notifications`                  | Desktop notifications                                   |
+| `system:env:read`                       | Read allowlisted environment variables                  |
+| `system:getInfo`                        | App/platform metadata                                   |
+| `clipboard:write`                       | Write the clipboard                                     |
+| `log:write`                             | Plugin log                                              |
+| `theme:read`                            | Current light/dark theme                                |
+
+`bluetooth`, `serial`, and `usb` are reserved: manifests may declare them, but
+calls fail with `unimplemented_permission` until a host implementation lands.
+
+## 5. Using the SDK
+
+```ts
+import { sdk, followHostTheme, onSocketEvent } from '@devtoolbox/plugin-sdk';
+
+followHostTheme();
+await sdk.storage.set('lastQuery', 'hello');
+const { value } = await sdk.storage.get<string>('lastQuery');
+const response = await sdk.http.request({ url: 'https://api.example.com/data' });
+sdk.log.info('loaded', response.status);
+```
+
+- Every SDK call returns the host `data` payload or throws a
+  `DevToolboxSdkError` with `code`, `message`, and optional `details`.
+- `sdk.capabilities.list()` returns the grant issued for this plugin.
+- See [SDK reference](sdk.md) for every namespace and event.
+
+## 6. Local development
+
+The host has no “install folder/zip” button; use a local registry:
+
+```bash
+# Build
+pnpm --filter @devtoolbox/plugin-market-my-tool build
+
+# Pack + sign
+pnpm --filter @devtoolbox/marketplace pack market-my-tool
+DEVTOOLBOX_SIGNING_KEY=$(cat .signing/my-key.txt) \
+  pnpm --filter @devtoolbox/marketplace sign .local-dist/market-my-tool-0.1.0.zip
+
+# Registry for the local HTTP server
+pnpm --filter @devtoolbox/marketplace registry market-my-tool \
+  --base-url http://127.0.0.1:8765 --out .local-dist/registry.json
+python3 -m http.server 8765 --directory marketplace/.local-dist
+```
+
+Add `http://127.0.0.1:8765/registry.json` in **Marketplace**. For signed
+registries, pin the public key under **Settings → Registries → Trust options**.
+
+Plugin logs go to `<app-data>/logs/plugins.log`; SDK denials include a stable
+error code.
+
+## 7. Package layout
+
+```text
+market-my-tool-1.0.0.zip
 ├── manifest.json
 └── package/
     ├── index.html
     └── assets/...
 ```
 
-## manifest.json (Complete Field Rules)
+`entry` points at `package/index.html`; the host rejects absolute paths, `..`,
+symlinks, and nested archives.
 
-DevToolBox validates the plugin manifest on install. The validation rules are implemented in:
+## 8. Publishing
 
-- `crates/devtoolbox-contract/src/manifest.rs` → `PluginManifest::validate()`
+```bash
+pnpm --filter @devtoolbox/marketplace registry --all \
+  --base-url https://example.com/marketplace --out release-dist/registry.json
+DEVTOOLBOX_SIGNING_KEY=$(cat .signing/marketplace-key.txt) \
+  pnpm --filter @devtoolbox/marketplace sign release-dist/registry.json
+```
 
-Required fields:
+Upload `registry.json`, `registry.json.sig`, and every `*.zip` (+ `.sig`) to any
+HTTPS host. The repository release workflow automates this; see
+[Packaging and signing](packaging.md) and
+[Marketplace release](../architecture/release.md#publish-a-marketplace-release).
 
-- `id`
-  - kebab-case
-  - must start with `market-`
-- `name`, `description`
-- `version`
-- `sdkVersion`
-- `entry` (path to entry html inside the package, e.g. `package/index.html`)
-- `categoryId`
-- `author`, `license`, `homepage`, `repository`
-- `permissions` (must not be empty)
+## 9. SDK 1.x compatibility
 
-Conditional fields:
+The host maps legacy method names and response shapes when
+`manifest.sdkVersion` is `1.x`. New plugins should target `sdkVersion: "2.0"`:
 
-- If `permissions` includes `http:external`, `httpDomains` must be non-empty and valid
-- If `permissions` includes `system:env:read`, `envAllowlist` must be non-empty
+- `manifest.schemaVersion` 2, `sdkVersion` `"2.0"`;
+- use `sdk.*` namespaces and `{ ok, data }` results;
+- declare all permissions explicitly.
 
-Tip: the registry entry manifest and the zip package manifest must match (id/version/sdkVersion/entry/categoryId/author/license/homepage/repository/permissions/httpDomains/envAllowlist/i18n).
-
-## Permissions and Capabilities
-
-Plugins must declare permissions in the manifest and the host enforces them on every SDK call. See:
-
-- [Plugin SDK Contract](sdk.md)
-
-Common permissions:
-
-- `storage:kv`: namespaced key-value storage
-- `http:proxy`: host HTTP proxy (recommended to avoid CORS issues)
-- `net:socket`: host socket API for TCP/UDP-style tools
-- `net:ssh`: host SSH shell and SFTP capability
-
-## SDK Request/Response Model
-
-Plugins communicate with the host via `postMessage` request/response:
-
-- request: `{ type: 'devtoolbox:sdk:request', requestId, method, params }`
-- response: `{ type: 'devtoolbox:sdk:response', requestId, ok, data? | error }`
-
-Most plugins implement a small `sdk.ts` wrapper that:
-
-- manages a pending map by `requestId`
-- provides typed helpers like `sdk.storage.get` / `sdk.http.request`
-- subscribes to host events (if needed)
-
-## Realtime Events (socket domain)
-
-For TCP/UDP tooling, plugins should use the socket capability:
-
-- SDK methods: `sdk.socket.*`
-- Event stream: `{ type: 'devtoolbox:sdk:event', domain: 'socket', payload: ... }`
-
-Details (API + event shape):
-
-- [Plugin SDK Contract](sdk.md)
-
-## Local Development vs Packaged Builds
-
-DevToolBox enforces different policies based on environment:
-
-- Development builds allow `file://` registries and downloads for local plugin development
-- Packaged builds only allow `https://` registries and downloads
-
-## Publishing (Registry + Zips)
-
-This repository publishes marketplace artifacts as a GitHub Release asset bundle:
-
-- `marketplace/scripts/pack-release.mjs` produces:
-  - `marketplace/release-dist/registry.json`
-  - `marketplace/release-dist/*.zip`
-- GitHub workflow `Marketplace Release` uploads those files to a release tag (default tag: `marketplace`)
-
-For the exact workflow steps, see:
-
-- `.github/workflows/marketplace-release.yml`
-
-## Review and Compliance Checklist
-
-Before submitting/publishing a plugin, verify:
-
-- Manifest passes validation rules (required fields, kebab-case `id`, non-empty `permissions`)
-- Registry manifest and package manifest are identical on install-critical fields (id/version/sdkVersion/entry/categoryId/author/license/homepage/repository/permissions/httpDomains/envAllowlist/i18n)
-- If you request `http:external`, you must provide `httpDomains` and they must not target localhost/private networks
-- If you request `system:env:read`, you must provide `envAllowlist`
-- Your UI works inside an iframe sandbox (no direct Electron/Node access)
-
-CI in this repo validates marketplace changes on PR/push:
-
-- `.github/workflows/marketplace.yml` (typecheck + lint + build)
-
-## Plugin Versioning and Upgrades
-
-- Plugins are versioned by `manifest.version`
-- DevToolBox compares the installed version with the registry version
-- When the registry version is newer, the Modules page shows Upgrade / Update All
+Legacy aliases (for example `socket.clientConnect`) remain available during the
+compatibility window but should not be used in new code.

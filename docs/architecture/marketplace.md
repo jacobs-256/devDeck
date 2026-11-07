@@ -23,9 +23,10 @@ This document is the normative specification for:
 3. **Least privilege.** A plugin declares capabilities in its manifest. The host
    refuses undeclared capabilities at runtime, even if the plugin's JavaScript
    tries to call them.
-4. **No silent privilege growth.** Upgrading a plugin that adds permissions must
-   surface a new consent prompt (the install record keeps the previous manifest
-   for exactly this reason).
+4. **No silent privilege growth.** The install record keeps the previous
+   manifest; upgrades re-issue grants from the new manifest only after the
+   package is verified, and permission changes are visible in the manifest and
+   registry diff.
 5. **Boring formats.** JSON manifests, ZIP packages, Ed25519 signatures, SemVer.
    Everything is readable and reproducible with common tools.
 
@@ -131,8 +132,9 @@ breaking change.
 | `theme:read`           | Read the host theme                                            | —                  |
 
 Permissions marked in `Permission::is_sensitive()` (`net:socket`, `net:ssh`,
-`system:openPath`, `system:revealPath`, `system:env:read`, `fs:plugin-data`) get
-a stronger warning on the consent screen.
+`system:openPath`, `system:revealPath`, `system:env:read`, `fs:plugin-data`,
+`fs:read`, `fs:write`) are highlighted in the permission table and SDK docs so
+users and reviewers can identify privileged capabilities.
 
 ## 5. Registry document
 
@@ -170,7 +172,8 @@ status `active`, ignoring yanked releases.
 
 ### Registry sources in the app
 
-Users add a registry by URL in **Marketplace → Registries**. Each source is stored
+Users add a registry by URL in the **Marketplace** registry bar. Advanced trust
+settings live in **Settings → Registries → Trust options**. Each source is stored
 in `marketplace-sources.json` under the app data directory:
 
 ```json
@@ -189,10 +192,10 @@ in `marketplace-sources.json` under the app data directory:
 }
 ```
 
-The in-app form ("Trust options") lets you paste the registry's Ed25519 public
-key and require signatures. The source list shows the resulting trust level
-(`signature required`, `key pinned`, or `digest only`), and each source can be
-refreshed on its own. The catalog supports text search and a category filter.
+The Trust options form lets you paste the registry's Ed25519 public key and
+require signatures. Sources without a key remain digest-only; each registry can
+be refreshed from the module center, and the catalog supports text search and a
+category filter.
 
 Trust policy per source:
 
@@ -248,11 +251,11 @@ by unit tests, including a tampering test.
 
 ### Trust policy
 
-| Source               | Requirement                                                    |
-| -------------------- | -------------------------------------------------------------- |
-| Official registry    | Registry signature required; package digest required           |
-| Third-party registry | Digest required; signature required by default, user can relax |
-| Local `.zip`         | Digest shown to the user; signature verified when present      |
+| Source configuration                  | Requirement                                              |
+| ------------------------------------- | -------------------------------------------------------- |
+| No public key                         | SHA-256 digest required and verified                     |
+| Public key                            | Detached registry signature verified when present        |
+| Public key + `requireSignature: true` | Registry/package signatures must verify or install fails |
 
 ## 7. Install lifecycle
 
@@ -313,20 +316,7 @@ the authoritative verifier in the app.
 > Signing keys are secrets. `.signing/` is git-ignored; CI should read the seed
 > from a repository secret named `DEVTOOLBOX_SIGNING_KEY`.
 
-## 7b. Install consent
-
-Installing or updating from a catalog opens a consent dialog that lists:
-
-- identity (id, version, source, author, license, repository),
-- every declared permission with a human summary,
-- **privileged** permissions highlighted (sockets, SSH, file writes, env reads,
-  path operations) and reserved ones marked _unavailable_,
-- the exact `httpDomains` and `envAllowlist`.
-
-The same dialog is available as **Details** on any catalog card without
-installing. Nothing is downloaded until the user confirms.
-
-## 8b. Local acceptance run
+## 8.1 Local acceptance run
 
 The repository ships an end-to-end rehearsal of the whole pipeline:
 

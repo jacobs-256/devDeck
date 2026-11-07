@@ -95,7 +95,7 @@ my-plugin-1.2.3.zip
 
 ### 应用内来源管理
 
-用户可在 **Marketplace → Registries** 添加 URL，保存在 `marketplace-sources.json`：
+用户可在 **应用市场** 的注册表栏添加 URL；高级信任设置位于 **设置 → 注册表 → Trust options**。来源保存在 `marketplace-sources.json`：
 
 ```json
 {
@@ -113,9 +113,17 @@ my-plugin-1.2.3.zip
 }
 ```
 
-应用内的「Trust options」可以粘贴注册表的 Ed25519 公钥并强制要求签名；来源列表会显示信任级别（`signature required` / `key pinned` / `digest only`），每个来源可单独刷新；目录支持文本搜索与分类筛选。
+Trust options 可以粘贴注册表的 Ed25519 公钥并强制要求签名；目录支持文本搜索与分类筛选。
 
-信任策略：仅摘要 → 配置 `publicKey` 时校验 `.sig` → `requireSignature: true` 时缺失即拒绝。下载上限：注册表 8 MiB、包 128 MiB，重定向逐跳校验 https。
+信任策略：
+
+| 来源配置                        | 要求                         |
+| ------------------------------- | ---------------------------- |
+| 未配置公钥                      | 必须校验 SHA-256 摘要        |
+| 配置公钥                        | 存在 `.sig` 时校验注册表签名 |
+| 公钥 + `requireSignature: true` | 签名缺失或无效则拒绝安装     |
+
+下载上限：注册表 8 MiB、包 128 MiB，重定向逐跳校验 https。
 
 ## 签名
 
@@ -147,17 +155,6 @@ pnpm --filter @devtoolbox/marketplace registry --all \
 DEVTOOLBOX_SIGNING_KEY=$(cat .signing/key.txt) \
   pnpm --filter @devtoolbox/marketplace sign release-dist/registry.json
 ```
-
-## 安装确认
-
-从目录安装或更新时会打开确认对话框，展示：
-
-- 身份信息（id、版本、来源、作者、许可证、仓库）
-- 每一条声明的权限及通俗说明
-- **特权权限**高亮（socket、SSH、文件写入、环境变量、路径操作），保留权限标记为「不可用」
-- 完整的 `httpDomains` 与 `envAllowlist`
-
-目录卡片上的 **Details** 可在不安装的情况下查看同样内容；用户确认前不会下载任何内容。
 
 ## 本地验收
 

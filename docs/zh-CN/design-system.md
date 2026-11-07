@@ -32,7 +32,7 @@ DevToolBox 保持原 Electron 应用（`main` 分支）的布局与视觉语言�
 
 ## 颜色
 
-Token 定义在 [`apps/desktop/src/theme/variables.css`](../apps/desktop/src/theme/variables.css)，插件镜像位于 `marketplace/shared/theme/variables.css`。
+Token 定义在 [`apps/desktop/src/theme/variables.css`](../../apps/desktop/src/theme/variables.css)，插件镜像位于 `marketplace/shared/theme/variables.css`。
 
 | Token                | 深色      | 浅色      | 用途                 |
 | -------------------- | --------- | --------- | -------------------- |
@@ -147,3 +147,8 @@ Token 定义在 [`apps/desktop/src/theme/variables.css`](../apps/desktop/src/the
 - [ ] 上表快捷键（含工具内快捷键）可用。
 - [ ] 深色与浅色主题均正常。
 - [ ] 插件 UI 使用共享 toolkit。
+
+## 相关文档
+
+- [二次开发指南](development.md)
+- [架构总览](architecture/overview.md)

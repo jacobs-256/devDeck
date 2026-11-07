@@ -1,291 +1,227 @@
-# Plugin SDK (Marketplace)
+# Plugin SDK Reference (2.0)
 
-> **Note:** This contract describes SDK 1.x. The SDK 2.0 surface is documented in
-> [Marketplace Authoring (SDK 2.0)](marketplace-v2.md).
+The SDK is published as `@devtoolbox/plugin-sdk`. Plugins import typed helpers
+instead of talking to the host directly. The host gates every call with the
+plugin's manifest permissions.
 
-This document defines the SDK contract for DevToolBox marketplace plugins.
-
-Marketplace plugins run in an isolated iframe runtime. A plugin must not call Electron/Node APIs directly. All privileged operations must go through the host-provided SDK.
-
-## Runtime Model
-
-- Plugin runtime: iframe (isolated)
-- UI entry: `index.html` (declared in the plugin manifest)
-- The plugin package (zip) must include `manifest.json` at the package root
-- Manifest `id` must start with `market-`
-- Workspace package name convention: `@devtoolbox/plugin-<market-id>`
-- Privileged access: request/response messages between plugin ↔ host
-- Compatibility: versioned by `sdkVersion` in the plugin manifest
-
-## SDK Conventions
-
-- All SDK calls are asynchronous and return a Promise-like response in the plugin layer.
-- Host responses must use a standard result shape:
-  - Success: `{ ok: true, data: T }`
-  - Error: `{ ok: false, error: { code: string, message: string, details?: unknown } }`
-- The host should log minimal request metadata for auditing (module id, method, duration, status), without logging secrets or full payloads.
-
-## Permissions
-
-Plugins must declare permissions in their manifest. The host must enforce permissions on every call.
-
-Recommended permission keys:
-
-- HTTP
-  - `http:external` (plugin may access external network)
-  - `http:proxy` (plugin may call `sdk.http.request`)
-- Network
-  - `net:socket` (plugin may use the host socket API for TCP/UDP testing)
-  - `net:ssh` (plugin may use host-managed SSH sessions and SFTP)
-- File system
-  - `fs:dialog` (plugin may open file dialogs)
-  - `fs:read` / `fs:write` (plugin may read/write via tokens)
-- Storage
-  - `storage:kv` (plugin may use namespaced key-value storage)
-- Hardware
-  - `bluetooth`
-  - `serial`
-  - `usb`
-- System (capability-based, no arbitrary exec)
-  - `system:openExternal`
-  - `system:revealPath`
-  - `system:openPath`
-  - `system:notifications`
-  - `system:env:read`
-  - `system:getInfo`
-
-## Network Policy (Strategy 1)
-
-Plugins may call `fetch` directly in the iframe runtime.
-
-To support APIs without CORS or enterprise environments, the host also provides `sdk.http.request` as a recommended path.
-
-When a plugin declares `http:external`, it must also declare `httpDomains` in its manifest for review and user transparency.
-
-### httpDomains Rules (v1)
-
-- Allowed:
-  - Exact hostnames, e.g. `api.github.com`
-  - Single-level wildcard, e.g. `*.example.com` (matches `a.example.com`, not `a.b.example.com`)
-- Not allowed:
-  - `*` (any domain)
-  - Multi-level wildcards, e.g. `**.example.com`, `*.*.example.com`
-  - Schemes, e.g. `https://api.example.com`
-  - Localhost, private IP ranges, or raw IP addresses (v1)
-
-## API Surface (v1)
-
-This section lists the recommended v1 API domains. Some hardware APIs may be marked experimental and implemented later while keeping the contract stable.
-
-Note:
-
-- The host SDK intentionally stays small and capability-focused. App-specific protocols (for example, MQTT clients) are not part of the standard SDK surface. Such features should be implemented inside the plugin itself.
-
-### sdk.http
-
-Recommended for:
-
-- Requests to APIs without CORS support
-- Custom headers and controlled timeouts
-- Auditing and governance
-
-Methods:
-
-- `sdk.http.request({ url, method, headers?, body?, timeoutMs?, responseType? })`
-
-Notes:
-
-- The host should enforce timeout and maximum response size.
-- The host should reject requests to forbidden targets (e.g. localhost/private subnets).
-
-### sdk.fs (Token-based)
-
-File system access must be user-initiated through dialogs. The host returns tokens rather than raw paths.
-
-Methods:
-
-- `sdk.fs.openFileDialog({ filters?, multiple? }) -> { items: [{ fileToken, name, size? }] }`
-- `sdk.fs.saveFileDialog({ suggestedName, filters? }) -> { fileToken }`
-- `sdk.fs.readFile({ fileToken, encoding? })`
-- `sdk.fs.writeFile({ fileToken, data, encoding? })`
-
-### sdk.storage (Namespaced KV)
-
-Storage must be scoped to the plugin id.
-
-Methods:
-
-- `sdk.storage.get({ key })`
-- `sdk.storage.set({ key, value })`
-- `sdk.storage.delete({ key })`
-- `sdk.storage.list({ prefix? })`
-- `sdk.storage.clear()`
-
-### sdk.socket (Host-implemented)
-
-Marketplace plugins run in an isolated iframe runtime and must not use Node network modules directly. The host provides a socket capability that supports both TCP and UDP with a unified API surface.
-
-Permission:
-
-- Requires `net:socket`
-
-Methods:
-
-- `sdk.socket.serverStart({ protocol: 'tcp' | 'udp', host: string, port: number })`
-- `sdk.socket.serverStop()`
-- `sdk.socket.serverStatus()`
-- `sdk.socket.serverSend({ protocol: 'tcp' | 'udp', encoding: 'utf8' | 'hex' | 'base64', payload: string, connId?: string, remote?: string })`
-  - TCP: omit `connId` to broadcast to all connected clients
-  - UDP: set `remote` as `host:port` (if omitted, host may use the last-seen remote address)
-- `sdk.socket.serverKick({ connId: string })` (TCP only)
-- `sdk.socket.clientConnect({ protocol: 'tcp' | 'udp', host: string, port: number })`
-- `sdk.socket.clientDisconnect()`
-- `sdk.socket.clientStatus()`
-- `sdk.socket.clientSend({ protocol: 'tcp' | 'udp', encoding: 'utf8' | 'hex' | 'base64', payload: string })`
-
-Events:
-
-The host pushes realtime socket events to the plugin via `postMessage`:
-
-```ts
-{ type: 'devtoolbox:sdk:event', domain: 'socket', payload: SocketEvent }
+```bash
+pnpm add @devtoolbox/plugin-sdk@2
 ```
 
-Where `SocketEvent` has a recommended shape:
-
-- `{ type: 'log', target: 'server' | 'client', level: 'info' | 'error', message: string }`
-- `{ type: 'status', target: 'server' | 'client', status: any }`
-- `{ type: 'data', target: 'server' | 'client', data: { direction: 'recv' | 'sent', protocol: 'tcp' | 'udp', bytes: number, remote?: string, connId?: string, text?: string, base64?: string } }`
-
-Notes:
-
-- `payload` decoding is performed by the host based on `encoding`
-- `hex` payloads must have an even length (whitespace may be ignored by the host)
-
-### sdk.ssh (Host-implemented)
-
-Marketplace plugins that provide remote development workflows should use the host SSH capability instead of opening raw network connections.
-
-Permission:
-
-- Requires `net:ssh`
-
-Authentication methods:
-
-- `password`
-- `privateKey` (OpenSSH private key with optional passphrase)
-- `agent` (explicit agent socket or `SSH_AUTH_SOCK`)
-- `keyboard-interactive` (the host emits prompts for MFA/OTP flows)
-
-Methods:
-
-- `sdk.ssh.connect({ sessionId, terminalId, profileId?, hold?, holdKey?, host, port, username, authMethod, password?, privateKey?, passphrase?, agent?, hostFingerprint?, cols?, rows?, proxy? })`
-- `sdk.ssh.disconnect(sessionId)`
-- `sdk.ssh.closeTerminal(sessionId, terminalId)` (closes one interactive shell while keeping the Hold transport)
-- `sdk.ssh.listSessions()`
-- `sdk.ssh.write(sessionId, terminalId, data)`
-- `sdk.ssh.resize(sessionId, terminalId, cols, rows)`
-- `sdk.ssh.respondKeyboard(sessionId, answers)`
-- `sdk.ssh.sftpRealpath(sessionId, path?)`
-- `sdk.ssh.sftpList(sessionId, path)`
-- `sdk.ssh.sftpReadFile(sessionId, path)`
-- `sdk.ssh.sftpWriteFile(sessionId, path, base64)`
-- `sdk.ssh.sftpMkdir(sessionId, path)`
-- `sdk.ssh.sftpDelete(sessionId, path, type)`
-- `sdk.ssh.sftpRename(sessionId, sourcePath, destinationPath)`
-
-Events:
-
-The host pushes shell output, session status, host-key warnings, and keyboard-interactive prompts through:
-
 ```ts
-{ type: 'devtoolbox:sdk:event', domain: 'ssh', payload: SshEvent }
+import { sdk, followHostTheme, onSocketEvent } from '@devtoolbox/plugin-sdk';
 ```
 
-SSH Hold:
+## 1. Call model
 
-- Set `hold: true` and provide a stable `holdKey` (normally the saved connection/profile ID).
-- The host keeps the SSH client alive after the plugin detaches its terminal tab and retains a bounded terminal output buffer.
-- Reconnecting with the same saved profile reuses the existing held session instead of authenticating again.
-- Each `terminalId` is an independent interactive shell on the same held SSH client, so split panes and copied tabs do not perform another SSH authentication.
-- SFTP operations continue to use the shared SSH client represented by `sessionId`.
-- A plugin should expose separate “detach” and “disconnect/stop hold” actions; detaching must not call `sdk.ssh.disconnect()`.
+```ts
+import { callSdk } from '@devtoolbox/plugin-sdk';
 
-SSH Proxy / jump host:
+const result = await callSdk<{ value: string | null }>('storage.get', { key: 'k' });
+if (!result.ok) {
+  console.error(result.error.code, result.error.message);
+} else {
+  console.log(result.data.value);
+}
+```
 
-- Pass `proxy` to route the target SSH handshake through an existing or automatically created held SSH client.
-- `proxy` uses the same auth fields as `connect`, plus optional `sessionId`, `profileId`, `name`, and `holdKey`.
-- The host opens `forwardOut` on the proxy client and connects the target SSH client over that stream; terminal panes and SFTP still operate on the target `sessionId`.
-- Proxy sessions are held for reuse. A visible connection to the same proxy profile can attach a shell to the held proxy transport without re-authenticating.
+- Each namespace method is a thin wrapper around `callSdk(method, params)`.
+- Every call resolves to a result object; it does not throw on host errors.
+- Result shape: `{ ok: true, data: T } | { ok: false, error: { code, message, details? } }`.
 
-### sdk.bluetooth (Experimental)
+Common error codes: `permission_denied`, `not_installed`, `plugin_disabled`,
+`unimplemented_permission`, `invalid_argument`, `not_found`, `timeout`,
+`unsupported`, `io`, `internal`.
 
-Methods (proposed):
+Always call `followHostTheme()` once at startup and listen for events before
+opening sockets or SSH channels.
 
-- `sdk.bluetooth.isAvailable()`
-- `sdk.bluetooth.scan({ services?, namePrefix?, timeoutMs? }) -> { scanId }`
-- `sdk.bluetooth.onDeviceFound({ scanId })`
-- `sdk.bluetooth.connect({ deviceId }) -> { sessionId }`
-- `sdk.bluetooth.read({ sessionId, serviceUuid, characteristicUuid })`
-- `sdk.bluetooth.write({ sessionId, serviceUuid, characteristicUuid, value, writeType? })`
-- `sdk.bluetooth.disconnect({ sessionId })`
+## 2. Namespaces
 
-### sdk.serial (Experimental)
+Signatures below omit the `SdkResult` wrapper; see §1 for the result shape.
 
-Methods (proposed):
+### `sdk.storage` — `storage:kv`
 
-- `sdk.serial.listPorts()`
-- `sdk.serial.open({ portId, baudRate, dataBits?, stopBits?, parity? }) -> { sessionId }`
-- `sdk.serial.write({ sessionId, data })`
-- `sdk.serial.onData({ sessionId })`
-- `sdk.serial.close({ sessionId })`
+All methods below return `Promise<SdkResult<T>>`; `T` is shown for each method.
 
-### sdk.usb (Experimental)
+```ts
+sdk.storage.get<T>(key); // T = { value: T | null }
+sdk.storage.set(key, value); // T = { saved: boolean }
+sdk.storage.delete(key); // T = { deleted: boolean }
+sdk.storage.keys(); // T = { keys: string[] }
+sdk.storage.clear(); // T = { cleared: boolean }
+```
 
-Methods (proposed):
+Storage is host-owned JSON scoped to the plugin id and survives updates.
 
-- `sdk.usb.listDevices({ filters? })`
-- `sdk.usb.open({ deviceId }) -> { sessionId }`
-- `sdk.usb.transferIn({ sessionId, endpoint, length })`
-- `sdk.usb.transferOut({ sessionId, endpoint, data })`
-- `sdk.usb.close({ sessionId })`
+### `sdk.http` — `http:proxy` / `http:external`
 
-### sdk.log (Debugging)
+```ts
+sdk.http.request<T>({
+  url, method?, headers?, body?, timeoutMs?, responseType?: 'text' | 'json' | 'base64'
+}): Promise<{ status, headers, data: T, truncated, finalUrl }>
+```
 
-The host provides a logging bridge so a plugin can write debug information into the DevToolBox console.
+The host enforces `manifest.httpDomains` on every hop, caps response size, and
+rejects non-http(s) schemes. The plugin document CSP blocks direct network
+connections (`connect-src 'none'`), so use `http:proxy`; `http:external` is
+accepted in manifests for compatibility but cannot bypass the proxy path.
 
-Methods:
+### `sdk.log` — `log:write`
 
-- `sdk.log.debug({ message, data? })`
-- `sdk.log.info({ message, data? })`
-- `sdk.log.warn({ message, data? })`
-- `sdk.log.error({ message, data? })`
-- `sdk.log.log({ message, data? })`
+```ts
+sdk.log.write(level: 'debug' | 'info' | 'warn' | 'error', message, data?)
+sdk.log.info(message, data?)
+sdk.log.warn(message, data?)
+sdk.log.error(message, data?)
+```
 
-Notes:
+Entries appear in `<app-data>/logs/plugins.log`.
 
-- Logs are forwarded to the main process output (the terminal running `./cli.sh dev`).
-- The host does not print SDK logs to the DevToolBox renderer console.
+### `sdk.system` — `system:getInfo` / `system:openExternal`
 
-### sdk.system (Capability-based)
+```ts
+sdk.system.openExternal(url): Promise<{ opened: boolean }>
+sdk.system.getInfo(): Promise<{ platform, arch, appVersion, tauriVersion }>
+```
 
-No arbitrary command execution is provided.
+`openExternal` only accepts http(s) URLs. Host-side permissions for
+notifications, path reveal/open, environment variables, and clipboard are
+reserved for a future SDK revision; they are not exposed in 2.0.
 
-Methods:
+### `sdk.theme` — `theme:read`
 
-- `sdk.system.openExternal({ url })`
-- `sdk.system.revealPath({ pathToken })`
-- `sdk.system.openPath({ pathToken })`
-- `sdk.system.notify({ title, body, level? })`
-- `sdk.system.getInfo()`
-- `sdk.system.getEnv({ keys })` (keys must be allowlisted in the manifest)
+```ts
+sdk.theme.get(): Promise<{ theme: 'light' | 'dark' }>
+```
 
-## Error Codes (Recommended)
+`followHostTheme(onChange?)` sets `<html data-theme>` and keeps it in sync; it
+also reads the `?theme=` query parameter on first load.
 
-- `permission_denied`
-- `invalid_params`
-- `not_supported`
-- `timeout`
-- `too_large`
-- `network_blocked`
-- `io_error`
+### `sdk.fs` — `fs:dialog`, `fs:read`, `fs:write`, `fs:plugin-data`
+
+```ts
+sdk.fs.pickFile({ title?, filters?, multiple? }): Promise<{ items: GrantedFile[] }>
+sdk.fs.pickSaveFile({ title?, suggestedName?, filters? }): Promise<GrantedFile | null>
+sdk.fs.readFile({ fileToken, encoding? }): Promise<FileContents>
+sdk.fs.writeFile({ fileToken, content, encoding? }): Promise<{ written: number }>
+sdk.fs.readPluginData({ path, encoding? }): Promise<FileContents>
+sdk.fs.writePluginData({ path, content, encoding? }): Promise<{ written: number }>
+```
+
+Paths never reach the plugin. The host returns opaque file tokens bound to the
+requesting plugin; plugin-data paths are sandboxed to the plugin's data folder.
+
+### `sdk.ssh` — `net:ssh`
+
+```ts
+sdk.ssh.connect({ host, port?, username, password?, privateKey?, passphrase?, sessionId? })
+  : Promise<{ sessionId, host, port, username, fingerprint }>
+sdk.ssh.openShell({ sessionId, cols?, rows?, term? }): Promise<{ sessionId, channelId }>
+sdk.ssh.exec({ sessionId, command }): Promise<{ sessionId, channelId }>
+sdk.ssh.write({ sessionId, channelId, data, encoding? }): Promise<{ written: boolean }>
+sdk.ssh.resize({ sessionId, channelId, cols, rows }): Promise<{ resized: boolean }>
+sdk.ssh.closeChannel(sessionId, channelId)
+sdk.ssh.disconnect(sessionId)
+sdk.ssh.list(): Promise<{ sessions: SshSessionInfo[] }>
+sdk.ssh.forgetHost(host, port?)
+```
+
+Host keys are pinned on first use (TOFU). Terminal output and status arrive via
+`onSshEvent`. The host supports password and OpenSSH key authentication; one
+session hosts multiple channels; writes are capped.
+
+### `sdk.sftp` — `net:ssh`
+
+```ts
+sdk.sftp.list({ sessionId, path })
+sdk.sftp.read({ sessionId, path, encoding? })
+sdk.sftp.write({ sessionId, path, content, encoding? })
+sdk.sftp.mkdir({ sessionId, path })
+sdk.sftp.remove({ sessionId, path, directory? })
+sdk.sftp.rename({ sessionId, from, to })
+sdk.sftp.realpath({ sessionId, path })
+```
+
+SFTP files are size-limited; downloads return text or base64.
+
+### `sdk.socket` — `net:socket`
+
+```ts
+sdk.socket.tcpConnect({ host, port }): Promise<{ sessionId }>
+sdk.socket.tcpSend({ sessionId, data, encoding? })
+sdk.socket.tcpClose(sessionId)
+sdk.socket.tcpListen({ host?, port? }): Promise<{ sessionId, port }>
+sdk.socket.serverSend({ sessionId, clientId, data, encoding? })
+sdk.socket.serverKick(sessionId, clientId)
+sdk.socket.udpBind({ host?, port? }): Promise<{ sessionId, port }>
+sdk.socket.udpSend({ sessionId, host, port, data, encoding? })
+sdk.socket.close(sessionId)
+sdk.socket.list()
+```
+
+Binary data is base64 on the wire; text chunks also carry `text`. Use
+`onSocketEvent(handler)` for `connected`, `data`, `closed`, `error`, and server
+events, plus `socketEventBytes(payload)` for raw bytes.
+
+### `sdk.capabilities`
+
+```ts
+sdk.capabilities.list(): Promise<{ grant: CapabilityGrant | null }>
+```
+
+Returns the permissions, HTTP domains, env allowlist, and grant timestamp issued
+to this plugin.
+
+## 3. Events
+
+```ts
+const stopSocket = onSocketEvent((event) => {
+  if (event.event === 'data') {
+    const bytes = socketEventBytes(event);
+    render(event.text ?? bytes.length);
+  }
+});
+
+const stopSsh = onSshEvent((event) => {
+  if (event.event === 'data') terminal.write(event.text ?? '');
+});
+
+// on unmount
+stopSocket();
+stopSsh();
+```
+
+Both helpers filter for `event.source`/message type and return an unsubscribe
+function.
+
+## 4. Permission mapping
+
+| SDK namespace                       | Permission                                      |
+| ----------------------------------- | ----------------------------------------------- |
+| `storage`                           | `storage:kv`                                    |
+| `http`                              | `http:proxy` or `http:external` + `httpDomains` |
+| `log`                               | `log:write`                                     |
+| `system.openExternal`               | `system:openExternal`                           |
+| `system.getInfo`                    | `system:getInfo`                                |
+| `theme`                             | `theme:read`                                    |
+| `fs.pickFile/pickSaveFile`          | `fs:dialog`                                     |
+| `fs.readFile/writeFile`             | `fs:read` / `fs:write`                          |
+| `fs.readPluginData/writePluginData` | `fs:plugin-data`                                |
+| `ssh`, `sftp`                       | `net:ssh`                                       |
+| `socket`                            | `net:socket`                                    |
+| `capabilities`                      | always available                                |
+
+## 5. Compatibility and limits
+
+- `sdkVersion: "2.0"` selects this surface. Older manifests get legacy aliases
+  and response shapes; new plugins should not depend on them.
+- HTTP requests are hop-checked against `httpDomains`, size-capped, and
+  time-limited; redirects to non-allowlisted hosts are rejected.
+- SSH host keys are pinned in `known-hosts.json`; changing keys is rejected until
+  the user forgets the host.
+- The plugin CSP blocks `connect-src`, `frame-src`, `object-src`, `base-uri`, and
+  `form-action`; all network access goes through the SDK.
+
+See [Marketplace Authoring](marketplace-v2.md) for a tutorial and
+[Marketplace protocol](../architecture/marketplace.md) for host-side details.

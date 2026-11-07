@@ -2,66 +2,102 @@
 
 ## Marketplace
 
-### The Marketplace tab is empty
+### The Marketplace is empty
 
-DevToolBox loads plugins from a marketplace registry. If the registry returns an empty list, the Marketplace tab shows “Marketplace registry is empty”.
+DevToolBox has no built-in registry. Add one:
 
-What to check:
+1. Open **Marketplace**.
+2. Paste a `registry.json` URL and click **Add registry**.
+3. Click **Refresh** if the list does not update.
 
-- Click Refresh (Modules page)
-- Verify your network can access the default registry URL:
-  - https://github.com/XthingsJacobs/devToolBox/releases/download/marketplace/registry.json
+For local development, `http://localhost` and `http://127.0.0.1` URLs are
+accepted; everything else must be HTTPS.
 
-### I cannot change the Registry URL
+### Install fails with “Only https is allowed”
 
-Custom registry URL override is only enabled in development builds. In packaged builds, DevToolBox always uses the default registry and requires HTTPS-only registry/download URLs for security.
+Registry and download URLs must be `https://`. Loopback (`http://localhost`,
+`http://127.0.0.1`) is allowed only for local development.
 
-### Install failed with “Only https is allowed”
+### Install fails with a signature or digest error
 
-In packaged builds:
+The package did not match its registry entry. Possible causes:
 
-- registry URLs must be `https://`
-- plugin download URLs must be `https://`
+- the author republished a ZIP without updating `sha256`;
+- the registry is stale (click **Refresh**);
+- a source with a pinned public key served an unsigned or tampered package.
 
-`file://` is only supported in development builds for local plugin development.
+Ask the registry author to regenerate and re-sign the release.
+
+### How do I verify a registry is signed?
+
+Open **Settings → Registries → Trust options**, paste the registry's Ed25519
+public key, and enable **Reject this registry unless its signature verifies**.
+Without a key, packages are still checked against their SHA-256 digest.
+
+### Where do plugins run?
+
+Plugins are web apps in a sandboxed iframe served from the `plugin://` protocol.
+They cannot access the filesystem, network, or SSH directly; every privileged
+call is permission-checked by the Rust host. The plugin CSP blocks direct
+network connections.
+
+### Can I use DevToolBox offline?
+
+Yes. All 27 built-in tools work offline. Marketplace actions and plugin network
+features need connectivity only when their manifests declare it.
 
 ## Updates
 
-### “Check for Updates…” does nothing
+### How do I check for updates?
 
-Try:
+Open **Settings → Updates** and click **Check for updates**. The app downloads
+from GitHub Releases and verifies the updater signature before installing.
 
-- Ensure you are using a packaged build (the auto-updater is designed for installed apps)
-- Check your network connectivity to GitHub Releases
-- Try again from menu → Help → Check for Updates…
+### The update check does nothing
 
-### How do I enable/disable background update checks?
+- Make sure you are using a packaged build (the updater is not active in a plain
+  browser preview).
+- Check connectivity to GitHub Releases.
+- Restart the app and try again.
 
-Settings → Updates → Auto-check for updates
+There is no background auto-check toggle in 3.0.0; updates are checked manually.
 
-## Data & Cache
+## Appearance and language
 
-### What does “Clear Storage” do?
+### Where are theme and language saved?
 
-It clears caches and storage data used by DevToolBox and the marketplace (registries/zips cache). If a plugin behaves unexpectedly after an update, clearing storage is a safe first step.
+Both are stored in `settings.json` in the app data directory and restored on
+startup. Use **Settings → General** to change them.
 
-### What does “Delete All Data” do?
+### Why do some labels stay in English?
 
-It deletes all local app data and relaunches DevToolBox. You will lose:
+The shell, pages, and all 27 tools are translated. Technical protocol tokens
+(MQTT statuses, WebSocket states, certificate fields) intentionally remain in
+English.
 
-- installed marketplace plugins
-- plugin key-value storage
-- app settings and caches
+## Data
 
-If you are not sure, use Clear Storage first.
+### Where is my data?
+
+- macOS: `~/Library/Application Support/com.devtoolbox.app`
+- Windows: `%APPDATA%\com.devtoolbox.app`
+
+It contains `settings.json`, `marketplace-state.json`, `marketplace-sources.json`,
+plugins, plugin storage, logs, and `known-hosts.json`.
+
+### How do I reset the app?
+
+Quit DevToolBox and remove the data directory (or just `settings.json` for
+appearance/language). This deletes installed plugins and plugin storage.
+
+## Shortcuts
+
+See the table in the [User Guide](guide.md#keyboard-shortcuts). The most common
+ones are `Cmd/Ctrl+K` (search), `Cmd/Ctrl+,` (settings), and `Cmd/Ctrl+W` (close
+tool tab).
 
 ## Support
 
-### What should I include in a bug report?
-
-See [Support](../governance/support.md). At minimum:
-
-- app version / build number
-- OS and architecture
-- steps to reproduce
-- screenshots/logs if relevant
+Include the version, OS/architecture, steps to reproduce, and screenshots or log
+excerpts in [GitHub Issues](https://github.com/XthingsJacobs/devToolBox/issues).
+For security issues, follow the [Security Policy](../governance/security.md).

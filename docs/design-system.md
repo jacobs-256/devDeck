@@ -167,3 +167,8 @@ switch with `<html data-theme="light">`, applied by `followHostTheme()`.
 - [ ] Shortcuts in the table still work (including tool-specific ones).
 - [ ] Light and dark themes both look correct.
 - [ ] Plugin UI uses the shared toolkit.
+
+## Related
+
+- [Development guide](development.md) — adding tools, commands, capabilities
+- [Architecture overview](architecture/overview.md)

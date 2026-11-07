@@ -20,15 +20,17 @@ pnpm --filter @devtoolbox/desktop exec tauri signer generate \
 ## 发布步骤
 
 ```bash
+# 版本号需同时更新：package.json、apps/desktop/package.json、
+# apps/desktop/src-tauri/tauri.conf.json、Cargo.toml [workspace.package]
 pnpm version minor --no-git-tag-version
-# 同时更新 apps/desktop/src-tauri/tauri.conf.json 的 version
 
-./cli.sh check
-pnpm --filter @devtoolbox/desktop build
+pnpm lint && pnpm typecheck && pnpm test
+cargo fmt --all -- --check && cargo clippy --workspace --all-targets
+cargo test --workspace
 
 git add -A
-git commit -m "chore(release): 2.2.0"
-git tag v2.2.0
+git commit -m "chore(release): 3.1.0"
+git tag v3.1.0
 git push origin HEAD --tags
 ```
 
@@ -61,7 +63,7 @@ pnpm --filter @devtoolbox/desktop tauri build --bundles app,dmg \
 
 ## Marketplace 签名独立
 
-插件 ZIP 与 `registry.json` 使用 [Marketplace 协议](marketplace.md#6-完整性校验与签名) 中描述的**另一把**密钥，勿与更新密钥混用。
+插件 ZIP 与 `registry.json` 使用 [Marketplace 协议](marketplace.md#签名) 中描述的**另一把**密钥，勿与更新密钥混用。
 
 ## 发布插件市场版本
 
@@ -100,8 +102,10 @@ https://github.com/<owner>/<repo>/releases/download/marketplace-v1/registry.json
 
 ## 发布前检查
 
-- [ ] `package.json`、`apps/desktop/package.json`、`tauri.conf.json` 版本一致
-- [ ] `./cli.sh check` 通过
+- [ ] `package.json`、`apps/desktop/package.json`、`tauri.conf.json`、`Cargo.toml` 版本一致
+- [ ] `pnpm lint`、`pnpm typecheck`、`pnpm test` 通过
+- [ ] `cargo fmt --check`、`cargo clippy`、`cargo test --workspace` 通过
 - [ ] Release draft 含 macOS / Windows 安装包与 `.sig`
 - [ ] `latest.json` 指向新版本
 - [ ] 发布 draft
+- [ ] 可选：打 `marketplace-v<version>` 标签并发布签名注册表

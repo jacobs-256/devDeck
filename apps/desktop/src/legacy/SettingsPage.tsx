@@ -43,6 +43,9 @@ export default function SettingsPage({
   const [active, setActive] = useState<SectionId>('general');
   const [sources, setSources] = useState<RegistrySource[]>([]);
   const [sourceUrl, setSourceUrl] = useState('');
+  const [publicKey, setPublicKey] = useState('');
+  const [requireSignature, setRequireSignature] = useState(false);
+  const [showTrust, setShowTrust] = useState(false);
   const [error, setError] = useState('');
 
   const loadSources = useCallback(async () => {
@@ -228,9 +231,21 @@ export default function SettingsPage({
                       onClick={() => {
                         const url = sourceUrl.trim();
                         if (!url) return;
-                        void addSource(url)
+                        const key = publicKey.trim();
+                        if (requireSignature && !key) {
+                          setError('Signature enforcement needs a public key.');
+                          return;
+                        }
+                        setError('');
+                        void addSource(url, {
+                          publicKey: key || undefined,
+                          requireSignature,
+                        })
                           .then(() => {
                             setSourceUrl('');
+                            setPublicKey('');
+                            setRequireSignature(false);
+                            setShowTrust(false);
                             return loadSources();
                           })
                           .catch((reason: unknown) =>
@@ -240,7 +255,40 @@ export default function SettingsPage({
                     >
                       Add
                     </button>
+                    <button
+                      type="button"
+                      className={styles.smallBtn}
+                      onClick={() => setShowTrust((value) => !value)}
+                    >
+                      {showTrust ? 'Hide trust options' : 'Trust options'}
+                    </button>
                   </div>
+
+                  {showTrust ? (
+                    <div className={styles.trustBox}>
+                      <label className={styles.trustLabel}>
+                        Ed25519 public key (Base64, optional)
+                        <textarea
+                          className={styles.trustInput}
+                          rows={3}
+                          value={publicKey}
+                          placeholder="32-byte Base64 public key"
+                          onChange={(event) => setPublicKey(event.target.value)}
+                        />
+                      </label>
+                      <label className={styles.trustCheck}>
+                        <input
+                          type="checkbox"
+                          checked={requireSignature}
+                          onChange={(event) => setRequireSignature(event.target.checked)}
+                        />
+                        Reject this registry unless its signature verifies
+                      </label>
+                      <p className={styles.trustNote}>
+                        Without a key, packages are still checked against their SHA-256 digest.
+                      </p>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </div>
