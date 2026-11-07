@@ -25,6 +25,15 @@
   transition: width 0.2s ease;
 }
 
+.scrollArea {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
 .navSection {
   padding: 12px 8px 8px;
   display: flex;

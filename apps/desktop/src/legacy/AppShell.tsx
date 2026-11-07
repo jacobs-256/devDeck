@@ -60,91 +60,93 @@ export default function AppShell({
       <div className={styles.body}>
         {!sidebarHidden && (
           <aside className={styles.sidebar} style={{ width: collapsed ? 52 : 180 }}>
-            <div className={styles.navSection}>
-              {navItems.map((item) => {
-                const active = item.id === activeNavId;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={`${styles.navItem}${active ? ` ${styles.navItemActive}` : ''}`}
-                    onClick={() => onNavSelect(item.id)}
-                    aria-current={active ? 'page' : undefined}
-                    title={collapsed ? item.label : undefined}
-                    data-tip={collapsed ? item.label : undefined}
-                    style={{
-                      justifyContent: collapsed ? 'center' : undefined,
-                      paddingLeft: collapsed ? 14 : undefined,
-                      paddingRight: collapsed ? 14 : undefined,
-                    }}
-                  >
-                    {active && <span className={styles.navIndicator} />}
-                    {item.icon && <span className={styles.navIcon}>{item.icon}</span>}
-                    {!collapsed && <span className={styles.navLabel}>{item.label}</span>}
-                    {!collapsed && typeof item.badge === 'number' && item.badge > 0 && (
-                      <span className={styles.badge}>{item.badge}</span>
-                    )}
-                  </button>
-                );
-              })}
+            <div className={styles.scrollArea}>
+              <div className={styles.navSection}>
+                {navItems.map((item) => {
+                  const active = item.id === activeNavId;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className={`${styles.navItem}${active ? ` ${styles.navItemActive}` : ''}`}
+                      onClick={() => onNavSelect(item.id)}
+                      aria-current={active ? 'page' : undefined}
+                      title={collapsed ? item.label : undefined}
+                      data-tip={collapsed ? item.label : undefined}
+                      style={{
+                        justifyContent: collapsed ? 'center' : undefined,
+                        paddingLeft: collapsed ? 14 : undefined,
+                        paddingRight: collapsed ? 14 : undefined,
+                      }}
+                    >
+                      {active && <span className={styles.navIndicator} />}
+                      {item.icon && <span className={styles.navIcon}>{item.icon}</span>}
+                      {!collapsed && <span className={styles.navLabel}>{item.label}</span>}
+                      {!collapsed && typeof item.badge === 'number' && item.badge > 0 && (
+                        <span className={styles.badge}>{item.badge}</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {isTools && (
+                <>
+                  <div className={styles.divider} />
+                  {!collapsed && <div className={styles.sectionTitle}>Categories</div>}
+
+                  <div className={styles.categorySection}>
+                    {toolCategories.map((c) => {
+                      const active = c.id === activeCategoryId;
+                      const isAll = c.id === 'all';
+                      const color = isAll
+                        ? 'var(--text-primary)'
+                        : (categoryColorMap[c.id as keyof typeof categoryColorMap] ?? 'var(--text-tertiary)');
+                      const activeBg = isAll ? 'var(--bg-elevated)' : `${color}12`;
+                      const activeBorder = isAll ? 'var(--border-subtle)' : `${color}28`;
+                      return (
+                        <button
+                          key={c.id}
+                          type="button"
+                          className={`${styles.categoryItem}${active ? ` ${styles.categoryItemActive}` : ''}`}
+                          title={collapsed ? c.name : undefined}
+                          data-tip={collapsed ? c.name : undefined}
+                          onClick={() => onCategorySelect?.(c.id)}
+                          style={{
+                            justifyContent: collapsed ? 'center' : undefined,
+                            paddingLeft: collapsed ? 0 : undefined,
+                            paddingRight: collapsed ? 0 : undefined,
+                            color: active
+                              ? color
+                              : collapsed
+                                ? 'var(--text-disabled)'
+                                : 'var(--text-quaternary)',
+                            background: active ? activeBg : 'transparent',
+                            borderColor: active ? activeBorder : 'transparent',
+                            boxShadow: active ? '0 8px 24px #00000055' : 'none',
+                          }}
+                        >
+                          <span className={styles.categoryIcon} style={{ color }}>
+                            {c.icon}
+                          </span>
+                          {!collapsed && (
+                            <>
+                              <span className={styles.categoryLabel}>{c.name}</span>
+                              <span
+                                className={styles.categoryCount}
+                                style={{ color: active ? color : 'var(--border-subtle)' }}
+                              >
+                                {c.modules.length}
+                              </span>
+                            </>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
             </div>
-
-            {isTools && (
-              <>
-                <div className={styles.divider} />
-                {!collapsed && <div className={styles.sectionTitle}>Categories</div>}
-
-                <div className={styles.categorySection}>
-                  {toolCategories.map((c) => {
-                    const active = c.id === activeCategoryId;
-                    const isAll = c.id === 'all';
-                    const color = isAll
-                      ? 'var(--text-primary)'
-                      : (categoryColorMap[c.id as keyof typeof categoryColorMap] ?? 'var(--text-tertiary)');
-                    const activeBg = isAll ? 'var(--bg-elevated)' : `${color}12`;
-                    const activeBorder = isAll ? 'var(--border-subtle)' : `${color}28`;
-                    return (
-                      <button
-                        key={c.id}
-                        type="button"
-                        className={`${styles.categoryItem}${active ? ` ${styles.categoryItemActive}` : ''}`}
-                        title={collapsed ? c.name : undefined}
-                        data-tip={collapsed ? c.name : undefined}
-                        onClick={() => onCategorySelect?.(c.id)}
-                        style={{
-                          justifyContent: collapsed ? 'center' : undefined,
-                          paddingLeft: collapsed ? 0 : undefined,
-                          paddingRight: collapsed ? 0 : undefined,
-                          color: active
-                            ? color
-                            : collapsed
-                              ? 'var(--text-disabled)'
-                              : 'var(--text-quaternary)',
-                          background: active ? activeBg : 'transparent',
-                          borderColor: active ? activeBorder : 'transparent',
-                          boxShadow: active ? '0 8px 24px #00000055' : 'none',
-                        }}
-                      >
-                        <span className={styles.categoryIcon} style={{ color }}>
-                          {c.icon}
-                        </span>
-                        {!collapsed && (
-                          <>
-                            <span className={styles.categoryLabel}>{c.name}</span>
-                            <span
-                              className={styles.categoryCount}
-                              style={{ color: active ? color : 'var(--border-subtle)' }}
-                            >
-                              {c.modules.length}
-                            </span>
-                          </>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </>
-            )}
 
             <div className={styles.spacer} />
 
