@@ -75,8 +75,8 @@ The renderer keeps the original Electron layout (`main` branch), restored in
 - **Tools workspace** — 252px tool list panel, browser-style tabs, tool header
   with fullscreen toggle; tools stay mounted while switching tabs.
 - **Module center** — installed/marketplace tabs, registry bar, filters, cards.
-- **Settings** — secondary navigation, theme/language, registries (including
-  trust options), updates, about.
+- **Settings** — flat grouped preferences: theme/language, registries (including
+  trust options), updates, and about.
 - **Global search** (`Cmd/Ctrl+K`) and About dialog.
 
 The native Tauri menu mirrors the legacy menu (Settings `Cmd+,`, edit roles,

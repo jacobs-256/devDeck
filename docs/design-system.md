@@ -32,7 +32,13 @@ should be indistinguishable from the pre-rewrite build.
 | Dashboard   | Header (kicker, search, title, date), category quick-nav, frequent-tool card grid, app/screen/runtime info widgets        |
 | Tools       | 252px tool list panel + workspace (tab bar, 56px tool header, content area)                                               |
 | Marketplace | Header (Module Center, counts, Refresh), registry bar, Installed/Marketplace tabs, category select + search, module cards |
-| Settings    | 196px secondary navigation + content column with header and cards                                                         |
+| Settings    | Flat single-scroll page: heading, grouped setting rows, segmented theme/language, registries, updates, about              |
+
+The Settings page follows the flat preferences layout used by `ssh-hold-deck`:
+a heading, 12px muted section labels, grouped surface rows with a title and
+description on the left and controls on the right. Settings primary actions use
+the reference green accent (`#10b981` dark / `#059669` light), while the rest of
+the app keeps the blue product accent.
 
 The tools workspace uses a two-column split: the list panel stays fixed while
 the workspace scrolls. Opening a tool collapses the main sidebar (legacy

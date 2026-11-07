@@ -144,7 +144,7 @@ Reserved permissions (`bluetooth`, `serial`, `usb`) parse but report
 
 - The shell and pages under `apps/desktop/src/legacy/` intentionally match the
   original Electron layout: 180/52px sidebar, tools workspace with list panel and
-  tabs, module center, settings secondary nav.
+  tabs, module center, and the flat settings rows.
 - Use the legacy tokens in `apps/desktop/src/theme/variables.css`; do not
   introduce new palettes or font scales. Plugins mirror the same tokens in
   `marketplace/shared/theme/`.

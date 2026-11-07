@@ -107,7 +107,7 @@ cargo clippy --workspace --all-targets
 
 ## 8. UI 约定
 
-- `apps/desktop/src/legacy/` 下的外壳与页面保持原 Electron 布局：180/52px 侧边栏、工具列表+标签页、模块中心、设置二级导航。
+- `apps/desktop/src/legacy/` 下的外壳与页面保持原 Electron 布局：180/52px 侧边栏、工具列表+标签页、模块中心与扁平设置行。
 - 使用 `apps/desktop/src/theme/variables.css` 的 legacy token，不要引入新色板或字号；插件镜像 `marketplace/shared/theme/`。
 - 页面组件用 CSS Module；工具内部使用 `styles/tool-compat.css`。
 - 保持快捷键契约：`Cmd/Ctrl+K`、`Cmd/Ctrl+,`、`Cmd/Ctrl+W`、`Esc`、搜索方向键/Enter、工具内 `Cmd/Ctrl+F`（JSON/MQTT）、Enter（Ping/Tracert）。见[设计规范](design-system.md)。

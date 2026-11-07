@@ -3,6 +3,15 @@
 All notable changes to DevToolBox are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/) and SemVer.
 
+## Unreleased
+
+### Changed
+
+- Restored the main-branch layouts for all 27 built-in tools.
+- Reworked Settings into a flat, grouped preferences page modeled on
+  `ssh-hold-deck`: theme/language segmented controls, registry management,
+  updates, and about in one scrolling view.
+
 ## 3.0.0 — Rust + Tauri 2 rewrite
 
 ### Added
