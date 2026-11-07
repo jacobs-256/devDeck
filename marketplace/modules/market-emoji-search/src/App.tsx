@@ -189,7 +189,7 @@ export default function App() {
     void (async () => {
       const res = await sdk.storage.get<unknown>('emojiSearch.size');
       if (!res.ok) return;
-      const v = res.data;
+      const v = res.data?.value;
       if (v === 'sm' || v === 'md' || v === 'lg' || v === 'xl') setEmojiSize(v);
     })();
   }, []);
@@ -205,8 +205,9 @@ export default function App() {
       const cacheKey = `emojiSearch.dataset.v1.${locale}`;
       try {
         const cached = await sdk.storage.get<unknown>(cacheKey);
-        if (cached.ok && isRecord(cached.data)) {
-          const c = cached.data as unknown as CachedDataset;
+        const cachedValue = cached.ok ? cached.data?.value : undefined;
+        if (cached.ok && isRecord(cachedValue)) {
+          const c = cachedValue as unknown as CachedDataset;
           const schemaOk = (c as { schemaVersion?: unknown }).schemaVersion === 1;
           const dataOk = isRecord((c as { dataset?: unknown }).dataset);
           if (schemaOk && dataOk && alive) {

@@ -35,6 +35,7 @@ nav:
       - Security Policy: governance/security.md
   - Plugin Developers:
       - Plugin Dev Guide: plugin-dev/guide.md
+      - Marketplace Authoring (SDK 2.0): plugin-dev/marketplace-v2.md
       - Plugin SDK Contract: plugin-dev/sdk.md
       - Marketplace Packaging: plugin-dev/packaging.md
   - Core Developers:
@@ -49,6 +50,21 @@ nav:
       - CLI: shared/cli.md
       - Troubleshooting: shared/troubleshooting.md
       - Docs Maintenance: core-dev/docs-readme.md
+  - Rust + Tauri Architecture:
+      - Overview: architecture/overview.md
+      - Marketplace Protocol: architecture/marketplace.md
+      - Security Model: architecture/security-model.md
+      - Migration Status: architecture/migration.md
+      - Legacy Removal: architecture/legacy-removal.md
+      - Releasing: architecture/release.md
+  - 中文文档:
+      - 架构总览: zh-CN/architecture/overview.md
+      - Marketplace 协议: zh-CN/architecture/marketplace.md
+      - 安全模型: zh-CN/architecture/security-model.md
+      - 迁移状态: zh-CN/architecture/migration.md
+      - 移除旧实现: zh-CN/architecture/legacy-removal.md
+      - 发布流程: zh-CN/architecture/release.md
+      - 插件开发指南: zh-CN/plugin-dev/marketplace-v2.md
   - Governance:
       - Open Source: governance/open-source.md
       - Contributing: governance/contributing.md

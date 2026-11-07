@@ -1,0 +1,49 @@
+[package]
+name = "devtoolbox-desktop"
+description = "DevToolBox desktop host (Tauri 2)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+default-run = "devtoolbox-desktop"
+
+[lib]
+name = "devtoolbox_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-updater = "2"
+tauri-plugin-single-instance = "2"
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+sha2 = { workspace = true }
+url = { workspace = true }
+semver = { workspace = true }
+tokio = { version = "1", features = ["net", "io-util", "sync", "time", "macros", "rt-multi-thread", "process"] }
+uuid = { version = "1", features = ["v4"] }
+russh = "0.65"
+russh-sftp = "3"
+rcgen = { version = "0.14", features = ["x509-parser"] }
+x509-parser = "0.18"
+time = "0.3"
+rumqttc = "0.25"
+base64 = { workspace = true }
+mime_guess = "2"
+reqwest = { version = "0.12", default-features = false, features = ["default-tls", "gzip"] }
+devtoolbox-contract = { workspace = true }
+devtoolbox-capability = { workspace = true }
+devtoolbox-market = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+ed25519-dalek = { workspace = true }
+zip = { workspace = true }

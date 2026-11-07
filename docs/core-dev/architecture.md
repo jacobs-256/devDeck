@@ -1,4 +1,9 @@
-# Architecture Overview
+# Architecture Overview (legacy Electron)
+
+> **Note:** This page documents the legacy Electron implementation under `core/`.
+> For the Rust + Tauri 2 architecture, see
+> [Architecture overview](../architecture/overview.md) and
+> [Migration status](../architecture/migration.md).
 
 DevToolBox is an Electron desktop app with a React renderer.
 
@@ -20,4 +25,3 @@ Tool modules are discovered via `import.meta.glob` and rendered inside a shared 
 ## IPC
 
 Renderer communicates with main via a typed preload API (`window.electronAPI`). Avoid exposing raw IPC channels directly to the renderer.
-

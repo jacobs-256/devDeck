@@ -1,38 +1,32 @@
-name: Marketplace Release
+name: Marketplace release
 
 on:
+  push:
+    tags:
+      - 'marketplace-v*'
   workflow_dispatch:
     inputs:
       tag:
-        description: Release tag for marketplace assets (keep stable, e.g. marketplace)
-        required: false
-        default: marketplace
+        description: 'Release tag to create or update'
+        required: true
+        default: marketplace-latest
 
 permissions:
   contents: write
-  actions: read
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
-
-concurrency:
-  group: marketplace-release-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           run_install: false
 
-      - name: Setup Node.js
+      - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -41,103 +35,60 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Build marketplace modules
+      - name: Build marketplace plugins
         run: pnpm -C marketplace build
 
-      - name: Pack marketplace release artifacts
-        run: node marketplace/scripts/pack-release.mjs
+      - name: Require the marketplace signing key
         env:
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          MARKETPLACE_TAG: ${{ github.event.inputs.tag }}
-
-      - name: Write keep list
-        run: node -e "const fs=require('node:fs'); const path=require('node:path'); const dir='marketplace/release-dist'; const zips=fs.existsSync(dir)?fs.readdirSync(dir).filter(f=>f.endsWith('.zip')):[]; fs.writeFileSync(path.join(dir,'keep-zips.json'), JSON.stringify({ zips }, null, 2), 'utf8');"
-
-      - name: List release artifacts
+          MARKETPLACE_SIGNING_KEY: ${{ secrets.MARKETPLACE_SIGNING_KEY }}
         run: |
-          ls -la marketplace/release-dist
-          ls -la marketplace/release-dist/*.zip || true
+          if [[ -z "${MARKETPLACE_SIGNING_KEY}" ]]; then
+            echo "::error::Set the MARKETPLACE_SIGNING_KEY repository secret (Base64 Ed25519 seed)."
+            exit 1
+          fi
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: marketplace-release
-          path: |
-            marketplace/release-dist/registry.json
-            marketplace/release-dist/keep-zips.json
-            marketplace/release-dist/*.zip
-          if-no-files-found: error
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: main
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: marketplace-release
-          path: marketplace-release
-
-      - name: Prune stale assets
-        run: node marketplace/scripts/prune-release-assets.mjs marketplace-release/keep-zips.json
+      - name: Pack and sign packages
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          MARKETPLACE_TAG: ${{ github.event.inputs.tag }}
+          MARKETPLACE_TAG: ${{ inputs.tag || github.ref_name }}
+          DEVTOOLBOX_SIGNING_KEY: ${{ secrets.MARKETPLACE_SIGNING_KEY }}
+        run: node marketplace/scripts/pack-release.mjs
 
-      - name: Release (Attempt 1)
-        id: release1
-        uses: softprops/action-gh-release@v2
-        continue-on-error: true
-        with:
-          tag_name: ${{ github.event.inputs.tag }}
-          name: Marketplace ${{ github.event.inputs.tag }}
-          target_commitish: main
-          files: |
-            marketplace-release/registry.json
-            marketplace-release/*.zip
-          fail_on_unmatched_files: false
+      - name: Sign the registry and verify every artifact
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEVTOOLBOX_SIGNING_KEY: ${{ secrets.MARKETPLACE_SIGNING_KEY }}
+        run: |
+          node marketplace/scripts/sign.mjs sign marketplace/release-dist/registry.json
+          PUB="$(node marketplace/scripts/sign.mjs public-key)"
+          printf '%s\n' "${PUB}" > marketplace/release-dist/public-key.txt
+          echo "MARKETPLACE_PUBLIC_KEY=${PUB}" >> "${GITHUB_ENV}"
+          for zip in marketplace/release-dist/*.zip; do
+            node marketplace/scripts/sign.mjs verify "${zip}" "${zip}.sig" --pubkey "${PUB}"
+          done
+          node marketplace/scripts/sign.mjs verify \
+            marketplace/release-dist/registry.json \
+            marketplace/release-dist/registry.json.sig \
+            --pubkey "${PUB}"
 
-      - name: Wait (Retry)
-        if: steps.release1.outcome == 'failure'
-        run: sleep 180
-
-      - name: Release (Attempt 2)
-        id: release2
-        if: steps.release1.outcome == 'failure'
-        uses: softprops/action-gh-release@v2
-        continue-on-error: true
-        with:
-          tag_name: ${{ github.event.inputs.tag }}
-          name: Marketplace ${{ github.event.inputs.tag }}
-          target_commitish: main
-          files: |
-            marketplace-release/registry.json
-            marketplace-release/*.zip
-          fail_on_unmatched_files: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Wait (Retry)
-        if: steps.release2.outcome == 'failure'
-        run: sleep 420
-
-      - name: Release (Attempt 3)
-        if: steps.release2.outcome == 'failure'
+      - name: Publish release assets
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event.inputs.tag }}
-          name: Marketplace ${{ github.event.inputs.tag }}
-          target_commitish: main
+          tag_name: ${{ inputs.tag || github.ref_name }}
+          name: Marketplace ${{ inputs.tag || github.ref_name }}
+          make_latest: false
+          fail_on_unmatched_files: true
+          body: |
+            Signed marketplace artifacts.
+
+            - Registry: `https://github.com/${{ github.repository }}/releases/download/${{ inputs.tag || github.ref_name }}/registry.json`
+            - Registry signature: `registry.json.sig`
+            - Public key (Base64 Ed25519): `${{ env.MARKETPLACE_PUBLIC_KEY }}`
+
+            Add the registry URL in **Marketplace → Add registry**, paste the public key
+            under **Trust options**, and enable signature verification.
           files: |
-            marketplace-release/registry.json
-            marketplace-release/*.zip
-          fail_on_unmatched_files: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            marketplace/release-dist/registry.json
+            marketplace/release-dist/registry.json.sig
+            marketplace/release-dist/public-key.txt
+            marketplace/release-dist/*.zip
+            marketplace/release-dist/*.zip.sig

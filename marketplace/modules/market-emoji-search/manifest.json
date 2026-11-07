@@ -1,9 +1,10 @@
 {
+  "schemaVersion": 2,
   "id": "market-emoji-search",
   "name": "Emoji Search",
   "description": "Filter and search emoji by category and tags, click to copy",
   "version": "0.1.0",
-  "sdkVersion": "1.0",
+  "sdkVersion": "2.0",
   "entry": "package/index.html",
   "categoryId": "text-tools",
   "author": "DevToolBox",

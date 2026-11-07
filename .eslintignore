@@ -10,3 +10,9 @@ docs-site/.venv
 docs-site
 marketplace
 marketplace/modules/*/package
+
+# Rust / Tauri build output
+target
+
+# Design assets (not part of the build)
+design

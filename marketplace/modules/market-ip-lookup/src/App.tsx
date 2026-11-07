@@ -265,7 +265,7 @@ async function getCache(ip: string): Promise<UnifiedResult | null> {
   const k = `ip.lookup.cache.${ip || 'me'}`;
   const res = await sdk.storage.get(k);
   if (!res.ok) return null;
-  const v = res.data;
+  const v = res.data?.value;
   if (!isRecord(v)) return null;
   const fetchedAt = typeof v.fetchedAt === 'string' ? v.fetchedAt : '';
   if (!fetchedAt) return null;
@@ -296,7 +296,7 @@ export default function App() {
     void (async () => {
       const res = await sdk.storage.get('ip.lookup.settings');
       if (!res.ok) return;
-      const v = res.data;
+      const v = res.data?.value;
       if (!isRecord(v)) return;
       const m = v.mode;
       const k = v.keys;

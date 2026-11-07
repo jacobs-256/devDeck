@@ -1,5 +1,8 @@
 # Marketplace Plugin Developer Guide
 
+> **Note:** This guide covers the Electron-era (SDK 1.x) plugin runtime. New
+> plugins should use [Marketplace Authoring (SDK 2.0)](marketplace-v2.md).
+
 This guide is for developers who create DevToolBox marketplace plugins.
 
 Marketplace plugins run inside an isolated iframe runtime. Plugins must not call Electron/Node APIs directly. All privileged operations must go through the host-provided SDK.
@@ -67,7 +70,7 @@ market-foo-1.0.0.zip
 
 DevToolBox validates the plugin manifest on install. The validation rules are implemented in:
 
-- `core/main/ipc/marketplace.ts` → `validateManifest()`
+- `crates/devtoolbox-contract/src/manifest.rs` → `PluginManifest::validate()`
 
 Required fields:
 

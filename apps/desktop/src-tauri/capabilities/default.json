@@ -1,0 +1,13 @@
+{
+  "identifier": "default",
+  "description": "Capabilities granted to the DevToolBox main window",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "opener:default",
+    "updater:default",
+    "dialog:default"
+  ]
+}

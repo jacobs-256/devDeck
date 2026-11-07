@@ -1,5 +1,8 @@
 # Plugin SDK (Marketplace)
 
+> **Note:** This contract describes SDK 1.x. The SDK 2.0 surface is documented in
+> [Marketplace Authoring (SDK 2.0)](marketplace-v2.md).
+
 This document defines the SDK contract for DevToolBox marketplace plugins.
 
 Marketplace plugins run in an isolated iframe runtime. A plugin must not call Electron/Node APIs directly. All privileged operations must go through the host-provided SDK.

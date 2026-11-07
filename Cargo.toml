@@ -1,0 +1,40 @@
+[workspace]
+resolver = "2"
+members = [
+  "apps/desktop/src-tauri",
+  "crates/devtoolbox-contract",
+  "crates/devtoolbox-capability",
+  "crates/devtoolbox-market",
+]
+
+[workspace.package]
+version = "2.1.0"
+edition = "2021"
+rust-version = "1.90"
+license = "Apache-2.0"
+repository = "https://github.com/XthingsJacobs/devToolBox"
+authors = ["DevToolBox contributors"]
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+semver = { version = "1", features = ["serde"] }
+sha2 = "0.10"
+base64 = "0.22"
+ed25519-dalek = "2"
+zip = "2"
+url = "2"
+tempfile = "3"
+serde_repr = "0.1"
+
+devtoolbox-contract = { path = "crates/devtoolbox-contract" }
+devtoolbox-capability = { path = "crates/devtoolbox-capability" }
+devtoolbox-market = { path = "crates/devtoolbox-market" }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true

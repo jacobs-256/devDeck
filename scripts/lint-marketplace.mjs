@@ -52,7 +52,8 @@ async function main() {
       continue;
     }
     if (!isKebabCaseId(id)) errors.push(`marketplace/${folder}: manifest.id must be kebab-case: ${id}`);
-    if (!id.startsWith('market-')) errors.push(`marketplace/${folder}: manifest.id must start with "market-": ${id}`);
+    if (!id.startsWith('market-'))
+      errors.push(`marketplace/${folder}: manifest.id must start with "market-": ${id}`);
   }
 
   if (errors.length) {
@@ -67,4 +68,3 @@ main().catch((err) => {
   process.stderr.write(`${String(err?.stack || err)}\n`);
   process.exitCode = 1;
 });
-

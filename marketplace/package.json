@@ -7,6 +7,11 @@
     "build": "pnpm -r --filter \"./modules/*\" build",
     "pack": "node scripts/pack-local.mjs",
     "lint": "eslint . --max-warnings 0",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "registry": "node scripts/registry.mjs",
+    "sign": "node scripts/sign.mjs",
+    "verify": "node scripts/sign.mjs verify",
+    "keygen": "node scripts/sign.mjs keygen",
+    "create": "node scripts/create.mjs"
   }
 }

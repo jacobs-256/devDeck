@@ -91,9 +91,7 @@ async function checkModule(moduleDir, folderName) {
 
 async function main() {
   const toolBase = path.join(rootDir, 'core/renderer/components/ModuleTools');
-  const modules = [
-    ...(await lintBase(toolBase)).map((m) => ({ ...m, scope: 'ModuleTools' })),
-  ];
+  const modules = [...(await lintBase(toolBase)).map((m) => ({ ...m, scope: 'ModuleTools' }))];
 
   const idMap = new Map();
   const allErrors = [];

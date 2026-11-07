@@ -88,7 +88,7 @@ Commands:
   plugin                         Select, build, and pack marketplace plugin(s) into a local registry zip
   plugin <market-id|all>         Build + pack marketplace plugin(s) into a local registry zip
   package <macos|windows|all> [arch]   Package installers (.dmg/.exe)
-  check                          Run local quality/security checks (lint + typecheck + test)
+  check                          Run local quality/security checks (JS + Rust)
   tool new                       Create a new built-in tool template (delegates to pnpm new:tool)
   doctor                         Print environment info
   help
@@ -162,6 +162,11 @@ cmd_doctor() {
   print_ok "Node $(node -v) | pnpm $("${PNPM_CMD[@]}" -v)"
   if command -v git >/dev/null 2>&1; then
     print_ok "Git $(git --version | awk '{print $3}')"
+  fi
+  if command -v rustc >/dev/null 2>&1; then
+    print_ok "Rust $(rustc --version | awk '{print $2}') | cargo $(cargo --version | awk '{print $2}')"
+  else
+    print_info "Rust toolchain not found (needed for apps/desktop and crates/)"
   fi
 }
 
@@ -734,10 +739,11 @@ cmd_package() {
   local platform="${1:-}"
   local arch="${2:-}"
   if [[ -z "$platform" ]]; then
-    platform="$(prompt 'Platform (macos/windows/all)' 'macos')"
+    platform="$(prompt 'Platform (macos/windows)' 'macos')"
   fi
   case "$platform" in
-    macos|windows|all) ;;
+    macos|windows) ;;
+    all) print_error "Tauri builds are per-OS. Run macos on macOS and windows on Windows, or use the release workflow."; exit 1 ;;
     *) print_error "Invalid platform: $platform"; exit 1 ;;
   esac
 
@@ -751,69 +757,35 @@ cmd_package() {
     esac
   fi
 
-  ensure_cmd node
+  ensure_cmd cargo
   ensure_pnpm
 
-  local builder_args=""
-  case "$platform" in
-    macos) builder_args="--mac" ;;
-    windows) builder_args="--win" ;;
-    all) builder_args="--mac --win" ;;
+  local bundles="app,dmg"
+  local target=""
+  if [[ "$platform" == "windows" ]]; then
+    bundles="nsis"
+  fi
+  case "$arch" in
+    arm64) target="aarch64-apple-darwin" ;;
+    x64) target="x86_64-apple-darwin" ;;
+    universal) target="universal-apple-darwin" ;;
+    "") ;;
   esac
 
-  if [[ "$(uname -s)" == "Darwin" && ( "$platform" == "windows" || "$platform" == "all" ) ]]; then
-    if ! command -v wine &>/dev/null || ! command -v mono &>/dev/null; then
-      print_error "Windows packaging on macOS requires wine + mono."
-      print_error "Install: brew install --cask wine-stable && brew install mono"
-      print_error "Or run packaging on Windows / GitHub Actions."
-      exit 1
-    fi
-  fi
-
-  if [[ "$platform" == "macos" || "$platform" == "all" ]]; then
-    case "$arch" in
-      arm64) builder_args="$builder_args --arm64" ;;
-      x64) builder_args="$builder_args --x64" ;;
-      universal) builder_args="$builder_args --universal" ;;
-      "") ;;
-    esac
+  local args=(--bundles "$bundles")
+  if [[ -n "$target" ]]; then
+    args+=(--target "$target")
   fi
 
   unset NODE_OPTIONS
-
-  print_info "Installing dependencies..."
-  run_pnpm install --frozen-lockfile --force
-  print_ok "Dependencies installed"
-
-  print_info "Building..."
-  run_pnpm build
-  print_ok "Build completed"
-
-  print_info "Pruning broken pnpm hoisted symlinks..."
-  node scripts/prune-broken-pnpm-links.mjs
-  print_ok "pnpm symlink check completed"
-
-  if ! (node -p "require('electron/package.json').version" >/dev/null 2>&1); then
-    print_error "Cannot resolve electron from node_modules. Run pnpm install in devToolBox."
-    exit 1
-  fi
-
-  print_info "Packaging ($platform${arch:+/$arch})..."
-  run_pnpm exec electron-builder $builder_args --publish never
+  print_info "Packaging with Tauri ($platform${arch:+/$arch})..."
+  run_pnpm --filter "@devtoolbox/desktop" tauri build "${args[@]}"
   print_ok "Packaging completed"
 
-  if [[ -d release ]]; then
-    find release -maxdepth 1 -type f -name '*.zip*' -delete 2>/dev/null || true
-  fi
-
-  local output_dir="release"
+  local output_dir="target/release/bundle"
   if [[ -d "$output_dir" ]]; then
-    print_info "Artifacts:"
-    case "$platform" in
-      macos) find "$output_dir" -name "*.dmg" -type f ;;
-      windows) find "$output_dir" -name "*.exe" -type f ;;
-      all) find "$output_dir" \( -name "*.dmg" -o -name "*.exe" \) -type f ;;
-    esac
+    print_info "Artifacts under $output_dir:"
+    find "$output_dir" -maxdepth 2 -type f \( -name "*.dmg" -o -name "*.exe" -o -name "*.app.tar.gz" \) 2>/dev/null || true
   fi
 }
 
@@ -822,6 +794,16 @@ cmd_check() {
   run_pnpm lint
   run_pnpm typecheck
   run_pnpm test
+
+  if command -v cargo >/dev/null 2>&1; then
+    print_info "Checking Rust workspace"
+    cargo fmt --all -- --check
+    cargo clippy -p devtoolbox-contract -p devtoolbox-capability -p devtoolbox-market --all-targets -- -D warnings
+    cargo test -p devtoolbox-contract -p devtoolbox-capability -p devtoolbox-market
+  else
+    print_info "Skipping Rust checks (cargo not found)"
+  fi
+
   print_ok "Checks passed"
 }
 

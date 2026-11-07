@@ -1,4 +1,6 @@
 packages:
+  - 'apps/desktop'
   - 'core/packages/*'
+  - 'packages/*'
   - 'marketplace'
   - 'marketplace/modules/*'

@@ -35,8 +35,13 @@ const root = path.resolve(__dirname, '..');
 const modulesDir = path.join(root, 'modules');
 
 const repo = String(process.env.GITHUB_REPOSITORY ?? '').trim();
-if (!repo) {
-  console.error('Missing env GITHUB_REPOSITORY (expected like "owner/repo")');
+const downloadBase = String(process.env.MARKETPLACE_DOWNLOAD_BASE_URL ?? '')
+  .trim()
+  .replace(/\/$/, '');
+if (!repo && !downloadBase) {
+  console.error(
+    'Missing env GITHUB_REPOSITORY (expected like "owner/repo") or MARKETPLACE_DOWNLOAD_BASE_URL',
+  );
   process.exit(1);
 }
 
@@ -45,6 +50,8 @@ if (!tag) {
   console.error('Missing env MARKETPLACE_TAG');
   process.exit(1);
 }
+
+const signingKey = String(process.env.DEVTOOLBOX_SIGNING_KEY ?? '').trim();
 
 const outDir = path.join(root, 'release-dist');
 rmrf(outDir);
@@ -87,7 +94,9 @@ for (const id of resolvedIds) {
 
   const builtEntryPath = path.join(pluginDir, entry);
   if (!fs.existsSync(builtEntryPath)) {
-    throw new Error(`Entry not built yet: ${builtEntryPath}. Run pnpm --filter @devtoolbox/plugin-${id} build`);
+    throw new Error(
+      `Entry not built yet: ${builtEntryPath}. Run pnpm --filter @devtoolbox/plugin-${id} build`,
+    );
   }
 
   const staging = path.join(outDir, `${id}-${version}`);
@@ -103,11 +112,24 @@ for (const id of resolvedIds) {
   const zipName = `${id}-${version}.zip`;
   const zipPath = path.join(outDir, zipName);
   rmrf(zipPath);
+  rmrf(`${zipPath}.sig`);
   execFileSync('zip', ['-qr', zipPath, 'manifest.json', entryRoot], { cwd: staging, stdio: 'inherit' });
+
+  let signature;
+  if (signingKey) {
+    execFileSync(process.execPath, [path.join(__dirname, 'sign.mjs'), 'sign', zipPath], {
+      stdio: 'inherit',
+      env: process.env,
+    });
+    const envelope = JSON.parse(fs.readFileSync(`${zipPath}.sig`, 'utf8'));
+    signature = { keyId: envelope.keyId, signature: envelope.signature };
+  }
 
   const sha256 = sha256File(zipPath);
   const size = fs.statSync(zipPath).size;
-  const downloadUrl = `https://github.com/${repo}/releases/download/${tag}/${zipName}`;
+  const downloadUrl = downloadBase
+    ? `${downloadBase}/${zipName}`
+    : `https://github.com/${repo}/releases/download/${tag}/${zipName}`;
 
   entries.push({
     manifest: { ...manifest },
@@ -116,10 +138,11 @@ for (const id of resolvedIds) {
     size,
     publishedAt: new Date().toISOString(),
     status: 'active',
+    ...(signature ? { signature } : {}),
   });
 }
 
-const registry = { schemaVersion: 1, plugins: entries };
+const registry = { schemaVersion: signingKey ? 2 : 1, plugins: entries };
 const registryPath = path.join(outDir, 'registry.json');
 fs.writeFileSync(registryPath, JSON.stringify(registry, null, 2), 'utf-8');
 process.stdout.write(`Marketplace release artifacts ready: ${outDir}\n`);

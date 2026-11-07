@@ -59,7 +59,8 @@ async function main() {
   for (const a of toDelete) {
     const delUrl = `https://api.github.com/repos/${repo}/releases/assets/${a.id}`;
     const delRes = await ghFetch(delUrl, token, { method: 'DELETE' });
-    if (!delRes.ok) throw new Error(`Failed to delete asset "${a.name}": ${delRes.status} ${await delRes.text()}`);
+    if (!delRes.ok)
+      throw new Error(`Failed to delete asset "${a.name}": ${delRes.status} ${await delRes.text()}`);
     process.stdout.write(`Deleted stale asset: ${a.name}\n`);
   }
 }
@@ -68,4 +69,3 @@ main().catch((e) => {
   process.stderr.write(`${e?.message ? e.message : String(e)}\n`);
   process.exit(1);
 });
-

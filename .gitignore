@@ -5,6 +5,14 @@ node_modules/
 dist/
 dist-electron/
 
+# Rust / Tauri build output
+/target/
+apps/desktop/src-tauri/gen/
+apps/desktop/src-tauri/target/
+
+# Marketplace release staging
+marketplace/release-dist/
+
 # Release artifacts
 release/
 
@@ -31,6 +39,8 @@ key.txt
 
 # Marketplace local dev artifacts
 marketplace/.local-dist/
+marketplace/.signing/
+.signing/
 marketplace/registry.local.json
 
 # Docs site build output
@@ -38,3 +48,6 @@ docs-site/site/
 
 # Docs local venv
 docs-site/.venv/
+
+# Local diagnostics output
+.devtoolbox-diagnostics/

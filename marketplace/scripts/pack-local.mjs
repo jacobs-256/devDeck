@@ -47,7 +47,9 @@ if (all) {
 }
 
 if (!ids.length) {
-  console.error('Usage: node marketplace/scripts/pack-local.mjs [--all] [--merge] <plugin-id> [plugin-id...]');
+  console.error(
+    'Usage: node marketplace/scripts/pack-local.mjs [--all] [--merge] <plugin-id> [plugin-id...]',
+  );
   process.exit(1);
 }
 
@@ -67,7 +69,9 @@ for (const id of ids) {
 
   const builtEntryPath = path.join(pluginDir, String(manifest.entry || ''));
   if (!fs.existsSync(builtEntryPath)) {
-    throw new Error(`Entry not built yet: ${builtEntryPath}. Run pnpm --filter @devtoolbox/plugin-${id} build`);
+    throw new Error(
+      `Entry not built yet: ${builtEntryPath}. Run pnpm --filter @devtoolbox/plugin-${id} build`,
+    );
   }
 
   const staging = path.join(outDir, `${id}-${version}`);
@@ -83,6 +87,8 @@ for (const id of ids) {
 
   const zipPath = path.join(outDir, `${id}-${version}.zip`);
   rmrf(zipPath);
+  // Repacking invalidates any previous signature for this version.
+  rmrf(`${zipPath}.sig`);
   execFileSync('zip', ['-qr', zipPath, 'manifest.json', entryRoot], { cwd: staging, stdio: 'inherit' });
 
   const sha256 = sha256File(zipPath);
@@ -107,7 +113,9 @@ if (merge && fs.existsSync(registryPath)) {
     const list = Array.isArray(existing?.plugins) ? existing.plugins : [];
     const map = new Map(list.map((e) => [e?.manifest?.id, e]).filter(([id]) => Boolean(id)));
     for (const e of entries) map.set(e.manifest.id, e);
-    plugins = Array.from(map.values()).sort((a, b) => String(a.manifest.id).localeCompare(String(b.manifest.id)));
+    plugins = Array.from(map.values()).sort((a, b) =>
+      String(a.manifest.id).localeCompare(String(b.manifest.id)),
+    );
   } catch {
     plugins = entries;
   }

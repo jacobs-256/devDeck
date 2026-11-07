@@ -55,9 +55,9 @@ async function compute({ repo, token, inputVersion, inputBuild, inputTag }) {
     let maxSeq = 0;
     for (const r of releases) {
       const candidates = [
-        ...(extractBuildNumbers(r?.tag_name)),
-        ...(extractBuildNumbers(r?.name)),
-        ...(extractBuildNumbers(r?.body)),
+        ...extractBuildNumbers(r?.tag_name),
+        ...extractBuildNumbers(r?.name),
+        ...extractBuildNumbers(r?.body),
       ];
       for (const c of candidates) {
         if (c.date === today && Number.isFinite(c.seq)) maxSeq = Math.max(maxSeq, c.seq);
