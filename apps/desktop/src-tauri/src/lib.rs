@@ -27,6 +27,7 @@ mod traceroute;
 
 use std::sync::Arc;
 
+use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem, SubmenuBuilder};
 use tauri::{Emitter, Manager};
 
 pub fn run() {
@@ -43,7 +44,70 @@ pub fn run() {
         .register_uri_scheme_protocol("plugin", |ctx, request| {
             protocol::serve(ctx.app_handle(), request)
         })
+        .on_menu_event(|app, event| {
+            let id = event.id().as_ref();
+            let (channel, payload) = match id {
+                "theme:dark" => ("menu:theme", "dark"),
+                "theme:light" => ("menu:theme", "light"),
+                "language:en" => ("menu:language", "en"),
+                "language:zh-CN" => ("menu:language", "zh-CN"),
+                "help:about" => ("menu:action", "about"),
+                other => ("menu:action", other),
+            };
+            let _ = app.emit(channel, payload);
+        })
         .setup(|app| {
+            // Native application menu. Accelerators mirror the legacy Electron menu.
+            let about = MenuItemBuilder::with_id("about", "About DevToolBox").build(app)?;
+            let settings = MenuItemBuilder::with_id("settings", "Settings…")
+                .accelerator("CmdOrCtrl+,")
+                .build(app)?;
+            let quit = PredefinedMenuItem::quit(app, Some("Quit DevToolBox"))?;
+            let app_menu = SubmenuBuilder::new(app, "DevToolBox")
+                .item(&about)
+                .item(&settings)
+                .separator()
+                .item(&quit)
+                .build()?;
+
+            let edit = SubmenuBuilder::new(app, "Edit")
+                .undo()
+                .redo()
+                .separator()
+                .cut()
+                .copy()
+                .paste()
+                .select_all()
+                .build()?;
+
+            let theme_dark = MenuItemBuilder::with_id("theme:dark", "Dark").build(app)?;
+            let theme_light = MenuItemBuilder::with_id("theme:light", "Light").build(app)?;
+            let theme_menu = SubmenuBuilder::new(app, "Theme")
+                .item(&theme_dark)
+                .item(&theme_light)
+                .build()?;
+
+            let lang_en = MenuItemBuilder::with_id("language:en", "English").build(app)?;
+            let lang_zh = MenuItemBuilder::with_id("language:zh-CN", "简体中文").build(app)?;
+            let lang_menu = SubmenuBuilder::new(app, "Language")
+                .item(&lang_en)
+                .item(&lang_zh)
+                .build()?;
+
+            let view = SubmenuBuilder::new(app, "View")
+                .item(&theme_menu)
+                .item(&lang_menu)
+                .build()?;
+
+            let help_about =
+                MenuItemBuilder::with_id("help:about", "About DevToolBox").build(app)?;
+            let help = SubmenuBuilder::new(app, "Help").item(&help_about).build()?;
+
+            let menu = MenuBuilder::new(app)
+                .items(&[&app_menu, &edit, &view, &help])
+                .build()?;
+            app.set_menu(menu)?;
+
             let data_dir = app.path().app_data_dir()?;
             let handle = app.handle().clone();
             let emit: socket::EventSink = Arc::new(move |payload| {

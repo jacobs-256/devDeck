@@ -10,6 +10,15 @@ export const LANGUAGES: Array<{ id: Language; label: string }> = [
 ];
 
 const en = {
+  'nav.dashboard': 'Dashboard',
+  'nav.modules': 'Marketplace',
+  'category.all': 'All Tools',
+  'category.dev': 'Developer Tools',
+  'category.text': 'Text Tools',
+  'category.network': 'Network Tools',
+  'category.security': 'Security & Crypto',
+  'category.other': 'Other Tools',
+
   'nav.tools': 'Tools',
   'nav.market': 'Marketplace',
   'nav.settings': 'Settings',
@@ -477,6 +486,15 @@ export type MessageKey = keyof typeof en;
 export type Dictionary = Record<MessageKey, string>;
 
 const zhCN: Dictionary = {
+  'nav.dashboard': '首页',
+  'nav.modules': '应用市场',
+  'category.all': '全部工具',
+  'category.dev': '开发工具',
+  'category.text': '文本工具',
+  'category.network': '网络工具',
+  'category.security': '安全与加密',
+  'category.other': '其他工具',
+
   'nav.tools': '工具',
   'nav.market': '应用市场',
   'nav.settings': '设置',

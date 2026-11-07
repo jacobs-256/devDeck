@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useI18n, type MessageKey } from '../../../i18n';
 import { CopyButton } from '../../components';
 import { formatJson, minifyJson, sortKeysJson, summarizeJson } from './json.model';
@@ -18,6 +18,9 @@ export default function JsonFormatterTool() {
   const { t } = useI18n();
   const [input, setInput] = useState(SAMPLE);
   const [mode, setMode] = useState<Mode>('format');
+  const [findOpen, setFindOpen] = useState(false);
+  const [findTerm, setFindTerm] = useState('');
+  const outputRef = useRef<HTMLTextAreaElement>(null);
 
   const result = useMemo(() => {
     switch (mode) {
@@ -31,6 +34,35 @@ export default function JsonFormatterTool() {
         return formatJson(input);
     }
   }, [input, mode]);
+
+  // Legacy shortcut: Cmd/Ctrl+F searches the formatted output, Enter jumps.
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'f') {
+        event.preventDefault();
+        setFindOpen(true);
+        return;
+      }
+      if (event.key === 'Escape' && findOpen) {
+        setFindOpen(false);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [findOpen]);
+
+  const findNext = () => {
+    const text = result.ok ? result.value : '';
+    const field = outputRef.current;
+    if (!text || !field || !findTerm) return;
+    const start = field.selectionEnd ?? 0;
+    const index = text.indexOf(findTerm, start);
+    const found = index >= 0 ? index : text.indexOf(findTerm);
+    if (found >= 0) {
+      field.focus();
+      field.setSelectionRange(found, found + findTerm.length);
+    }
+  };
 
   return (
     <div className="tool-body">
@@ -66,8 +98,32 @@ export default function JsonFormatterTool() {
           <span className="field-label">{t('common.output')}</span>
           <CopyButton value={result.ok ? result.value : ''} />
         </div>
+        {findOpen ? (
+          <div className="field-row">
+            <input
+              autoFocus
+              value={findTerm}
+              placeholder="Find in output…"
+              onChange={(event) => setFindTerm(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  findNext();
+                } else if (event.key === 'Escape') {
+                  setFindOpen(false);
+                }
+              }}
+            />
+            <button type="button" onClick={findNext}>
+              Find next
+            </button>
+            <button type="button" className="ghost" onClick={() => setFindOpen(false)}>
+              Close
+            </button>
+          </div>
+        ) : null}
         {result.ok ? (
-          <textarea className="mono result" rows={10} readOnly value={result.value} />
+          <textarea ref={outputRef} className="mono result" rows={10} readOnly value={result.value} />
         ) : (
           <p className="error-text">{result.error}</p>
         )}

@@ -41,6 +41,9 @@ export default function TracertTool() {
             value={host}
             spellCheck={false}
             onChange={(event) => setHost(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') void run();
+            }}
           />
         </label>
         <label className="field compact">

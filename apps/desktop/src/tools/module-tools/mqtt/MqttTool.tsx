@@ -35,6 +35,8 @@ export default function MqttTool() {
   const [log, setLog] = useState<LogEntry[]>([]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filter, setFilter] = useState('');
   const sessionRef = useRef('');
   const nextId = useRef(1);
 
@@ -44,6 +46,22 @@ export default function MqttTool() {
       { id: nextId.current++, kind, text, at: new Date().toLocaleTimeString() },
     ]);
   };
+
+  // Legacy shortcut: Cmd/Ctrl+F filters the message log.
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'f') {
+        event.preventDefault();
+        setFilterOpen(true);
+        return;
+      }
+      if (event.key === 'Escape' && filterOpen) {
+        setFilterOpen(false);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [filterOpen]);
 
   useEffect(() => {
     let dispose: (() => void) | undefined;
@@ -136,6 +154,11 @@ export default function MqttTool() {
   };
 
   const connected = Boolean(sessionId) && status !== 'disconnected' && status !== 'error';
+  const visibleLog = log.filter((entry) => {
+    const needle = filter.trim().toLowerCase();
+    if (!needle) return true;
+    return entry.text.toLowerCase().includes(needle) || entry.kind.toLowerCase().includes(needle);
+  });
 
   return (
     <div className="tool-body">
@@ -224,6 +247,17 @@ export default function MqttTool() {
       <div className="field">
         <div className="field-row">
           <span className="field-label">{t('tool.mqtt.messages', { count: log.length })}</span>
+          {filterOpen ? (
+            <input
+              autoFocus
+              value={filter}
+              placeholder="Filter messages…"
+              onChange={(event) => setFilter(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') setFilterOpen(false);
+              }}
+            />
+          ) : null}
           <button type="button" className="ghost" onClick={() => setLog([])} disabled={!log.length}>
             {t('common.clear')}
           </button>
@@ -234,7 +268,7 @@ export default function MqttTool() {
               {t('tool.mqtt.noActivity')}
             </p>
           ) : (
-            log.map((entry) => (
+            visibleLog.map((entry) => (
               <div key={entry.id} className="ws-log-row">
                 <span className="muted small">{entry.at}</span>
                 <span className={`badge ${entry.kind === 'error' ? 'bad' : ''}`}>{entry.kind}</span>

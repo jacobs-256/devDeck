@@ -1,0 +1,250 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+}
+
+.dialog {
+  position: fixed;
+  z-index: 9999;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 480px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.header {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.headerBadge {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--accent-primary) 35%, transparent),
+    color-mix(in oklab, var(--cat-security) 35%, transparent)
+  );
+  border: 1px solid color-mix(in oklab, var(--accent-primary) 50%, transparent);
+  color: var(--accent-secondary);
+}
+
+.appIconSmall {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  display: block;
+}
+
+.headerTitle {
+  font-size: 15px;
+  color: var(--text-primary);
+  font-weight: 600;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.closeBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.closeBtn:hover {
+  background: color-mix(in oklab, var(--accent-error) 15%, transparent);
+  border-color: color-mix(in oklab, var(--accent-error) 30%, transparent);
+  color: var(--accent-error);
+}
+
+.content {
+  padding: 22px 20px;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.heroIcon {
+  width: 80px;
+  height: 80px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--accent-primary) 25%, transparent),
+    color-mix(in oklab, var(--cat-security) 25%, transparent)
+  );
+  border: 2px solid color-mix(in oklab, var(--accent-primary) 40%, transparent);
+  color: var(--accent-secondary);
+}
+
+.appIconLarge {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  display: block;
+}
+
+.heroTitle {
+  font-size: 20px;
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.heroSub {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin-bottom: 2px;
+}
+
+.heroMeta {
+  font-size: 12px;
+  color: var(--text-quaternary);
+  font-family: var(--font-family-mono);
+}
+
+.desc {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.infoItem {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.infoLabel {
+  font-size: 10px;
+  color: var(--text-disabled);
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.infoValue {
+  font-size: 12px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.linkBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+  font-size: 13px;
+  text-decoration: none;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.linkBtn:hover {
+  background: var(--bg-hover);
+  border-color: color-mix(in oklab, var(--accent-primary) 40%, transparent);
+}
+
+.linkIcon {
+  color: var(--accent-secondary);
+  display: inline-flex;
+  align-items: center;
+}
+
+.footer {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-top: 1px solid var(--border-default);
+  background: var(--bg-secondary);
+}
+
+.footerText {
+  font-size: 11px;
+  color: var(--text-disabled);
+}
+
+.footerBtn {
+  height: 28px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: var(--accent-primary);
+  border: 1px solid var(--accent-primary);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background 0.12s ease;
+}
+
+.footerBtn:hover {
+  background: var(--accent-primary-hover);
+}

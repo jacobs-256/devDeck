@@ -1,217 +1,169 @@
-# Design System
+# Design System & Layout
 
-DevToolBox is a dense, keyboard-friendly desktop tool. The interface should feel
-calm and precise: neutral surfaces, one accent, clear hierarchy, and controls
-that behave the same everywhere. Plugins inherit the same tokens so the product
-looks like one application.
-
-## Principles
-
-1. **Content first.** Chrome recedes: low-contrast borders, quiet surfaces, one
-   accent reserved for actions, links, and focus.
-2. **Dense but legible.** 13–14px base text, 8px spacing rhythm, comfortable hit
-   targets (34px controls, 28px segmented items).
-3. **Themeable by tokens.** No hardcoded colors in components; dark and light
-   are the same design with different token values.
-4. **Predictable controls.** Every button, input, tab, and badge has the same
-   height, radius, and focus treatment.
-5. **Plugins are guests with the same taste.** Marketplace iframes use the
-   mirrored token set in `marketplace/shared/theme/`.
-
-## Brand
-
-- Wordmark: **DevToolBox**, semibold, 15px in the sidebar.
-- Mark: 32×32 rounded square, 6px radius, subtle shadow.
-- Accent: blue. Use it for primary actions, active navigation, links, and focus.
-  Never use it for large backgrounds or decorative fills.
-
-## Color tokens
-
-Defined in [`apps/desktop/src/styles/tokens.css`](../apps/desktop/src/styles/tokens.css).
-Semantic names only; components never reference raw hex values.
-
-| Token                       | Dark                              | Light                             | Use                                |
-| --------------------------- | --------------------------------- | --------------------------------- | ---------------------------------- |
-| `--bg`                      | `#0a0e15`                         | `#f4f6fa`                         | App background                     |
-| `--bg-subtle`               | `#0d121b`                         | `#eef2f8`                         | Sidebar gradient end               |
-| `--bg-elevated`             | `#121826`                         | `#ffffff`                         | Cards, panels, dialogs             |
-| `--surface-2`               | `#172033`                         | `#f7f9fd`                         | Inputs, nested cards, hover rows   |
-| `--surface-3`               | `#1e293d`                         | `#eef2f9`                         | Active segmented item, code blocks |
-| `--bg-hover`                | `#1b2435`                         | `#e9eefa`                         | Hover backgrounds                  |
-| `--border`                  | `#253048`                         | `#dde4ef`                         | Default borders                    |
-| `--border-strong`           | `#33415c`                         | `#c5d0e2`                         | Hover borders, dashed empty states |
-| `--text`                    | `#e8edf7`                         | `#111a2c`                         | Primary text                       |
-| `--text-muted`              | `#9aa7bd`                         | `#59667c`                         | Secondary text, labels             |
-| `--text-faint`              | `#6d7b92`                         | `#7d8aa0`                         | Placeholders, meta                 |
-| `--accent`                  | `#6ea0ff`                         | `#1f5fe0`                         | Links, active states, focus        |
-| `--accent-strong`           | `#2f6fed`                         | `#2563eb`                         | Primary button background          |
-| `--accent-soft`             | 14% blue                          | 10% blue                          | Selected/active backgrounds        |
-| `--ok` / `--warn` / `--bad` | `#3ddc97` / `#f4b74a` / `#ff6b7a` | `#0f8a5f` / `#9a6400` / `#c62d43` | Status text and borders            |
-| `--overlay`                 | 65% black                         | 40% slate                         | Dialog backdrop                    |
-
-Status colors always pair a tinted background (`--ok-soft`, `--warn-soft`,
-`--bad-soft`) with the matching text color; never use them for large areas.
-
-## Typography
-
-| Token         | Size | Use                         |
-| ------------- | ---- | --------------------------- |
-| `--text-xs`   | 11px | Badges, table headers, meta |
-| `--text-sm`   | 12px | Labels, helper text, tables |
-| `--text-base` | 14px | Body copy, controls         |
-| `--text-md`   | 15px | Card titles, sidebar brand  |
-| `--text-lg`   | 18px | Tool titles, dialog titles  |
-| `--text-xl`   | 22px | Section headings            |
-| `--text-2xl`  | 28px | Page title                  |
-
-- Sans stack: system UI + Noto Sans SC / PingFang / Microsoft YaHei.
-- Mono stack: system monospace; used for payloads, PEM, IPs, diffs, logs.
-- Weights: 400 body, 500 labels/buttons, 600 headings, 680 page titles.
-- Line height: 1.55 body, 1.25 headings.
-
-## Spacing and shape
-
-- Spacing scale: 4 / 8 / 12 / 16 / 20 / 24 / 32 / 40 (`--space-1` … `--space-10`).
-- Radii: `--radius-sm` 6, `--radius` 10, `--radius-lg` 14, `--radius-xl` 18,
-  full pills.
-- Control height: `--control-height` 34px.
-- Sidebar: `--sidebar-width` 248px. Content max width: `--content-max` 1280px.
-
-## Elevation and motion
-
-- `--shadow-sm`: cards, active tabs, primary buttons.
-- `--shadow-md`: hovered plugin cards.
-- `--shadow-lg`: dialogs.
-- Transitions: 120ms for hover/focus, 180ms for card elevation.
-- Focus ring: 3px `--focus-ring` + accent border. Never remove focus styling.
-- Honor `prefers-reduced-motion`: transitions collapse to ~0ms.
+DevToolBox keeps the layout and visual language of the original Electron app
+(`main` branch). The Rust/Tauri host only changes the plumbing; the interface
+should be indistinguishable from the pre-rewrite build.
 
 ## Layout
 
 ```
-┌──────────────┬─────────────────────────────────────────────┐
-│ sidebar 248  │ content (max 1280, padding 32/36)           │
-│ brand        │ header: title + subtitle      actions      │
-│ nav          │ tabs / filters                             │
-│ version      │ cards / tools layout                       │
-│ footer       │                                            │
-└──────────────┴─────────────────────────────────────────────┘
+┌────────────┬──────────────────────────────────────────────────────────┐
+│ sidebar    │ page                                                     │
+│ 180 / 52   │ dashboard · tools · modules · settings                   │
+└────────────┴──────────────────────────────────────────────────────────┘
 ```
 
-- **Shell:** CSS grid, sidebar fixed width, content scrolls independently.
-- **Header:** title 28px, subtitle 14px muted, max 72ch; actions wrap on narrow
-  widths.
-- **Marketplace:** auto-fill grid, minimum card width 320px; filters sit above
-  the grid (search grows, category select min 160px).
-- **Tools:** two columns — navigator 236px and panel; both are elevated cards.
-  Panels use a header row with title, description, and category badge.
-- **Breakpoints:** 1080px (narrower sidebar), 900px (sidebar becomes a top bar,
-  tool navigator stacks), 640px (single-column cards, stacked header).
+### Sidebar
+
+- Width 180px expanded, 52px collapsed; the footer toggles collapse (`‹` / `›`).
+- Primary navigation: **Dashboard · Tools · Marketplace · Settings**, each with
+  a VS Code icon, 34px row, 10px radius and a 3px left accent indicator when
+  active.
+- On the Tools page the sidebar also lists categories: **All Tools, Developer
+  Tools, Text Tools, Network Tools, Security & Crypto, Other Tools**, each with a
+  color dot/icon, label, and module count.
+- Collapsed mode keeps icons only; labels appear as hover tooltips.
+- Background `--bg-secondary`, right border `--border-default`.
+
+### Pages
+
+| Page        | Structure                                                                                                                 |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Dashboard   | Header (kicker, search, title, date), category quick-nav, frequent-tool card grid, app/screen/runtime info widgets        |
+| Tools       | 252px tool list panel + workspace (tab bar, 56px tool header, content area)                                               |
+| Marketplace | Header (Module Center, counts, Refresh), registry bar, Installed/Marketplace tabs, category select + search, module cards |
+| Settings    | 196px secondary navigation + content column with header and cards                                                         |
+
+The tools workspace uses a two-column split: the list panel stays fixed while
+the workspace scrolls. Opening a tool collapses the main sidebar (legacy
+behaviour), and the fullscreen button in the tool header hides both sidebars.
+Tabs keep opened tools mounted so state survives switching.
+
+## Color
+
+Tokens live in [`apps/desktop/src/theme/variables.css`](../apps/desktop/src/theme/variables.css)
+and are mirrored for plugins in `marketplace/shared/theme/variables.css`.
+
+| Token                | Dark      | Light     | Use                          |
+| -------------------- | --------- | --------- | ---------------------------- |
+| `--bg-primary`       | `#0d1117` | `#fafbfc` | App/page background          |
+| `--bg-secondary`     | `#161b22` | `#f0f3f6` | Sidebar, panels, cards       |
+| `--bg-tertiary`      | `#21262d` | `#e4e9ed` | Inputs, code blocks, widgets |
+| `--bg-elevated`      | `#1c2128` | `#ffffff` | Floating menus, dialogs      |
+| `--bg-hover`         | `#30363d` | `#d8dde3` | Hover                        |
+| `--border-default`   | `#21262d` | `#c2c9d1` | Default borders              |
+| `--border-subtle`    | `#30363d` | `#d4d9df` | Control borders              |
+| `--border-emphasis`  | `#484f58` | `#9ca3ab` | Strong borders               |
+| `--text-primary`     | `#e6edf3` | `#0f1419` | Primary text                 |
+| `--text-secondary`   | `#cdd9e5` | `#57606a` | Secondary text               |
+| `--text-tertiary`    | `#8b949e` | `#6e7781` | Labels                       |
+| `--text-quaternary`  | `#6e7681` | `#818b98` | Descriptions, meta           |
+| `--accent-primary`   | `#1f6feb` | `#0969da` | Primary actions              |
+| `--accent-secondary` | `#58a6ff` | `#218bff` | Icons, links, active nav     |
+| `--accent-success`   | `#3fb950` | `#1a7f37` | Success                      |
+| `--accent-error`     | `#f85149` | `#d1242f` | Errors, destructive          |
+| `--accent-warning`   | `#e3b341` | `#9a6700` | Warnings                     |
+
+Category accents: `--cat-dev` blue, `--cat-text` green, `--cat-network` orange,
+`--cat-security` purple, `--cat-other` yellow. They tint icons, pills and active
+rows at 8–15% opacity.
+
+## Typography
+
+- Sans: `Inter, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui`.
+- Mono: `JetBrains Mono, "Fira Code", "Cascadia Code", "SF Mono", Consolas`.
+- Base 13px / 1.5; small 12px; meta 11px; page titles 21px, card titles 13px.
+- Tool headers 15px semibold; sidebar labels 12.5px.
 
 ## Components
 
 ### Buttons
 
-| Variant            | Usage                                                  |
-| ------------------ | ------------------------------------------------------ |
-| `button.primary`   | One per view/section: install, connect, generate, save |
-| `button` (default) | Secondary actions with a border and surface            |
-| `button.ghost`     | Low-emphasis actions, filters, copy                    |
-| `button.danger`    | Destructive actions (remove, uninstall)                |
-| `button.link`      | Inline text actions                                    |
+Legacy buttons are compact and flat: 30–34px tall, 8–10px radius, 12px labels.
 
-- Height 34px, padding 0 13px, radius 10px, 13px/500 label.
-- Hover: border strengthens and background lifts. Active: 1px translate.
-- Disabled: 45% opacity, no pointer events.
-- Icon + label gap: 6px. Do not create icon-only buttons without an aria-label.
+| Variant                              | Usage                          |
+| ------------------------------------ | ------------------------------ |
+| Primary (`--accent-primary` fill)    | Install, Refresh, save actions |
+| Secondary (`--bg-tertiary` + border) | Tool actions, filters          |
+| Ghost / icon                         | Tabs, close, copy, overflow    |
+| Danger                               | Uninstall/remove               |
+
+Hover raises the surface to `--bg-hover`; focus uses a 2px
+`--border-focus` outline. Disabled controls drop to ~45–60% opacity.
 
 ### Form controls
 
-- Inputs/selects: 34px tall, surface-2 background, 1px border, 10px radius.
-- Focus: accent border + 3px ring; never rely on outline alone.
-- Textareas: 9/11px padding, min 96px, vertical resize.
-- Labels sit above controls (`field-label`, 12px/500 muted); required fields add
-  `*` in the label, not a separate asterisk.
-- `.field-row` bottom-aligns controls; wrap on narrow widths.
-- `.field.compact` is 148px for ports/counts; `.field.grow` takes remaining space.
-- Checkboxes use the accent color and keep a 15px box; label is clickable.
+- Inputs/selects: 32px tall, `--bg-tertiary`, 1px `--border-subtle`, 8px radius.
+- Focus: border switches to `--border-focus` with a 1px outline.
+- Labels sit above controls at 12px `--text-quaternary`.
+- Tool forms use `.field`, `.field-row`, `.field.compact` (148px), `.field.grow`.
+- Checkboxes/radios use the accent color.
 
-### Segmented control and tabs
+### Cards and lists
 
-- `.segmented` for mutually exclusive modes inside a tool (Encode/Decode).
-- `.tabs` for page-level sections (Catalog/Installed); active tab is an elevated
-  pill on the surface-2 track.
+- Module cards: 12px radius, `--bg-secondary`, 1px border, icon tile, title,
+  version/category pills, description, action row.
+- Tool list rows: 42px icon tile + name + 2-line description; active row gets a
+  colored left border and `--bg-secondary`.
+- Dashboard tool cards: 12px radius, hover border + shadow, category pill.
+- Widgets: colored 3px left border, header with icon/title, body grid.
 
-### Badges and tags
+### Tabs
 
-- Badges: 21px pills, 11px/500; variants `ok`, `warn`, `bad`.
-- Tags: mono 11px for permissions, domains, env vars.
-- Never encode status by color alone — keep the text (`valid`, `expired`).
+- Tool tabs: compact browser-style tabs, category-colored icon, close button,
+  active line at the bottom, overflow menu with “Close All”.
+- Marketplace tabs: underline style with count pills.
 
-### Cards, tables, notices
+## Keyboard shortcuts
 
-- Cards: 14px radius, 20px padding, 1px border, shadow-sm. Plugin cards lift on
-  hover.
-- Tables: 12px text, uppercase 11px headers, row hover, no vertical borders.
-- Notices: left accent bar; error notices use the error color and tint.
-- Empty states: dashed border, 40px padding, centered title + hint.
+Shortcuts follow the Electron app exactly.
 
-### Dialogs
+| Shortcut                          | Action                                                    |
+| --------------------------------- | --------------------------------------------------------- |
+| `Cmd/Ctrl+K`                      | Toggle global tool search                                 |
+| `Cmd/Ctrl+,`                      | Open Settings                                             |
+| `Cmd/Ctrl+W`                      | Close the active tool tab                                 |
+| `Esc`                             | Close search/dialog, exit tool fullscreen, close tab menu |
+| `↑` / `↓`                         | Move through search results                               |
+| `Enter`                           | Open the selected search result                           |
+| `Cmd/Ctrl+F`                      | JSON Formatter: find in output · MQTT: filter messages    |
+| `Enter`                           | TCP Ping: run probe · Tracert: trace route                |
+| `Cmd/Ctrl+C` / `V` / `X` / `A`    | Copy / paste / cut / select all (native menu roles)       |
+| `Cmd/Ctrl+Z` / `Shift+Cmd/Ctrl+Z` | Undo / redo (native menu roles)                           |
+| `Cmd+Q`                           | Quit (macOS)                                              |
+| `Tab` / `Shift+Tab`               | Move focus between controls                               |
 
-- 740px max width, 18px radius, backdrop blur, shadow-lg.
-- Header (title + close), scrollable body, footer aligned right with
-  Cancel + Primary.
-- Permission rows: title, mono id, `privileged`/`unavailable` badges, summary;
-  privileged rows use warning tint.
-
-### Tool navigator
-
-- Search on top, groups with uppercase 11px labels.
-- Items 34px, 8px radius; active item uses accent-soft background and accent text.
-- Panel shows title, one-line description, category badge, and a divider.
-
-## Accessibility
-
-- Text contrast ≥ 4.5:1 for body, ≥ 3:1 for large text and UI borders.
-- Every interactive element is reachable by keyboard and has a visible
-  `:focus-visible` state.
-- Buttons and inputs are at least 34px tall; checkbox hit area includes label.
-- Use semantic elements (`button`, `nav`, `main`, `header`, `dl`) and
-  `aria-current="page"` for active navigation.
-- Status is always conveyed with text, not just color.
-- Respect reduced motion.
+The native menu exposes Settings (`Cmd+,`), theme, language, Edit roles, and
+About. Menu events are forwarded to the renderer as `menu:action`,
+`menu:theme`, and `menu:language`.
 
 ## Plugin theming
 
-Plugins load `marketplace/shared/devtoolbox-embed.css`, which imports
-`theme/variables.css` and `theme/toolkit.css`.
-
-- `data-theme="light"` on `<html>` switches tokens; the SDK's `followHostTheme()`
-  applies it.
-- Use `--bg-*`, `--text-*`, `--accent-*`, `--border-*`, `--radius`, and font
-  variables. Never hardcode hex colors.
-- Toolkit helpers: `.dtb-card`, `.dtb-input`, `.dtb-button`, `.dtb-muted`.
-- Plugin-specific styles may define layout, but controls should match the
-  toolkit height/radius/focus behavior.
+Plugins load `marketplace/shared/devtoolbox-embed.css`, which imports the same
+legacy token file and toolkit (buttons, inputs, cards, code highlighting). They
+switch with `<html data-theme="light">`, applied by `followHostTheme()`.
 
 ## Implementation map
 
-| File                                     | Responsibility                                 |
-| ---------------------------------------- | ---------------------------------------------- |
-| `apps/desktop/src/styles/tokens.css`     | Color, type, spacing, motion tokens            |
-| `apps/desktop/src/styles/base.css`       | Reset, typography, focus, scrollbars           |
-| `apps/desktop/src/styles/layout.css`     | Shell, sidebar, content, grids, breakpoints    |
-| `apps/desktop/src/styles/components.css` | Buttons, forms, cards, tabs, tables, dialogs   |
-| `apps/desktop/src/styles/tools.css`      | Tool navigator, previews, markdown, diff, logs |
-| `marketplace/shared/theme/variables.css` | Plugin mirror of the token set                 |
-| `marketplace/shared/theme/toolkit.css`   | Shared plugin primitives                       |
+| Path                                        | Responsibility                                       |
+| ------------------------------------------- | ---------------------------------------------------- |
+| `apps/desktop/src/theme/variables.css`      | Color tokens and typography variables                |
+| `apps/desktop/src/theme/global.css`         | Reset, scrollbars, animations, utility output colors |
+| `apps/desktop/src/theme/toolkit.css`        | Shared plugin primitives                             |
+| `apps/desktop/src/legacy/AppShell.tsx`      | Sidebar, navigation, categories                      |
+| `apps/desktop/src/legacy/ToolsPage.tsx`     | Tool list, tabs, header, workspace                   |
+| `apps/desktop/src/legacy/DashboardPage.tsx` | Dashboard                                            |
+| `apps/desktop/src/legacy/ModulesPage.tsx`   | Marketplace                                          |
+| `apps/desktop/src/legacy/SettingsPage.tsx`  | Settings                                             |
+| `apps/desktop/src/legacy/GlobalSearch.tsx`  | `Cmd/Ctrl+K` search dialog                           |
+| `apps/desktop/src/styles/tool-compat.css`   | Control styling for ported tool bodies               |
+| `apps/desktop/src-tauri/src/lib.rs`         | Native menu and accelerators                         |
 
-## Checklist for new UI
+## Checklist
 
-- [ ] Uses tokens, not raw colors or ad-hoc font sizes.
-- [ ] Primary action is unique and visually dominant.
-- [ ] Labels, placeholders, and errors are distinguishable without color alone.
-- [ ] Focus is visible; keyboard order matches visual order.
-- [ ] Works in both themes and at 960px and 1280px widths.
-- [ ] Empty, loading, and error states are designed.
-- [ ] Plugin UI uses the toolkit and inherits tokens.
+- [ ] New UI matches the legacy spacing, typography, and palette.
+- [ ] Sidebar collapses to 52px and keeps categories usable.
+- [ ] Tools open in tabs and survive switching.
+- [ ] Shortcuts in the table still work (including tool-specific ones).
+- [ ] Light and dark themes both look correct.
+- [ ] Plugin UI uses the shared toolkit.
