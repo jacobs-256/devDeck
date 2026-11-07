@@ -39,6 +39,41 @@ pub struct PingReport {
     pub avg_ms: Option<f64>,
 }
 
+/// Result of the OS `ping` binary, used by the restored legacy Ping tool.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NativePingReport {
+    pub host: String,
+    pub output: String,
+    pub exit_code: Option<i32>,
+}
+
+/// Run the platform `ping` command (ICMP) for legacy tool compatibility.
+pub async fn system_ping(host: &str, count: u32) -> Result<NativePingReport, DevToolboxError> {
+    let host = validate_host(host)?;
+    let count = count.clamp(1, 20);
+
+    let mut command = tokio::process::Command::new("ping");
+    if cfg!(windows) {
+        command.args(["-n", &count.to_string()]);
+    } else {
+        command.args(["-c", &count.to_string()]);
+    }
+    let output = command
+        .arg(host)
+        .output()
+        .await
+        .map_err(|err| DevToolboxError::Internal(format!("failed to run ping: {err}")))?;
+
+    let mut text = String::from_utf8_lossy(&output.stdout).to_string();
+    text.push_str(&String::from_utf8_lossy(&output.stderr));
+    Ok(NativePingReport {
+        host: host.to_string(),
+        output: text,
+        exit_code: output.status.code(),
+    })
+}
+
 fn validate_host(host: &str) -> Result<&str, DevToolboxError> {
     let trimmed = host.trim();
     if trimmed.is_empty() {

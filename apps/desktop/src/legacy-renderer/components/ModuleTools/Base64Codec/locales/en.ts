@@ -1,0 +1,20 @@
+// @ts-nocheck
+export default {
+  name: 'Base64 Codec',
+  description: 'Base64 encoding and decoding with JSON auto-detection',
+  input: 'Input',
+  encode: 'Encode',
+  decode: 'Decode',
+  swap: 'Swap',
+  clear: 'Clear',
+  help: 'Help',
+  encodePlaceholder: 'Enter text to encode...',
+  decodePlaceholder: 'Enter Base64 string to decode...',
+  scrollTop: 'Back to Top',
+  chars: 'Chars',
+  lines: 'Lines',
+  encodeResult: 'Base64 Encoded Result',
+  decodeResult: 'Decoded Result',
+  copied: 'Copied',
+  copy: 'Copy',
+};

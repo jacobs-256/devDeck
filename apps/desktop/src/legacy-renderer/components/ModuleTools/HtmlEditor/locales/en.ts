@@ -1,0 +1,22 @@
+// @ts-nocheck
+export default {
+  name: 'HTML Editor',
+  description: 'HTML editing with live preview',
+  htmlEdit: 'HTML Edit',
+  open: 'Open',
+  save: 'Save',
+  saveAs: 'Save As',
+  compress: 'Minify',
+  beautify: 'Beautify',
+  copied: 'Copied',
+  copy: 'Copy',
+  download: 'Download',
+  clear: 'Clear',
+  scrollTop: 'Back to Top',
+  chars: 'Chars',
+  lines: 'Lines',
+  livePreview: 'Live Preview',
+  htmlPreview: 'HTML Preview',
+  htmlFiles: 'HTML Files',
+  allFiles: 'All Files',
+};

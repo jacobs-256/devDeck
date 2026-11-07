@@ -130,6 +130,7 @@ pub fn run() {
             commands::cert_generate_csr,
             commands::cert_issue,
             commands::cert_parse,
+            commands::system_ping,
             commands::tcp_ping,
             commands::mqtt_connect,
             commands::mqtt_subscribe,

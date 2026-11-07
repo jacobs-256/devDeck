@@ -1,0 +1,127 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.modal {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  width: 90%;
+  max-width: 900px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-float);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.closeBtn {
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 4px 8px;
+  border-radius: var(--radius-small);
+}
+
+.closeBtn:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.body {
+  overflow-y: auto;
+  padding: 16px 24px 24px;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  color: var(--text-primary);
+}
+
+.body h2 {
+  font-size: var(--font-size-heading);
+  margin: 24px 0 8px;
+  color: var(--accent-color);
+}
+
+.body h2:first-child {
+  margin-top: 0;
+}
+
+.body h3 {
+  font-size: var(--font-size-base);
+  margin: 20px 0 6px;
+  color: var(--text-primary);
+}
+
+.body p {
+  margin: 8px 0;
+  color: var(--text-secondary);
+}
+
+.body code {
+  background-color: var(--bg-active);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-small);
+}
+
+/* Three-column layout for meta/quantifier/negation tables */
+.threeCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.threeCol h3 {
+  margin-top: 0;
+}
+
+/* Reference tables */
+.refTable {
+  border-collapse: collapse;
+  font-size: var(--font-size-small);
+  width: 100%;
+  margin: 8px 0;
+}
+
+.refTable th,
+.refTable td {
+  border: 1px solid var(--bg-active);
+  padding: 5px 8px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.refTable th {
+  background-color: var(--bg-panel);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.refTable td {
+  color: var(--text-primary);
+}
+
+.refTable td:last-child {
+  white-space: normal;
+}

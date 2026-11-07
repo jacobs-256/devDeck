@@ -35,7 +35,7 @@ The app uses the same layout as the original DevToolBox:
 5. Use the fullscreen button in the tool header for a distraction-free view
    (`Esc` exits).
 
-All built-in tools run locally. Network tools (TCP Ping, MQTT, Tracert,
+All built-in tools run locally. Network tools (Ping Test, MQTT, Tracert,
 WebSocket) and certificate tools never send data to a third-party service.
 
 ## Marketplace
@@ -88,7 +88,7 @@ Plugin data is stored in the app data directory and survives updates.
 | `Esc`                             | Close search/dialog, exit fullscreen                   |
 | `↑` / `↓` / `Enter`               | Navigate and open search results                       |
 | `Cmd/Ctrl+F`                      | JSON Formatter: find in output · MQTT: filter messages |
-| `Enter`                           | TCP Ping: probe · Tracert: trace                       |
+| `Enter`                           | Ping Test: probe · Tracert: trace                      |
 | `Cmd/Ctrl+C/V/X/A`                | Copy / paste / cut / select all                        |
 | `Cmd/Ctrl+Z` / `Shift+Cmd/Ctrl+Z` | Undo / redo                                            |
 | `Cmd+Q`                           | Quit (macOS)                                           |

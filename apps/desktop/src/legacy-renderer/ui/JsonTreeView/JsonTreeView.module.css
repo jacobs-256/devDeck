@@ -1,0 +1,116 @@
+.tree {
+  display: flex;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  min-height: 100%;
+}
+
+/* Left gutter column */
+.gutterCol {
+  flex-shrink: 0;
+  user-select: none;
+  background-color: var(--bg-panel);
+  border-right: 1px dashed rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.gutterRow {
+  display: flex;
+  align-items: center;
+  height: calc(1em * var(--line-height-base));
+}
+
+.lineNum {
+  display: inline-block;
+  width: 40px;
+  min-width: 40px;
+  text-align: right;
+  padding-right: 8px;
+  color: var(--text-secondary);
+}
+
+.arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  min-width: 20px;
+  height: 20px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+}
+
+.arrow:hover {
+  color: var(--text-active);
+}
+
+.arrowPlaceholder {
+  display: inline-block;
+  width: 20px;
+  min-width: 20px;
+}
+
+/* Right content column */
+.contentCol {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.contentRow {
+  white-space: nowrap;
+  height: calc(1em * var(--line-height-base));
+}
+
+.contentRowClickable {
+  cursor: pointer;
+}
+
+.contentRow:hover {
+  background-color: var(--bg-hover);
+}
+
+/* JSON syntax highlighting */
+.key {
+  color: #9cdcfe;
+}
+
+.colon {
+  color: var(--text-primary);
+}
+
+.valStr {
+  color: #ce9178;
+}
+
+.valNum {
+  color: #b5cea8;
+}
+
+.valBool {
+  color: #569cd6;
+}
+
+.valNull {
+  color: #569cd6;
+}
+
+.bracket {
+  color: var(--text-primary);
+}
+
+.collapsedLabel {
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-style: italic;
+  font-size: var(--font-size-small);
+}
+
+.collapsedLabel:hover {
+  color: var(--text-primary);
+}

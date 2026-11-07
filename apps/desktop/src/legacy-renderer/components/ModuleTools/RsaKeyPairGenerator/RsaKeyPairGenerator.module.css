@@ -1,0 +1,99 @@
+.page {
+  width: 100%;
+  height: 100%;
+  padding: 18px 18px 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.sub {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.bitsLabel {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.bitsBox {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.bitsValue {
+  width: 86px;
+  padding: 7px 10px;
+  font-family: var(--font-family-mono);
+  font-size: 12px;
+  color: var(--text-primary);
+  border: none;
+  background: transparent;
+  outline: none;
+  text-align: left;
+}
+
+.stepper {
+  display: flex;
+  align-items: stretch;
+  border-left: 1px solid var(--border-subtle);
+}
+
+.stepBtn {
+  width: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.stepBtn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.monoWrap :global(textarea) {
+  white-space: pre;
+}
+
+.error {
+  font-size: 12px;
+  color: var(--accent-error);
+}

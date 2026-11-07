@@ -66,14 +66,18 @@ cargo clippy --workspace --all-targets
 
 ## 5. 添加内置工具
 
-1. 新建 `apps/desktop/src/tools/module-tools/<tool>/`：`<Tool>.tsx`（根节点 `div.tool-body`）、`<tool>.model.ts`、`<tool>.model.test.ts`。
-2. 在 `apps/desktop/src/tools/registry.ts` 注册：`id`、英文 `name`/`description`、`nameKey`/`descriptionKey`、`category`、`keywords`、懒加载组件。
-3. 在 `apps/desktop/src/legacy/data.tsx` 的 `TOOL_CATEGORY` 映射侧边栏分类，并在 `TOOL_ICONS` 添加图标。
-4. 在 `apps/desktop/src/i18n/index.tsx` 的中英词典加入 `tool.<id>.name` / `.desc` 及 UI key。
-5. 复用 `tools/components.tsx` 的 `CopyButton`；`.tool-body` 内的控件由 `styles/tool-compat.css` 统一。
-6. 运行 `pnpm test` 并从工具页打开验证；工具按标签页保活。
+内置工具界面沿用 main 分支的 legacy 组件，位于
+`apps/desktop/src/legacy-renderer/components/ModuleTools/`。共享 `@@components`
+提供 `ToolSection`、`useSplitPane`、`HelpModal`、`JsonTreeView` 等组件，保证布局与旧版一致。
 
-需要特权（文件、网络、SSH）时调用宿主命令，不要直接用浏览器 API。
+1. 新建 `legacy-renderer/components/ModuleTools/<Folder>/`：`index.tsx`（默认导出，填满工具区域）、`<Folder>.module.css`、可选的 `locales/en.ts`。
+2. 使用 `@@components` 中的共享组件，不要另写工具头部/分栏。
+3. 在 `apps/desktop/src/tools/registry.ts` 注册：`id`、英文搜索文本、`nameKey`/`descriptionKey`、分类、关键词、懒加载组件。
+4. 在 `apps/desktop/src/legacy/data.tsx` 映射分类与图标。
+5. 在中英词典加入 `tool.<id>.name` / `.desc`。
+6. 特权操作调用 Tauri 命令；`window.electronAPI` 只存在于 `legacy-renderer/compat/electron.ts` 兼容桥，按需扩展。
+
+工具按标签页保活，切换不丢失状态。
 
 ## 6. 添加宿主命令
 

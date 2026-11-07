@@ -1,0 +1,23 @@
+// @ts-nocheck
+export default {
+  name: 'JSON ⇄ YAML',
+  description: 'Convert JSON and YAML with syntax highlighting',
+  mode: 'Mode',
+  modeJsonToYaml: 'JSON → YAML',
+  modeYamlToJson: 'YAML → JSON',
+  inputJson: 'JSON Input',
+  inputYaml: 'YAML Input',
+  outputJson: 'JSON Output',
+  outputYaml: 'YAML Output',
+  placeholderJson: 'Paste JSON here...',
+  placeholderYaml: 'YAML will appear here...',
+  importJson: 'Import JSON',
+  importYaml: 'Import YAML',
+  formatJson: 'Format',
+  copy: 'Copy',
+  copied: 'Copied',
+  save: 'Save',
+  clear: 'Clear',
+  errorInvalidJson: 'Invalid JSON',
+  errorInvalidYaml: 'Invalid YAML',
+};

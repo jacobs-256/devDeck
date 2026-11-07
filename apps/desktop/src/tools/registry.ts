@@ -3,33 +3,37 @@ import { CATEGORY_LABELS, CATEGORY_ORDER, type ToolCategory, type ToolDefinition
 
 // Each tool is its own chunk: the shell stays small and heavy dependencies
 // (YAML, XML, pinyin dictionaries) load only when a tool is opened.
-const Base64Tool = lazy(() => import('./module-tools/base64/Base64Tool'));
-const CaGeneratorTool = lazy(() => import('./module-tools/certs/CaGeneratorTool'));
-const CertViewerTool = lazy(() => import('./module-tools/certs/CertViewerTool'));
-const ClientCertTool = lazy(() => import('./module-tools/certs/ClientCertTool'));
-const CsrGeneratorTool = lazy(() => import('./module-tools/certs/CsrGeneratorTool'));
-const KeyPairTool = lazy(() => import('./module-tools/certs/KeyPairTool'));
-const HtmlEditorTool = lazy(() => import('./module-tools/html-editor/HtmlEditorTool'));
-const IpCalculatorTool = lazy(() => import('./module-tools/ip-calculator/IpCalculatorTool'));
-const JsonFormatterTool = lazy(() => import('./module-tools/json-formatter/JsonFormatterTool'));
-const JsonXmlTool = lazy(() => import('./module-tools/json-xml/JsonXmlTool'));
-const JsonYamlTool = lazy(() => import('./module-tools/json-yaml/JsonYamlTool'));
-const JsFormatterTool = lazy(() => import('./module-tools/js-formatter/JsFormatterTool'));
-const JwtTool = lazy(() => import('./module-tools/jwt/JwtTool'));
-const MarkdownTool = lazy(() => import('./module-tools/markdown-preview/MarkdownTool'));
-const MqttTool = lazy(() => import('./module-tools/mqtt/MqttTool'));
-const PingTestTool = lazy(() => import('./module-tools/ping-test/PingTestTool'));
-const PinyinTool = lazy(() => import('./module-tools/pinyin/PinyinTool'));
-const QrCodeTool = lazy(() => import('./module-tools/qr-code/QrCodeTool'));
-const RegexTesterTool = lazy(() => import('./module-tools/regex-tester/RegexTesterTool'));
-const StringEncryptTool = lazy(() => import('./module-tools/string-encrypt/StringEncryptTool'));
-const TextDiffTool = lazy(() => import('./module-tools/text-diff/TextDiffTool'));
-const TracertTool = lazy(() => import('./module-tools/tracert/TracertTool'));
-const UnicodeTool = lazy(() => import('./module-tools/unicode/UnicodeTool'));
-const UrlCodecTool = lazy(() => import('./module-tools/url-codec/UrlCodecTool'));
-const UuidTool = lazy(() => import('./module-tools/uuid/UuidTool'));
-const WebSocketTesterTool = lazy(() => import('./module-tools/websocket-tester/WebSocketTesterTool'));
-const WifiQrTool = lazy(() => import('./module-tools/wifi-qr/WifiQrTool'));
+const Base64Tool = lazy(() => import('../legacy-renderer/components/ModuleTools/Base64Codec/index'));
+const CaGeneratorTool = lazy(() => import('../legacy-renderer/components/ModuleTools/CaGenerator/index'));
+const CertViewerTool = lazy(() => import('../legacy-renderer/components/ModuleTools/CertViewer/index'));
+const ClientCertTool = lazy(
+  () => import('../legacy-renderer/components/ModuleTools/ClientCertGenerator/index'),
+);
+const CsrGeneratorTool = lazy(() => import('../legacy-renderer/components/ModuleTools/CsrGenerator/index'));
+const KeyPairTool = lazy(() => import('../legacy-renderer/components/ModuleTools/RsaKeyPairGenerator/index'));
+const HtmlEditorTool = lazy(() => import('../legacy-renderer/components/ModuleTools/HtmlEditor/index'));
+const IpCalculatorTool = lazy(() => import('../legacy-renderer/components/ModuleTools/IpCalculator/index'));
+const JsonFormatterTool = lazy(() => import('../legacy-renderer/components/ModuleTools/JsonFormatter/index'));
+const JsonXmlTool = lazy(() => import('../legacy-renderer/components/ModuleTools/JsonXmlConverter/index'));
+const JsonYamlTool = lazy(() => import('../legacy-renderer/components/ModuleTools/JsonYamlConverter/index'));
+const JsFormatterTool = lazy(() => import('../legacy-renderer/components/ModuleTools/JsFormatter/index'));
+const JwtTool = lazy(() => import('../legacy-renderer/components/ModuleTools/JwtTool/index'));
+const MarkdownTool = lazy(() => import('../legacy-renderer/components/ModuleTools/MarkdownPreview/index'));
+const MqttTool = lazy(() => import('../legacy-renderer/components/ModuleTools/MqttTool/index'));
+const PingTestTool = lazy(() => import('../legacy-renderer/components/ModuleTools/PingTest/index'));
+const PinyinTool = lazy(() => import('../legacy-renderer/components/ModuleTools/PinyinConverter/index'));
+const QrCodeTool = lazy(() => import('../legacy-renderer/components/ModuleTools/QrCodeGenerator/index'));
+const RegexTesterTool = lazy(() => import('../legacy-renderer/components/ModuleTools/RegexTester/index'));
+const StringEncryptTool = lazy(() => import('../legacy-renderer/components/ModuleTools/StringEncrypt/index'));
+const TextDiffTool = lazy(() => import('../legacy-renderer/components/ModuleTools/TextDiff/index'));
+const TracertTool = lazy(() => import('../legacy-renderer/components/ModuleTools/TracertTest/index'));
+const UnicodeTool = lazy(() => import('../legacy-renderer/components/ModuleTools/UnicodeTool/index'));
+const UrlCodecTool = lazy(() => import('../legacy-renderer/components/ModuleTools/UrlCodec/index'));
+const UuidTool = lazy(() => import('../legacy-renderer/components/ModuleTools/UuidGenerator/index'));
+const WebSocketTesterTool = lazy(
+  () => import('../legacy-renderer/components/ModuleTools/WebSocketTester/index'),
+);
+const WifiQrTool = lazy(() => import('../legacy-renderer/components/ModuleTools/WifiQrGenerator/index'));
 
 /**
  * Every built-in tool, in display order.
@@ -112,10 +116,10 @@ export const TOOLS: ToolDefinition[] = [
     id: 'tcp-ping',
     nameKey: 'tool.tcp-ping.name',
     descriptionKey: 'tool.tcp-ping.desc',
-    name: 'TCP Ping',
-    description: 'Measure TCP handshake latency and reachability for a host and port.',
+    name: 'Ping Test',
+    description: 'Test host connectivity and latency with the system ping command.',
     category: 'network',
-    keywords: ['ping', 'latency', 'reachability', 'tcp'],
+    keywords: ['ping', 'latency', 'reachability', 'icmp'],
     component: PingTestTool,
   },
   {
@@ -162,10 +166,10 @@ export const TOOLS: ToolDefinition[] = [
     id: 'key-pair',
     nameKey: 'tool.key-pair.name',
     descriptionKey: 'tool.key-pair.desc',
-    name: 'Key Pair Generator',
-    description: 'Generate ECDSA P-256/P-384 or Ed25519 key pairs in PEM format.',
+    name: 'RSA Key Pair Generator',
+    description: 'Generate RSA private and public keys in PEM format.',
     category: 'crypto',
-    keywords: ['key', 'ecdsa', 'ed25519', 'pem'],
+    keywords: ['key', 'rsa', 'pem'],
     component: KeyPairTool,
   },
   {

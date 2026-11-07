@@ -111,7 +111,7 @@ Token 定义在 [`apps/desktop/src/theme/variables.css`](../../apps/desktop/src/
 | `↑` / `↓`                         | 在搜索结果中移动                            |
 | `Enter`                           | 打开选中的搜索结果                          |
 | `Cmd/Ctrl+F`                      | JSON 格式化：在输出中查找 · MQTT：过滤消息  |
-| `Enter`                           | TCP Ping：开始探测 · Tracert：开始追踪      |
+| `Enter`                           | Ping Test：开始探测 · Tracert：开始追踪     |
 | `Cmd/Ctrl+C` / `V` / `X` / `A`    | 复制 / 粘贴 / 剪切 / 全选（原生菜单角色）   |
 | `Cmd/Ctrl+Z` / `Shift+Cmd/Ctrl+Z` | 撤销 / 重做（原生菜单角色）                 |
 | `Cmd+Q`                           | 退出（macOS）                               |

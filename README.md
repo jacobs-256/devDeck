@@ -30,7 +30,7 @@ Updates are verified with the updater signing key and can be checked from
 | --------- | ------------------------------------------------------------------------------------------------------------ |
 | Developer | JSON Formatter, JSON ↔ YAML, JSON ↔ XML, HTML Editor, JS Formatter, Regex Tester, UUID Generator             |
 | Text      | Base64, URL Codec, Unicode Inspector, Pinyin Converter, QR Code, Wi-Fi QR, Markdown Preview, Text Diff       |
-| Network   | IP Calculator, TCP Ping, MQTT Client, Tracert, WebSocket Tester                                              |
+| Network   | IP Calculator, Ping Test, MQTT Client, Tracert, WebSocket Tester                                             |
 | Security  | Key Pair, CA Generator, CSR Generator, Issue Certificate, Certificate Viewer, JWT Decoder, String Encryption |
 
 All tools run locally. Network and certificate operations are implemented in
@@ -113,7 +113,7 @@ cargo fmt --all -- --check
 | `Esc`                            | Close search/dialog, exit tool fullscreen              |
 | `↑` / `↓` / `Enter`              | Navigate and open search results                       |
 | `Cmd/Ctrl+F`                     | JSON Formatter: find in output · MQTT: filter messages |
-| `Enter`                          | TCP Ping: probe · Tracert: trace                       |
+| `Enter`                          | Ping Test: probe · Tracert: trace                      |
 | `Cmd/Ctrl+C/V/X/A`, `Cmd/Ctrl+Z` | Native edit roles                                      |
 | `Cmd+Q`                          | Quit (macOS)                                           |
 

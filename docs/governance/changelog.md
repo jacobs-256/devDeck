@@ -15,7 +15,7 @@ All notable changes to DevToolBox are documented here. The format follows
   and registry signatures, publish workflow, and an end-to-end acceptance script.
 - Plugin SDK 2.0 with storage, HTTP, logging, files, sockets, SSH/SFTP, theme,
   system info, and a sandboxed iframe bridge. SDK 1.x aliases are preserved.
-- 27 built-in tools ported to React/Rust, including TCP Ping, MQTT, Tracert,
+- 27 built-in tools ported to React/Rust, including Ping Test, MQTT, Tracert,
   WebSocket Tester, certificate tooling, and string encryption.
 - Legacy Electron layout restored: sidebar navigation, dashboard, tool list +
   tabs workspace, module center, and settings secondary navigation.

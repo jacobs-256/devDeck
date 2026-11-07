@@ -27,7 +27,7 @@ DevToolBox 是一个包含 27 个内置工具和开放插件市场的桌面工�
 4. 用 `×`、标签菜单的 **Close All** 或 `Cmd/Ctrl+W` 关闭。
 5. 工具头部的全屏按钮进入专注模式，`Esc` 退出。
 
-所有内置工具均在本地运行；网络工具（TCP Ping、MQTT、Tracert、WebSocket）和证书工具不会把数据发送到第三方服务。
+所有内置工具均在本地运行；网络工具（Ping Test、MQTT、Tracert、WebSocket）和证书工具不会把数据发送到第三方服务。
 
 ## 应用市场
 
@@ -66,7 +66,7 @@ DevToolBox 是一个包含 27 个内置工具和开放插件市场的桌面工�
 | `Esc`                             | 关闭搜索/对话框、退出全屏           |
 | `↑` / `↓` / `Enter`               | 搜索结果导航与打开                  |
 | `Cmd/Ctrl+F`                      | JSON 格式化查找输出 · MQTT 过滤消息 |
-| `Enter`                           | TCP Ping 探测 · Tracert 追踪        |
+| `Enter`                           | Ping Test 探测 · Tracert 追踪       |
 | `Cmd/Ctrl+C/V/X/A`                | 复制/粘贴/剪切/全选                 |
 | `Cmd/Ctrl+Z` / `Shift+Cmd/Ctrl+Z` | 撤销/重做                           |
 | `Cmd+Q`                           | 退出（macOS）                       |

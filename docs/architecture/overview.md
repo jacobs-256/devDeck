@@ -119,7 +119,7 @@ permission, with no new IPC surface.
 The renderer can only call the commands registered in `lib.rs`:
 
 `app_info`, `plugin_list`, `plugin_uninstall`, `plugin_set_enabled`,
-`cert_generate_key|ca|csr`, `cert_issue`, `cert_parse`, `tcp_ping`,
+`cert_generate_key|ca|csr`, `cert_issue`, `cert_parse`, `system_ping`, `tcp_ping`,
 `mqtt_connect|subscribe|publish|disconnect`, `traceroute`,
 `registry_list_sources|add_source|remove_source|refresh`,
 `plugin_install_from_registry`, `theme_set`, `language_set`, and
@@ -188,25 +188,23 @@ Built-in tools are renderer-only and should not need Rust at all.
 ```
 apps/desktop/src/tools/
 ├── registry.ts              the single place a tool is registered
-├── types.ts                 ToolDefinition / categories
-├── components.tsx           CopyButton
-└── module-tools/<tool>/
-    ├── <tool>.model.ts      pure logic (no React, no window.*)
-    ├── <tool>.model.test.ts Vitest unit tests
-    └── <ToolName>.tsx       UI
+└── types.ts                 ToolDefinition / categories
+
+apps/desktop/src/legacy-renderer/
+├── components/ModuleTools/<Folder>/   legacy tool UI + CSS module + locales
+└── ui/                                @@components: ToolSection, SplitPane, ...
 ```
 
 Rules:
 
-- keep logic in the `.model.ts` file so it is testable in Node;
-- register the tool once in `registry.ts` with keywords, i18n keys, and category;
+- keep the tool UI in the restored legacy component tree so the layout matches
+  the original application;
+- register the tool once in `registry.ts` with a lazy import, keywords, i18n
+  keys, and category;
 - map the category and icon in `apps/desktop/src/legacy/data.tsx`;
 - add `tool.<id>.name` / `.desc` keys to both dictionaries;
-- tools that need privileges (files, network, SSH) call a host command — never
-  `fetch`, `fs`, or host APIs directly;
-- controls inside `.tool-body` use `styles/tool-compat.css`;
-- add at least one test per model file; `pnpm --filter @devtoolbox/desktop test`
-  runs them.
+- tools that need privileges (files, network, SSH) call a host command through
+  the legacy compatibility bridge — never host APIs directly.
 
 Step-by-step instructions live in the [development guide](../development.md).
 

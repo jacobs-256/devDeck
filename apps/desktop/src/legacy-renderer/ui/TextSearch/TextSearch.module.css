@@ -1,0 +1,95 @@
+/* Search bar */
+.searchBar {
+  position: absolute;
+  top: 4px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background-color: var(--bg-panel);
+  border: 1px solid var(--bg-active);
+  border-radius: 6px;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.searchInput {
+  width: 140px;
+  padding: 2px 6px;
+  border: 1px solid var(--bg-active);
+  border-radius: 4px;
+  outline: none;
+  font-size: 12px;
+  font-family: inherit;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.searchInput:focus {
+  border-color: var(--accent-color);
+}
+
+.searchInfo {
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  min-width: 28px;
+  text-align: center;
+}
+
+.searchBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  border-radius: 3px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.searchBtn:hover {
+  background-color: var(--bg-active);
+  color: var(--text-primary);
+}
+
+/* Highlight overlay */
+.highlightOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 12px;
+  font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre;
+  word-wrap: normal;
+  overflow: hidden;
+  pointer-events: none;
+  color: transparent;
+  z-index: 0;
+}
+
+.highlightMark {
+  background-color: rgba(255, 213, 0, 0.35);
+  color: transparent;
+  border-radius: 2px;
+}
+
+.highlightMarkActive {
+  background-color: rgba(255, 150, 0, 0.55);
+  color: transparent;
+  border-radius: 2px;
+}
+
+.textareaTransparent {
+  background-color: transparent !important;
+  position: relative;
+  z-index: 1;
+}

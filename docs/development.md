@@ -82,24 +82,29 @@ Debugging tips:
 
 ## 5. Add a built-in tool
 
-1. Create `apps/desktop/src/tools/module-tools/<tool>/`:
-   - `<Tool>.tsx` — UI, root element `div.tool-body`
-   - `<tool>.model.ts` — pure logic
-   - `<tool>.model.test.ts` — Vitest tests for the model
-2. Register it in `apps/desktop/src/tools/registry.ts`:
-   `id`, `name`/`description` (English search index), `nameKey`/`descriptionKey`,
-   `category`, `keywords`, lazy component.
-3. Map the tool to a sidebar category in `apps/desktop/src/legacy/data.tsx`
-   (`TOOL_CATEGORY`) and add an icon in `TOOL_ICONS`.
-4. Add `tool.<id>.name` and `tool.<id>.desc` to both dictionaries in
-   `apps/desktop/src/i18n/index.tsx`. Add any UI keys as `tool.<id>.*`.
-5. Reuse `CopyButton` from `tools/components.tsx`; controls inside `.tool-body`
-   are styled by `apps/desktop/src/styles/tool-compat.css`.
-6. Run `pnpm test` and open the tool from the Tools page. Tools are lazy-loaded
-   and kept alive in tabs.
+Built-in tool UIs are the components restored from the original main-branch
+renderer under `apps/desktop/src/legacy-renderer/components/ModuleTools/`. They
+use the shared `@@components` primitives so every tool keeps the legacy layout
+(tool section headers, split panes, help modal, toolbar actions).
 
-If the tool needs privileges (files, network, SSH), call a host command instead
-of browser APIs.
+1. Create `legacy-renderer/components/ModuleTools/<Folder>/`:
+   - `index.tsx` — default-exported component; root fills the tool area
+   - `<Folder>.module.css` — layout styles
+   - `locales/en.ts` — optional tool strings (`name`, button labels, help)
+2. Use `ToolSection`, `useSplitPane`, `HelpModal`, `JsonTreeView`, or
+   `useTextSearch` from `@@components` instead of bespoke chrome.
+3. Register the tool in `apps/desktop/src/tools/registry.ts` with a lazy import,
+   `id`, English search text, `nameKey`/`descriptionKey`, category, and keywords.
+4. Map it to a sidebar category and icon in
+   `apps/desktop/src/legacy/data.tsx` (`TOOL_CATEGORY`, `TOOL_ICONS`).
+5. Add `tool.<id>.name` / `.desc` to both dictionaries in
+   `apps/desktop/src/i18n/index.tsx`.
+6. Privileged work goes through a Tauri command. The only `window.electronAPI`
+   surface is the compatibility bridge in
+   `legacy-renderer/compat/electron.ts`; extend it only when a restored tool
+   needs another host call.
+
+Tools are lazy-loaded chunks and stay mounted while switching tabs.
 
 ## 6. Add a host command
 

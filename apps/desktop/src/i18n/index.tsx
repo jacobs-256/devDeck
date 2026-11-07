@@ -237,8 +237,8 @@ const en = {
 
   'tool.pinyin.name': 'Pinyin Converter',
   'tool.pinyin.desc': 'Convert Chinese text to pinyin with tone marks, numbers, or initials.',
-  'tool.tcp-ping.name': 'TCP Ping',
-  'tool.tcp-ping.desc': 'Measure TCP handshake latency and reachability for a host and port.',
+  'tool.tcp-ping.name': 'Ping Test',
+  'tool.tcp-ping.desc': 'Test host connectivity and latency with the system ping command.',
   'tool.mqtt.name': 'MQTT Client',
   'tool.mqtt.desc': 'Connect to an MQTT broker, subscribe, publish, and inspect messages live.',
   'tool.tracert.name': 'Tracert',
@@ -296,8 +296,8 @@ const en = {
   'certs.subjectSt': 'State (ST)',
   'certs.subjectL': 'Locality (L)',
 
-  'tool.key-pair.name': 'Key Pair Generator',
-  'tool.key-pair.desc': 'Generate ECDSA P-256/P-384 or Ed25519 key pairs in PEM format.',
+  'tool.key-pair.name': 'RSA Key Pair Generator',
+  'tool.key-pair.desc': 'Generate RSA private and public keys in PEM format.',
   'tool.ca-generator.name': 'CA Generator',
   'tool.ca-generator.desc': 'Create a self-signed root CA certificate and key for local development.',
   'tool.csr-generator.name': 'CSR Generator',
@@ -587,8 +587,8 @@ const zhCN: Dictionary = {
 
   'tool.pinyin.name': '拼音转换',
   'tool.pinyin.desc': '将中文转换为带声调、数字声调或首字母的拼音。',
-  'tool.tcp-ping.name': 'TCP Ping',
-  'tool.tcp-ping.desc': '测量主机与端口的 TCP 握手延迟和可达性。',
+  'tool.tcp-ping.name': 'Ping 测试',
+  'tool.tcp-ping.desc': '使用系统 ping 命令测试主机连通性与延迟。',
   'tool.mqtt.name': 'MQTT 客户端',
   'tool.mqtt.desc': '连接 MQTT Broker，订阅、发布并实时查看消息。',
   'tool.tracert.name': '路由追踪',
@@ -643,8 +643,8 @@ const zhCN: Dictionary = {
   'certs.subjectSt': '省/州（ST）',
   'certs.subjectL': '城市（L）',
 
-  'tool.key-pair.name': '密钥对生成',
-  'tool.key-pair.desc': '生成 PEM 格式的 ECDSA P-256/P-384 或 Ed25519 密钥对。',
+  'tool.key-pair.name': 'RSA 密钥对生成',
+  'tool.key-pair.desc': '生成 PEM 格式的 RSA 私钥与公钥。',
   'tool.ca-generator.name': 'CA 生成器',
   'tool.ca-generator.desc': '为本地开发创建自签名根 CA 证书与私钥。',
   'tool.csr-generator.name': 'CSR 生成器',

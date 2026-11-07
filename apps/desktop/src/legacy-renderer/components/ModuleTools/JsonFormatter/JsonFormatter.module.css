@@ -1,0 +1,281 @@
+.container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-sidebar);
+}
+
+.inputPane,
+.outputPane {
+  display: flex;
+  flex-direction: column;
+  background-color: transparent;
+  padding: 6px;
+  box-sizing: border-box;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.divider {
+  width: 8px;
+  margin: 0 -3px;
+  flex-shrink: 0;
+  background-color: transparent;
+  cursor: col-resize;
+  position: relative;
+}
+
+.divider::after {
+  content: '';
+  display: none;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  transform: translate(-50%, -50%);
+  border-radius: 2px;
+  background-color: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 -8px 0 rgba(255, 255, 255, 0.18),
+    0 8px 0 rgba(255, 255, 255, 0.18);
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
+  opacity: 0.75;
+}
+
+.divider:hover::before {
+  background-color: rgba(97, 175, 239, 0.9);
+  box-shadow:
+    0 -8px 0 rgba(97, 175, 239, 0.9),
+    0 8px 0 rgba(97, 175, 239, 0.9);
+  opacity: 1;
+}
+
+.divider:active::before {
+  background-color: rgba(97, 175, 239, 0.95);
+  box-shadow:
+    0 -8px 0 rgba(97, 175, 239, 0.95),
+    0 8px 0 rgba(97, 175, 239, 0.95);
+}
+
+.textarea {
+  flex: 1;
+  resize: none;
+  border: none;
+  outline: none;
+  padding: 10px 12px;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  box-sizing: border-box;
+  white-space: pre;
+  overflow-x: auto;
+  word-wrap: normal;
+}
+
+.textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+.textareaWrap {
+  position: relative;
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.outputWrap {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.outputBody {
+  flex: 1;
+  min-height: 0;
+  background-color: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.treeWrap {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* Back-to-top floating button */
+.scrollTopBtn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.25s ease,
+    background-color 0.15s ease;
+  z-index: 5;
+}
+
+.scrollTopVisible {
+  opacity: 0.8;
+  pointer-events: auto;
+}
+
+.scrollTopBtn:hover {
+  opacity: 1;
+  background-color: rgba(97, 175, 239, 0.18);
+  color: var(--text-active);
+}
+
+.output,
+.error {
+  margin: 0;
+  padding: 12px;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.output {
+  color: var(--text-primary);
+}
+
+.error {
+  color: #f48771;
+}
+
+.statusBar {
+  display: flex;
+  gap: 16px;
+  padding: 4px 12px;
+  font-size: var(--font-size-small);
+  color: var(--text-secondary);
+  background-color: var(--bg-panel);
+  border-top: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+/* Search bar */
+.searchBar {
+  position: absolute;
+  top: 4px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  z-index: 10;
+  box-shadow: var(--shadow-float);
+}
+
+.searchInput {
+  width: 140px;
+  padding: 2px 6px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-small);
+  outline: none;
+  font-size: var(--font-size-small);
+  font-family: inherit;
+  background-color: rgba(255, 255, 255, 0.03);
+  color: var(--text-primary);
+}
+
+.searchInput:focus {
+  border-color: var(--focus-border);
+}
+
+.searchInfo {
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  min-width: 28px;
+  text-align: center;
+}
+
+.searchBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  border-radius: 3px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.searchBtn:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* Highlight overlay */
+.highlightOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 10px 12px;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  white-space: pre;
+  word-wrap: normal;
+  overflow: hidden;
+  pointer-events: none;
+  color: transparent;
+  z-index: 0;
+}
+
+.highlightMark {
+  background-color: rgba(255, 213, 0, 0.35);
+  color: transparent;
+  border-radius: 2px;
+}
+
+.highlightMarkActive {
+  background-color: rgba(255, 150, 0, 0.55);
+  color: transparent;
+  border-radius: 2px;
+}
+
+.textareaTransparent {
+  background-color: transparent !important;
+  position: relative;
+  z-index: 1;
+}

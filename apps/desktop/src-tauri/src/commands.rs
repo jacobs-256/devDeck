@@ -15,7 +15,7 @@ use crate::certs::{
     SubjectInput,
 };
 use crate::mqtt::validate_broker;
-use crate::ping::{self, PingReport};
+use crate::ping::{self, NativePingReport, PingReport};
 use crate::registry::{self, Catalog};
 use crate::state::{now_ms, AppState};
 use crate::traceroute::{self, TraceReport};
@@ -159,6 +159,14 @@ pub async fn traceroute(
     max_hops: Option<u32>,
 ) -> Result<TraceReport, DevToolboxError> {
     traceroute::traceroute(&host, max_hops.unwrap_or(30)).await
+}
+
+#[tauri::command]
+pub async fn system_ping(
+    host: String,
+    count: Option<u32>,
+) -> Result<NativePingReport, DevToolboxError> {
+    ping::system_ping(&host, count.unwrap_or(4)).await
 }
 
 #[tauri::command]

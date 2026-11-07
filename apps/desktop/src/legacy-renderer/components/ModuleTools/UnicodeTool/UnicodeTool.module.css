@@ -1,0 +1,126 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 14px;
+  box-sizing: border-box;
+  overflow: hidden;
+  gap: 10px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.formatLabel {
+  font-size: var(--font-size-small);
+  color: var(--text-secondary);
+}
+
+.select {
+  padding: 5px 10px;
+  border: 1px solid var(--bg-active);
+  border-radius: 5px;
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  font-size: var(--font-size-base);
+  outline: none;
+  cursor: pointer;
+}
+
+.btn {
+  padding: 5px 14px;
+  border: none;
+  border-radius: 5px;
+  background: var(--accent-color);
+  color: #fff;
+  font-size: var(--font-size-small);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.btn:hover {
+  opacity: 0.85;
+}
+
+.btnSec {
+  padding: 5px 14px;
+  border: 1px solid var(--bg-active);
+  border-radius: 5px;
+  background: none;
+  color: var(--text-secondary);
+  font-size: var(--font-size-small);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.btnSec:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.panels {
+  flex: 1;
+  display: flex;
+  gap: 12px;
+  min-height: 0;
+}
+
+.panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.panelLabel {
+  font-size: var(--font-size-small);
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.area {
+  flex: 1;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--bg-active);
+  border-radius: 6px;
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  resize: none;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.area:focus {
+  border-color: var(--accent-color);
+}
+
+.cpBtn {
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+}
+
+.cpBtn:hover {
+  color: var(--accent-color);
+}
+
+.err {
+  color: #e74c3c;
+  font-size: var(--font-size-small);
+  flex-shrink: 0;
+}

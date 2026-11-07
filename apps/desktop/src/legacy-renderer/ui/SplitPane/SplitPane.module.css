@@ -1,0 +1,135 @@
+/* Shared split-pane layout */
+.container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-sidebar);
+}
+
+.pane {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.divider {
+  width: 8px;
+  margin: 0 -3px;
+  flex-shrink: 0;
+  background-color: transparent;
+  cursor: col-resize;
+  position: relative;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  transform: translate(-50%, -50%);
+  border-radius: 2px;
+  background-color: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 -8px 0 rgba(255, 255, 255, 0.18),
+    0 8px 0 rgba(255, 255, 255, 0.18);
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
+  opacity: 0.75;
+}
+
+.divider:hover::before {
+  background-color: rgba(97, 175, 239, 0.9);
+  box-shadow:
+    0 -8px 0 rgba(97, 175, 239, 0.9),
+    0 8px 0 rgba(97, 175, 239, 0.9);
+  opacity: 1;
+}
+
+.divider:active::before {
+  background-color: rgba(97, 175, 239, 0.95);
+  box-shadow:
+    0 -8px 0 rgba(97, 175, 239, 0.95),
+    0 8px 0 rgba(97, 175, 239, 0.95);
+}
+
+.paneHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  min-height: 36px;
+  box-sizing: border-box;
+  font-size: var(--font-size-small);
+  color: var(--text-secondary);
+  background-color: var(--bg-panel);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.paneHeader > span {
+  flex-shrink: 0;
+}
+
+.textarea {
+  flex: 1;
+  resize: none;
+  border: none;
+  outline: none;
+  padding: 10px 12px;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  box-sizing: border-box;
+  white-space: pre;
+  overflow-x: auto;
+  word-wrap: normal;
+}
+
+.textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+.outputWrap {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+}
+
+.output,
+.error {
+  margin: 0;
+  padding: 12px;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.output {
+  color: var(--text-primary);
+}
+
+.error {
+  color: #f48771;
+}
+
+.statusBar {
+  display: flex;
+  gap: 16px;
+  padding: 4px 12px;
+  font-size: var(--font-size-small);
+  color: var(--text-secondary);
+  background-color: var(--bg-panel);
+  border-top: 1px solid var(--border-color);
+  flex-shrink: 0;
+}

@@ -92,7 +92,7 @@ async fn plugin_sdk_call(plugin_id, method, params) -> Result<Value, DevToolboxE
 
 新增能力 = 一个 match 分支 + 一条权限，不新增 IPC 表面。
 
-渲染层可调用的宿主命令固定为 `lib.rs` 中注册的列表：应用信息、插件管理、证书、TCP Ping、MQTT、Tracert、注册表来源、按源安装、主题/语言，以及 `plugin_sdk_call`。
+渲染层可调用的宿主命令固定为 `lib.rs` 中注册的列表：应用信息、插件管理、证书、Ping Test、MQTT、Tracert、注册表来源、按源安装、主题/语言，以及 `plugin_sdk_call`。
 
 ## 安装流程
 

@@ -127,7 +127,7 @@ Shortcuts follow the Electron app exactly.
 | `↑` / `↓`                         | Move through search results                               |
 | `Enter`                           | Open the selected search result                           |
 | `Cmd/Ctrl+F`                      | JSON Formatter: find in output · MQTT: filter messages    |
-| `Enter`                           | TCP Ping: run probe · Tracert: trace route                |
+| `Enter`                           | Ping Test: run probe · Tracert: trace route               |
 | `Cmd/Ctrl+C` / `V` / `X` / `A`    | Copy / paste / cut / select all (native menu roles)       |
 | `Cmd/Ctrl+Z` / `Shift+Cmd/Ctrl+Z` | Undo / redo (native menu roles)                           |
 | `Cmd+Q`                           | Quit (macOS)                                              |

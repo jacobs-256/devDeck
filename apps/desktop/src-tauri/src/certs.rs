@@ -9,6 +9,7 @@ use rcgen::{
     BasicConstraints, CertificateParams, DistinguishedName, DnType, ExtendedKeyUsagePurpose, IsCa,
     Issuer, KeyPair, KeyUsagePurpose, PKCS_ECDSA_P256_SHA256, PKCS_ECDSA_P384_SHA384, PKCS_ED25519,
 };
+use rsa::pkcs8::EncodePrivateKey;
 use serde::{Deserialize, Serialize};
 use time::{Duration, OffsetDateTime};
 
@@ -21,6 +22,8 @@ pub enum KeyAlgorithm {
     EcdsaP256,
     EcdsaP384,
     Ed25519,
+    Rsa2048,
+    Rsa4096,
 }
 
 impl KeyAlgorithm {
@@ -29,6 +32,8 @@ impl KeyAlgorithm {
             Self::EcdsaP256 => "ECDSA P-256",
             Self::EcdsaP384 => "ECDSA P-384",
             Self::Ed25519 => "Ed25519",
+            Self::Rsa2048 => "RSA 2048",
+            Self::Rsa4096 => "RSA 4096",
         }
     }
 
@@ -37,6 +42,7 @@ impl KeyAlgorithm {
             Self::EcdsaP256 => &PKCS_ECDSA_P256_SHA256,
             Self::EcdsaP384 => &PKCS_ECDSA_P384_SHA384,
             Self::Ed25519 => &PKCS_ED25519,
+            Self::Rsa2048 | Self::Rsa4096 => &rcgen::PKCS_RSA_SHA256,
         }
     }
 }
@@ -98,6 +104,22 @@ pub struct CertificateInfo {
 }
 
 fn generate_key(algorithm: KeyAlgorithm) -> Result<KeyPair, DevToolboxError> {
+    let bits = match algorithm {
+        KeyAlgorithm::Rsa2048 => Some(2048),
+        KeyAlgorithm::Rsa4096 => Some(4096),
+        _ => None,
+    };
+    if let Some(bits) = bits {
+        let mut rng = rand::thread_rng();
+        let private = rsa::RsaPrivateKey::new(&mut rng, bits).map_err(|err| {
+            DevToolboxError::Internal(format!("RSA key generation failed: {err}"))
+        })?;
+        let pem = private
+            .to_pkcs8_pem(rsa::pkcs8::LineEnding::LF)
+            .map_err(|err| DevToolboxError::Internal(format!("RSA key encoding failed: {err}")))?;
+        return KeyPair::from_pem(&pem)
+            .map_err(|err| DevToolboxError::Internal(format!("RSA key import failed: {err}")));
+    }
     KeyPair::generate_for(algorithm.signature_algorithm())
         .map_err(|err| DevToolboxError::Internal(format!("key generation failed: {err}")))
 }
@@ -292,6 +314,7 @@ mod tests {
             KeyAlgorithm::EcdsaP256,
             KeyAlgorithm::EcdsaP384,
             KeyAlgorithm::Ed25519,
+            KeyAlgorithm::Rsa2048,
         ] {
             let material = generate_key_pair(algorithm).unwrap();
             assert!(material.private_key_pem.contains("BEGIN PRIVATE KEY"));
@@ -301,11 +324,22 @@ mod tests {
 
     #[test]
     fn generates_a_parseable_ca() {
-        let material =
-            generate_ca(&subject("DevToolBox Root CA"), 365, KeyAlgorithm::EcdsaP256).unwrap();
+        for algorithm in [KeyAlgorithm::EcdsaP256, KeyAlgorithm::Rsa2048] {
+            let material = generate_ca(&subject("DevToolBox Root CA"), 365, algorithm).unwrap();
+            let info = parse_certificate(&material.certificate_pem).unwrap();
+            assert!(info.is_ca);
+            assert!(info.subject.contains("DevToolBox Root CA"));
+            assert_eq!(info.subject, info.issuer);
+            assert!(info.not_after > info.not_before);
+        }
+    }
+
+    #[test]
+    fn legacy_rsa_ca_round_trip() {
+        let material = generate_ca(&subject("Legacy Root CA"), 365, KeyAlgorithm::Rsa2048).unwrap();
         let info = parse_certificate(&material.certificate_pem).unwrap();
         assert!(info.is_ca);
-        assert!(info.subject.contains("DevToolBox Root CA"));
+        assert!(info.subject.contains("Legacy Root CA"));
         assert_eq!(info.subject, info.issuer);
         assert!(info.not_after > info.not_before);
     }

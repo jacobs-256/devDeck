@@ -1,0 +1,35 @@
+.uuid-help {
+  color: var(--text-primary);
+}
+
+.uuid-help h1,
+.uuid-help h2,
+.uuid-help h3 {
+  margin: 12px 0 8px;
+  font-size: var(--font-size-base);
+}
+
+.uuid-help p {
+  margin: 8px 0;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.uuid-help ul {
+  margin: 8px 0 8px 18px;
+  color: var(--text-secondary);
+}
+
+.uuid-help li {
+  margin: 6px 0;
+}
+
+.uuid-help code {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-small);
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1px 6px;
+  border-radius: 6px;
+}

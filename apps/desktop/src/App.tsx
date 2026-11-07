@@ -3,6 +3,7 @@ import { VscExtensions, VscGear, VscHome, VscLayout, VscTools } from 'react-icon
 import { listen } from '@tauri-apps/api/event';
 import { appInfo, listPlugins, setLanguage, setTheme } from './api';
 import { I18nProvider, translate, type Language, type Translate } from './i18n';
+import { I18nProvider as LegacyI18nProvider } from './legacy-renderer/i18n';
 import AppShell, { type AppShellNavItemId } from './legacy/AppShell';
 import AboutDialog from './legacy/AboutDialog';
 import DashboardPage from './legacy/DashboardPage';
@@ -245,22 +246,24 @@ export default function App() {
         )}
 
         {view === 'tools' && (
-          <ToolsPage
-            categories={toolCategories}
-            selectedCategoryId={categoryId}
-            selectedModuleId={selectedModuleId}
-            openedTools={openedTools}
-            onCategorySelect={setCategoryId}
-            onOpenTool={openTool}
-            onActivateTool={setSelectedModuleId}
-            onCloseTool={closeTool}
-            onCloseAllTools={closeAllTools}
-            plugins={plugins}
-            theme={theme}
-            isFullscreen={toolsFullscreen}
-            onSetFullscreen={setToolsFullscreen}
-            onRequestCollapseSidebar={() => setSidebarCollapsed(true)}
-          />
+          <LegacyI18nProvider initialLocale={language}>
+            <ToolsPage
+              categories={toolCategories}
+              selectedCategoryId={categoryId}
+              selectedModuleId={selectedModuleId}
+              openedTools={openedTools}
+              onCategorySelect={setCategoryId}
+              onOpenTool={openTool}
+              onActivateTool={setSelectedModuleId}
+              onCloseTool={closeTool}
+              onCloseAllTools={closeAllTools}
+              plugins={plugins}
+              theme={theme}
+              isFullscreen={toolsFullscreen}
+              onSetFullscreen={setToolsFullscreen}
+              onRequestCollapseSidebar={() => setSidebarCollapsed(true)}
+            />
+          </LegacyI18nProvider>
         )}
 
         {view === 'modules' && <ModulesPage onInstalledChange={setPlugins} />}

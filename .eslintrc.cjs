@@ -69,6 +69,15 @@ module.exports = {
       },
     },
     {
+      files: ['apps/desktop/src/legacy-renderer/**/*.{ts,tsx}'],
+      rules: {
+        '@typescript-eslint/ban-ts-comment': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/require-await': 'off',
+        '@typescript-eslint/no-unnecessary-type-assertion': 'off',
+      },
+    },
+    {
       files: ['**/__tests__/**/*.{ts,tsx}', '**/*.{test,spec}.{ts,tsx}'],
       env: {
         jest: true,
