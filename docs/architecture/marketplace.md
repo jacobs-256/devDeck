@@ -146,7 +146,7 @@ users and reviewers can identify privileged capabilities.
   "plugins": [
     {
       "manifest": { "...": "as above" },
-      "downloadUrl": "https://github.com/XthingsJacobs/devDeck/releases/download/marketplace/market-ip-lookup-1.0.0.zip",
+      "downloadUrl": "https://github.com/jacobs-256/devToolBox/releases/download/marketplace/market-ip-lookup-1.0.0.zip",
       "sha256": "9f2c…64 hex chars",
       "size": 182344,
       "publishedAt": "2026-11-07T00:00:00Z",

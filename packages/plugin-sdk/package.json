@@ -25,7 +25,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/XthingsJacobs/devDeck.git",
+    "url": "https://github.com/jacobs-256/devToolBox.git",
     "directory": "packages/plugin-sdk"
   },
   "scripts": {

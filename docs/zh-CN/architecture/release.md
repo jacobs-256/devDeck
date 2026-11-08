@@ -43,7 +43,7 @@ git push origin HEAD --tags
 确认无误后手动发布 draft。应用使用的更新地址：
 
 ```
-https://github.com/XthingsJacobs/devDeck/releases/latest/download/latest.json
+https://github.com/jacobs-256/devToolBox/releases/latest/download/latest.json
 ```
 
 ## 本地复现签名构建

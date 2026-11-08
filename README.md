@@ -20,7 +20,7 @@ Windows.
 ## Install
 
 Download the latest release from
-[GitHub Releases](https://github.com/XthingsJacobs/devDeck/releases):
+[GitHub Releases](https://github.com/jacobs-256/devToolBox/releases):
 
 - **macOS** — open the DMG and drag DevDeck into Applications.
 - **Windows** — run the NSIS installer.

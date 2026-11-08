@@ -52,7 +52,7 @@ export default function AboutDialog({
           <div className={styles.links}>
             <a
               className={styles.linkBtn}
-              href="https://github.com/XthingsJacobs/devDeck"
+              href="https://github.com/jacobs-256/devToolBox"
               target="_blank"
               rel="noreferrer"
             >
@@ -61,7 +61,7 @@ export default function AboutDialog({
             </a>
             <a
               className={styles.linkBtn}
-              href="https://github.com/XthingsJacobs/devDeck"
+              href="https://github.com/jacobs-256/devToolBox"
               target="_blank"
               rel="noreferrer"
             >

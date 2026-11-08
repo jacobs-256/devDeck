@@ -18,8 +18,8 @@
   "categoryId": "dev-tools",
   "author": "DevDeck",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/XthingsJacobs/devDeck",
-  "repository": "https://github.com/XthingsJacobs/devDeck",
+  "homepage": "https://github.com/jacobs-256/devToolBox",
+  "repository": "https://github.com/jacobs-256/devToolBox",
   "iconKey": "vsc:VscTerminal",
   "permissions": ["storage:kv", "net:ssh"]
 }

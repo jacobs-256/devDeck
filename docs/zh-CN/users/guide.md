@@ -4,7 +4,7 @@ DevDeck 是一个包含 27 个内置工具和开放插件市场的桌面工具�
 
 ## 安装
 
-从 [GitHub Releases](https://github.com/XthingsJacobs/devDeck/releases) 下载：
+从 [GitHub Releases](https://github.com/jacobs-256/devToolBox/releases) 下载：
 
 - **macOS**：打开 DMG，将 DevDeck 拖入 Applications。
 - **Windows**：运行 NSIS 安装程序（x64）。
@@ -38,7 +38,7 @@ DevDeck 是一个包含 27 个内置工具和开放插件市场的桌面工具�
 首次启动会自动添加官方 GitHub 注册表：
 
 ```text
-https://github.com/XthingsJacobs/devToolBox/releases/download/marketplace/registry.json
+https://github.com/jacobs-256/devToolBox/releases/download/marketplace/registry.json
 ```
 
 点击 **Refresh** 可重新加载目录。
@@ -86,4 +86,4 @@ https://github.com/XthingsJacobs/devToolBox/releases/download/marketplace/regist
 
 ## 反馈
 
-通过 [GitHub Issues](https://github.com/XthingsJacobs/devDeck/issues) 报告问题，附版本、系统、复现步骤与截图/日志。安全问题请遵循[安全策略](../../governance/security.md)。
+通过 [GitHub Issues](https://github.com/jacobs-256/devToolBox/issues) 报告问题，附版本、系统、复现步骤与截图/日志。安全问题请遵循[安全策略](../../governance/security.md)。

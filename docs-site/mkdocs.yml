@@ -1,7 +1,7 @@
 site_name: DevDeck
 site_url: https://dtb.256th.com
-repo_url: https://github.com/XthingsJacobs/devDeck
-repo_name: XthingsJacobs/devDeck
+repo_url: https://github.com/jacobs-256/devToolBox
+repo_name: jacobs-256/devToolBox
 
 docs_dir: ../docs
 site_dir: site

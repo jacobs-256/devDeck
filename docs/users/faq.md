@@ -7,7 +7,7 @@
 DevDeck adds the official GitHub registry on first launch:
 
 ```text
-https://github.com/XthingsJacobs/devToolBox/releases/download/marketplace/registry.json
+https://github.com/jacobs-256/devToolBox/releases/download/marketplace/registry.json
 ```
 
 If the list is empty:
@@ -107,5 +107,5 @@ tool tab).
 ## Support
 
 Include the version, OS/architecture, steps to reproduce, and screenshots or log
-excerpts in [GitHub Issues](https://github.com/XthingsJacobs/devDeck/issues).
+excerpts in [GitHub Issues](https://github.com/jacobs-256/devToolBox/issues).
 For security issues, follow the [Security Policy](../governance/security.md).

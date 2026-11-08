@@ -4,11 +4,12 @@ on:
   push:
     tags:
       - 'v*'
+      - '[0-9]*'
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to build (e.g. v3.0.0); required for manual runs'
-        required: false
+        description: 'Tag to build (e.g. v3.0.0)'
+        required: true
 
 permissions:
   contents: write
@@ -28,13 +29,23 @@ jobs:
           - label: macOS arm64
             os: macos-latest
             target: aarch64-apple-darwin
-            args: '--bundles app,dmg --target aarch64-apple-darwin --config {"bundle":{"createUpdaterArtifacts":true}}'
+            args: '--bundles app,dmg --target aarch64-apple-darwin --config src-tauri/tauri.release.conf.json'
           - label: Windows x64
             os: windows-latest
             target: ''
-            args: '--bundles nsis --config {"bundle":{"createUpdaterArtifacts":true}}'
+            args: '--bundles nsis --config src-tauri/tauri.release.conf.json'
     steps:
       - uses: actions/checkout@v4
+
+      - name: Require updater signing key
+        shell: bash
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: |
+          if [[ -z "${TAURI_SIGNING_PRIVATE_KEY}" ]]; then
+            echo "::error::Missing TAURI_SIGNING_PRIVATE_KEY repository secret."
+            exit 1
+          fi
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -70,8 +81,8 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           projectPath: apps/desktop
-          tagName: ${{ github.ref_name }}
-          releaseName: DevDeck ${{ github.ref_name }}
+          tagName: ${{ inputs.tag || github.ref_name }}
+          releaseName: DevDeck ${{ inputs.tag || github.ref_name }}
           releaseBody: 'See CHANGELOG.md for details.'
           releaseDraft: true
           prerelease: false

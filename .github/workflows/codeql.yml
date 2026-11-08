@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - rust
   schedule:
     - cron: '0 3 * * 1'
 
