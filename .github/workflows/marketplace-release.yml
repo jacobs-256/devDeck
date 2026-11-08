@@ -35,6 +35,9 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      - name: Build plugin SDK
+        run: pnpm --filter @devdeck/plugin-sdk build
+
       - name: Build marketplace plugins
         run: pnpm -C marketplace build
 

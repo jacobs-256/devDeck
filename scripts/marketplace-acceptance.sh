@@ -45,6 +45,9 @@ need cargo
 need curl
 need zip
 
+echo "==> Building plugin SDK"
+pnpm --dir "${ROOT}" --filter @devdeck/plugin-sdk build >/dev/null
+
 echo "==> Building ${PLUGIN}"
 pnpm --dir "${ROOT}" --filter "@devdeck/plugin-${PLUGIN}" build >/dev/null
 

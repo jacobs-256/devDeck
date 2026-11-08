@@ -127,5 +127,8 @@ jobs:
       - name: Install JS dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build plugin SDK
+        run: pnpm --filter @devdeck/plugin-sdk build
+
       - name: Marketplace acceptance (signed artifacts)
         run: ./scripts/marketplace-acceptance.sh market-emoji-search
