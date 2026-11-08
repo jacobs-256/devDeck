@@ -97,18 +97,17 @@ export default function App() {
       .catch(() => undefined);
   }, []);
 
-  // Seed the official registry once. Removing it later is respected via the flag.
+  // Ensure the official registry is present on every launch. Older builds set
+  // a one-shot flag even when the registry URL had moved, leaving the release
+  // UI with no way to add it back (release builds hide custom registries).
   useEffect(() => {
-    const key = 'devdeck.defaultRegistrySeeded';
     void (async () => {
       try {
         const sources = await listSources();
-        const hasDefault = sources.some((source) => source.url === DEFAULT_REGISTRY_URL);
-        if (window.localStorage.getItem(key) === '1') return;
-        if (!hasDefault) {
+        if (!sources.some((source) => source.url === DEFAULT_REGISTRY_URL)) {
           await addSource(DEFAULT_REGISTRY_URL, { name: 'DevDeck Marketplace' });
         }
-        window.localStorage.setItem(key, '1');
+        window.localStorage.removeItem('devdeck.defaultRegistrySeeded');
       } catch {
         // Offline or validation failure: retry on the next launch.
       }

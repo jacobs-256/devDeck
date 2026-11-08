@@ -1303,7 +1303,7 @@ dependencies = [
 
 [[package]]
 name = "devdeck-capability"
-version = "3.0.0"
+version = "3.0.1"
 dependencies = [
  "devdeck-contract",
  "serde",
@@ -1315,7 +1315,7 @@ dependencies = [
 
 [[package]]
 name = "devdeck-contract"
-version = "3.0.0"
+version = "3.0.1"
 dependencies = [
  "semver",
  "serde",
@@ -1327,7 +1327,7 @@ dependencies = [
 
 [[package]]
 name = "devdeck-desktop"
-version = "3.0.0"
+version = "3.0.1"
 dependencies = [
  "base64 0.22.1",
  "devdeck-capability",
@@ -1367,7 +1367,7 @@ dependencies = [
 
 [[package]]
 name = "devdeck-market"
-version = "3.0.0"
+version = "3.0.1"
 dependencies = [
  "base64 0.22.1",
  "devdeck-contract",
