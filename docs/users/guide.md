@@ -6,7 +6,7 @@ marketplace. This guide covers the interface, plugins, settings, and shortcuts.
 ## Install
 
 Download the latest installer from
-[GitHub Releases](https://github.com/jacobs-256/devToolBox/releases):
+[GitHub Releases](https://github.com/jacobs-256/devDeck/releases):
 
 - **macOS** — open the DMG and drag DevDeck into Applications.
 - **Windows** — run the NSIS installer (x64).
@@ -49,7 +49,7 @@ the Rust host.
 DevDeck ships with the official GitHub registry as the default source:
 
 ```text
-https://github.com/jacobs-256/devToolBox/releases/download/marketplace/registry.json
+https://github.com/jacobs-256/devDeck/releases/download/marketplace/registry.json
 ```
 
 It is added once on first launch. Use **Refresh** to reload the catalog.
@@ -111,6 +111,6 @@ Plugin data is stored in the app data directory and survives updates.
 
 ## Report an issue
 
-Use [GitHub Issues](https://github.com/jacobs-256/devToolBox/issues) and
+Use [GitHub Issues](https://github.com/jacobs-256/devDeck/issues) and
 include the version, OS/architecture, steps to reproduce, and screenshots or log
 excerpts. For security reports, follow the [Security Policy](../governance/security.md).

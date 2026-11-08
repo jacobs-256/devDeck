@@ -8,8 +8,8 @@
   "categoryId": "other-tools",
   "author": "DevDeck",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/jacobs-256/devToolBox",
-  "repository": "https://github.com/jacobs-256/devToolBox",
+  "homepage": "https://github.com/jacobs-256/devDeck",
+  "repository": "https://github.com/jacobs-256/devDeck",
   "permissions": ["storage:kv", "http:proxy", "http:external"],
   "httpDomains": ["api.frankfurter.app"]
 }

@@ -34,7 +34,7 @@
 ## Build or launch has no plugins / empty Marketplace
 
 DevDeck adds the official GitHub registry on first launch. If it is missing,
-add `https://github.com/jacobs-256/devToolBox/releases/download/marketplace/registry.json` in **Marketplace** and click **Refresh**.
+add `https://github.com/jacobs-256/devDeck/releases/download/marketplace/registry.json` in **Marketplace** and click **Refresh**.
 Use HTTPS, or `http://localhost` / `http://127.0.0.1` for local testing. If a
 local registry is not loading, confirm the Python/Node server is running and the
 URL points at the JSON file.

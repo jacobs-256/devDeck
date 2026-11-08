@@ -8,7 +8,7 @@ import styles from './AboutFooter.module.css';
 
 type Phase = 'idle' | 'checking' | 'current' | 'available' | 'installing' | 'ready' | 'error';
 
-const REPOSITORY = 'https://github.com/jacobs-256/devToolBox';
+const REPOSITORY = 'https://github.com/jacobs-256/devDeck';
 const ISSUES = `${REPOSITORY}/issues`;
 
 function openExternal(url: string) {

@@ -52,7 +52,7 @@ git push origin HEAD --tags
 Publish the draft when the artifacts look right. The app's update endpoint is:
 
 ```
-https://github.com/jacobs-256/devToolBox/releases/latest/download/latest.json
+https://github.com/jacobs-256/devDeck/releases/latest/download/latest.json
 ```
 
 Because it uses `releases/latest`, only the newest **published** release is

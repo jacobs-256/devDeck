@@ -7,7 +7,7 @@
 DevDeck 首次启动会自动添加官方 GitHub 注册表：
 
 ```text
-https://github.com/jacobs-256/devToolBox/releases/download/marketplace/registry.json
+https://github.com/jacobs-256/devDeck/releases/download/marketplace/registry.json
 ```
 
 如果列表为空：
@@ -57,4 +57,4 @@ https://github.com/jacobs-256/devToolBox/releases/download/marketplace/registry.
 
 ## 支持
 
-在 [GitHub Issues](https://github.com/jacobs-256/devToolBox/issues) 提交版本、系统、复现步骤与日志。安全问题请遵循[安全策略](../../governance/security.md)。
+在 [GitHub Issues](https://github.com/jacobs-256/devDeck/issues) 提交版本、系统、复现步骤与日志。安全问题请遵循[安全策略](../../governance/security.md)。

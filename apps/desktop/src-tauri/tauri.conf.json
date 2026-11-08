@@ -59,7 +59,7 @@
   "plugins": {
     "updater": {
       "endpoints": [
-        "https://github.com/jacobs-256/devToolBox/releases/latest/download/latest.json"
+        "https://github.com/jacobs-256/devDeck/releases/latest/download/latest.json"
       ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEY5REEzRkZGQjZFQThBM0QKUldROWl1cTIvei9hK2NXcS9OVlJlVkxTQnFycHRpL2dsM3djZjNwWDNnWEV5NFA0aWxERHRERjgK"
     }

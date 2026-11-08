@@ -14,7 +14,7 @@ import type {
 } from './types';
 
 export const DEFAULT_REGISTRY_URL =
-  'https://github.com/jacobs-256/devToolBox/releases/download/marketplace/registry.json';
+  'https://github.com/jacobs-256/devDeck/releases/download/marketplace/registry.json';
 
 export function appInfo(): Promise<AppInfo> {
   return invoke<AppInfo>('app_info');
