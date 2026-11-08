@@ -38,6 +38,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Ensure release tag exists
+        if: matrix.label == 'macOS arm64'
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/${RELEASE_TAG}" >/dev/null 2>&1; then
+            echo "Tag ${RELEASE_TAG} already exists."
+            exit 0
+          fi
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            echo "::error::Workflow was triggered by tag ${RELEASE_TAG}, but the tag is not on origin."
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "${RELEASE_TAG}" -m "Release ${RELEASE_TAG}"
+          git push origin "refs/tags/${RELEASE_TAG}"
+          echo "Created and pushed tag ${RELEASE_TAG}."
+
       - name: Resolve updater signing
         id: updater
         shell: bash
