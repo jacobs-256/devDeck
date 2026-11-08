@@ -41,8 +41,12 @@ export function AboutFooter({ name, version }: { name?: string; version?: string
       setPhase('available');
       setMessage(t('update.available', { version: found.version }));
     } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      const noPublishedRelease = /valid release JSON|404|not found|failed to fetch|network error/i.test(
+        detail,
+      );
       setPhase('error');
-      setMessage(error instanceof Error ? error.message : String(error));
+      setMessage(noPublishedRelease ? t('update.noRelease') : t('update.checkFailed', { message: detail }));
     }
   };
 

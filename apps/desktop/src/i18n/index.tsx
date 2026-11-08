@@ -36,6 +36,8 @@ const en = {
   'update.downloading': 'Downloading update…',
   'update.installing': 'Installing update…',
   'update.ready': 'Update installed. Restart DevDeck to finish.',
+  'update.noRelease': 'No published update is available yet.',
+  'update.checkFailed': 'Update check failed: {message}',
   'update.unknown': 'unknown',
 
   'common.copy': 'Copy',
@@ -396,6 +398,8 @@ const zhCN: Dictionary = {
   'update.downloading': '正在下载更新…',
   'update.installing': '正在安装更新…',
   'update.ready': '更新已安装，重启 DevDeck 完成更新。',
+  'update.noRelease': '当前还没有已发布的更新。',
+  'update.checkFailed': '检查更新失败：{message}',
   'update.unknown': '未知',
 
   'common.copy': '复制',
