@@ -142,11 +142,14 @@ pub fn service_check(
 
 #[tauri::command]
 pub fn desktop_settings_set(
+    app: AppHandle,
     state: State<'_, AppState>,
     settings: crate::settings::DesktopSettings,
 ) -> Result<crate::settings::DesktopSettings, DevDeckError> {
     state.set_desktop_settings(&settings)?;
-    Ok(state.desktop_settings())
+    let saved = state.desktop_settings();
+    crate::sync_tray(&app, saved.tray_enabled);
+    Ok(saved)
 }
 
 #[tauri::command]

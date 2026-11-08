@@ -227,13 +227,13 @@ export default function SettingsPage({
     }
   };
 
-  const persistDesktop = async (next: DesktopSettings, message: string = copy.saved) => {
+  const persistDesktop = async (next: DesktopSettings) => {
     try {
       const saved = await saveDesktopSettings(next);
       setDesktop(saved);
       setPortInput(String(saved.servicePort));
       setService(await serviceStatus());
-      setSystemStatus(message);
+      setSystemStatus('');
     } catch (reason) {
       setError(formatError(reason));
     }
@@ -468,10 +468,10 @@ export default function SettingsPage({
                   className={styles.secondaryBtn}
                   onClick={() => {
                     if (!desktop) return;
-                    void persistDesktop(
-                      { ...desktop, servicePort: Number(portInput) || desktop.servicePort },
-                      copy.portSaved,
-                    );
+                    void persistDesktop({
+                      ...desktop,
+                      servicePort: Number(portInput) || desktop.servicePort,
+                    });
                   }}
                 >
                   <VscSave />
