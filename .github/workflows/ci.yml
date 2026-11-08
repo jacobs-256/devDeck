@@ -59,7 +59,7 @@ jobs:
       - name: Scaffold template builds
         run: |
           node marketplace/scripts/create.mjs --id market-ci-template --name "CI Template"
-          pnpm install --filter @devdeck/plugin-market-ci-template
+          pnpm install --no-frozen-lockfile
           pnpm --filter @devdeck/plugin-market-ci-template build
           rm -rf marketplace/modules/market-ci-template
 
