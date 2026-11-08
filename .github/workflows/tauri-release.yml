@@ -29,22 +29,26 @@ jobs:
           - label: macOS arm64
             os: macos-latest
             target: aarch64-apple-darwin
-            args: '--bundles app,dmg --target aarch64-apple-darwin --config src-tauri/tauri.release.conf.json'
+            args: '--bundles app,dmg --target aarch64-apple-darwin'
           - label: Windows x64
             os: windows-latest
             target: ''
-            args: '--bundles nsis --config src-tauri/tauri.release.conf.json'
+            args: '--bundles nsis'
     steps:
       - uses: actions/checkout@v4
 
-      - name: Require updater signing key
+      - name: Resolve updater signing
+        id: updater
         shell: bash
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
         run: |
-          if [[ -z "${TAURI_SIGNING_PRIVATE_KEY}" ]]; then
-            echo "::error::Missing TAURI_SIGNING_PRIVATE_KEY repository secret."
-            exit 1
+          if [[ -n "${TAURI_SIGNING_PRIVATE_KEY}" ]]; then
+            echo "extra=--config src-tauri/tauri.release.conf.json" >> "${GITHUB_OUTPUT}"
+            echo "Updater signing enabled."
+          else
+            echo "extra=" >> "${GITHUB_OUTPUT}"
+            echo "::warning::TAURI_SIGNING_PRIVATE_KEY is not configured; building without updater artifacts."
           fi
 
       - name: Setup pnpm
@@ -86,4 +90,4 @@ jobs:
           releaseBody: 'See CHANGELOG.md for details.'
           releaseDraft: true
           prerelease: false
-          args: ${{ matrix.args }}
+          args: ${{ matrix.args }} ${{ steps.updater.outputs.extra }}
