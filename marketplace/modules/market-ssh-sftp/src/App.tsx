@@ -10,6 +10,7 @@ import {
   type FormEvent,
 } from 'react';
 import TerminalPane from './TerminalPane';
+import { ConfirmDialog, TextPromptDialog } from './Dialogs';
 import {
   sdk,
   type SftpEntry,
@@ -75,6 +76,20 @@ type FolderPickerState = {
   entries: SftpEntry[];
   loading: boolean;
   error: string;
+};
+type TextPromptState = {
+  title: string;
+  label: string;
+  initial: string;
+  confirmLabel?: string;
+  onConfirm: (value: string) => void | Promise<void>;
+};
+type ConfirmPromptState = {
+  title: string;
+  message: string;
+  confirmLabel?: string;
+  destructive?: boolean;
+  onConfirm: () => void | Promise<void>;
 };
 
 type ResultLike = { ok: boolean; data?: unknown; error?: { message?: string } };
@@ -422,6 +437,8 @@ export default function App() {
   const [connectAfterSave, setConnectAfterSave] = useState(false);
   const [keyboardPrompt, setKeyboardPrompt] = useState<KeyboardPrompt | null>(null);
   const [keyboardAnswers, setKeyboardAnswers] = useState<string[]>([]);
+  const [textPrompt, setTextPrompt] = useState<TextPromptState | null>(null);
+  const [confirmPrompt, setConfirmPrompt] = useState<ConfirmPromptState | null>(null);
   const [notice, setNotice] = useState('');
   const [storageReady, setStorageReady] = useState(false);
   const privateKeyFileRef = useRef<HTMLInputElement | null>(null);
@@ -1188,12 +1205,18 @@ export default function App() {
   const renameSession = (tabId: string) => {
     const session = sessions[tabId];
     if (!session) return;
-    const title = window.prompt('Rename tab', session.title);
-    if (!title?.trim()) return;
-    setSessions((current) => ({
-      ...current,
-      [tabId]: { ...current[tabId], title: title.trim() },
-    }));
+    setTextPrompt({
+      title: 'Rename tab',
+      label: 'Tab title',
+      initial: session.title,
+      confirmLabel: 'Rename',
+      onConfirm: (nextTitle) => {
+        setSessions((current) => ({
+          ...current,
+          [tabId]: { ...current[tabId], title: nextTitle },
+        }));
+      },
+    });
   };
 
   const reconnectSession = async (tabId: string) => {
@@ -1433,8 +1456,7 @@ export default function App() {
     });
   };
 
-  const deleteProfile = async (profile: ConnectionProfile) => {
-    if (!window.confirm(`Delete connection “${profile.name}”?`)) return;
+  const performDeleteProfile = async (profile: ConnectionProfile) => {
     const active = Object.values(sessions).filter((session) => session.profileId === profile.id);
     const transportIds = new Set(active.map((session) => session.sessionId));
     const backendSessions = await sdk.ssh.listSessions();
@@ -1470,6 +1492,16 @@ export default function App() {
         .filter((item) => item.id !== profile.id)
         .map((item) => (item.proxyProfileId === profile.id ? { ...item, proxyProfileId: '' } : item)),
     );
+  };
+
+  const deleteProfile = (profile: ConnectionProfile) => {
+    setConfirmPrompt({
+      title: 'Delete connection',
+      message: `Delete “${profile.name}”? This disconnects its sessions and removes the saved credentials.`,
+      confirmLabel: 'Delete',
+      destructive: true,
+      onConfirm: () => performDeleteProfile(profile),
+    });
   };
 
   const openGroupCreator = () => {
@@ -2578,6 +2610,28 @@ export default function App() {
           </form>
         </div>
       )}
+
+      {textPrompt && (
+        <TextPromptDialog
+          title={textPrompt.title}
+          label={textPrompt.label}
+          initial={textPrompt.initial}
+          confirmLabel={textPrompt.confirmLabel}
+          onCancel={() => setTextPrompt(null)}
+          onConfirm={textPrompt.onConfirm}
+        />
+      )}
+
+      {confirmPrompt && (
+        <ConfirmDialog
+          title={confirmPrompt.title}
+          message={confirmPrompt.message}
+          confirmLabel={confirmPrompt.confirmLabel}
+          destructive={confirmPrompt.destructive}
+          onCancel={() => setConfirmPrompt(null)}
+          onConfirm={confirmPrompt.onConfirm}
+        />
+      )}
     </div>
   );
 }
@@ -2626,6 +2680,8 @@ function SftpBrowser({
   const [transferring, setTransferring] = useState('');
   const [dragActive, setDragActive] = useState(false);
   const [selected, setSelected] = useState<SftpEntry | null>(null);
+  const [textPrompt, setTextPrompt] = useState<TextPromptState | null>(null);
+  const [confirmPrompt, setConfirmPrompt] = useState<ConfirmPromptState | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const dragDepthRef = useRef(0);
   const breadcrumbs = useMemo(() => remotePathBreadcrumbs(pathValue), [pathValue]);
@@ -2759,37 +2815,59 @@ function SftpBrowser({
     void uploadFiles(Array.from(event.dataTransfer.files ?? []));
   };
 
-  const createDirectory = async () => {
-    const name = window.prompt('New directory name');
-    if (!name?.trim()) return;
-    const result = await sdk.ssh.sftpMkdir(sessionId, joinRemotePath(pathValue, name.trim()));
-    if (!result.ok) onError(resultError(result, 'Unable to create directory.'));
-    else void load(pathValue);
+  const createDirectory = () => {
+    setTextPrompt({
+      title: 'New directory',
+      label: 'Directory name',
+      initial: '',
+      confirmLabel: 'Create',
+      onConfirm: async (name) => {
+        const result = await sdk.ssh.sftpMkdir(sessionId, joinRemotePath(pathValue, name));
+        if (!result.ok) onError(resultError(result, 'Unable to create directory.'));
+        else void load(pathValue);
+      },
+    });
   };
 
-  const deleteEntry = async () => {
+  const deleteEntry = () => {
     if (!selected) return;
-    if (!window.confirm(`Delete “${selected.name}”?`)) return;
-    const result = await sdk.ssh.sftpDelete(
-      sessionId,
-      joinRemotePath(pathValue, selected.name),
-      selected.type === 'directory' ? 'directory' : 'file',
-    );
-    if (!result.ok) onError(resultError(result, 'Unable to delete remote item.'));
-    else void load(pathValue);
+    const entry = selected;
+    setConfirmPrompt({
+      title: 'Delete remote item',
+      message: `Delete “${entry.name}”? This cannot be undone.`,
+      confirmLabel: 'Delete',
+      destructive: true,
+      onConfirm: async () => {
+        const result = await sdk.ssh.sftpDelete(
+          sessionId,
+          joinRemotePath(pathValue, entry.name),
+          entry.type === 'directory' ? 'directory' : 'file',
+        );
+        if (!result.ok) onError(resultError(result, 'Unable to delete remote item.'));
+        else void load(pathValue);
+      },
+    });
   };
 
-  const renameEntry = async () => {
+  const renameEntry = () => {
     if (!selected) return;
-    const name = window.prompt('New name', selected.name);
-    if (!name?.trim() || name.trim() === selected.name) return;
-    const result = await sdk.ssh.sftpRename(
-      sessionId,
-      joinRemotePath(pathValue, selected.name),
-      joinRemotePath(pathValue, name.trim()),
-    );
-    if (!result.ok) onError(resultError(result, 'Unable to rename remote item.'));
-    else void load(pathValue);
+    const entry = selected;
+    setTextPrompt({
+      title: 'Rename remote item',
+      label: 'New name',
+      initial: entry.name,
+      confirmLabel: 'Rename',
+      onConfirm: async (name) => {
+        if (name === entry.name) return;
+        const result = await sdk.ssh.sftpRename(
+          sessionId,
+          joinRemotePath(pathValue, entry.name),
+          joinRemotePath(pathValue, name),
+        );
+        if (!result.ok) onError(resultError(result, 'Unable to rename remote item.'));
+        else void load(pathValue);
+      },
+    });
   };
 
   const submitPath = (event: FormEvent) => {
@@ -3009,6 +3087,28 @@ function SftpBrowser({
           )}
         </div>
       </div>
+
+      {textPrompt && (
+        <TextPromptDialog
+          title={textPrompt.title}
+          label={textPrompt.label}
+          initial={textPrompt.initial}
+          confirmLabel={textPrompt.confirmLabel}
+          onCancel={() => setTextPrompt(null)}
+          onConfirm={textPrompt.onConfirm}
+        />
+      )}
+
+      {confirmPrompt && (
+        <ConfirmDialog
+          title={confirmPrompt.title}
+          message={confirmPrompt.message}
+          confirmLabel={confirmPrompt.confirmLabel}
+          destructive={confirmPrompt.destructive}
+          onCancel={() => setConfirmPrompt(null)}
+          onConfirm={confirmPrompt.onConfirm}
+        />
+      )}
     </div>
   );
 }

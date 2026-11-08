@@ -1,4 +1,4 @@
-/** Types mirrored from `crates/devtoolbox-contract` and the host commands. */
+/** Types mirrored from `crates/devdeck-contract` and the host commands. */
 
 export type PluginPermission = string;
 
@@ -43,16 +43,15 @@ export interface InstalledPlugin {
   source: InstallSource;
 }
 
-import type { Language } from './i18n';
-
 export interface AppInfo {
   name: string;
   version: string;
   platform: string;
   arch: string;
   dataDir: string;
-  theme: Theme;
-  language: Language;
+  theme: ThemeSetting;
+  language: LanguageSetting;
+  textSize: TextSize;
 }
 
 export interface SdkError {
@@ -62,6 +61,24 @@ export interface SdkError {
 }
 
 export type Theme = 'light' | 'dark';
+export type ThemeSetting = Theme | 'auto';
+export type LanguageSetting = 'en' | 'zh-CN' | 'auto';
+export type TextSize = 'small' | 'default' | 'large' | 'xlarge';
+export type CloseBehavior = 'ask' | 'tray' | 'quit';
+
+export interface ServiceStatus {
+  port: number;
+  autoSelect: boolean;
+  activePort: number;
+  running: boolean;
+}
+
+export interface DesktopSettings {
+  closeBehavior: CloseBehavior;
+  trayEnabled: boolean;
+  servicePort: number;
+  serviceAutoPort: boolean;
+}
 
 export interface RegistrySource {
   id: string;

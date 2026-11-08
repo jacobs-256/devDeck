@@ -1,6 +1,7 @@
 // @ts-nocheck
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styles from './ClientPanel.module.css';
+import { useI18n } from '../../../i18n';
 
 type LogKind = 'system' | 'send' | 'recv' | 'error';
 type LogItem = { ts: string; level: 'info' | 'error'; kind: LogKind; text: string };
@@ -15,6 +16,8 @@ function nowText(): string {
 }
 
 export default function ClientPanel() {
+  const { locale } = useI18n();
+  const tr = (en: string, zh: string) => (locale === 'zh-CN' ? zh : en);
   const [url, setUrl] = useState('ws://127.0.0.1:8080/ws');
   const [message, setMessage] = useState('{"type":"ping"}');
   const [connected, setConnected] = useState(false);
@@ -23,7 +26,7 @@ export default function ClientPanel() {
 
   const wsRef = useRef<WebSocket | null>(null);
 
-  const statusText = useMemo(() => (connected ? 'Connected' : 'Disconnected'), [connected]);
+  const statusText = connected ? tr('Connected', '已连接') : tr('Disconnected', '未连接');
 
   const classifyLog = (level: LogItem['level'], text: string): LogKind => {
     if (level === 'error') return 'error';
@@ -55,7 +58,7 @@ export default function ClientPanel() {
     setError('');
     const u = url.trim();
     if (!u) {
-      setError('Missing URL');
+      setError(tr('Missing URL', '缺少 URL'));
       return;
     }
     disconnect();
@@ -90,7 +93,7 @@ export default function ClientPanel() {
     setError('');
     const ws = wsRef.current;
     if (!ws || ws.readyState !== WebSocket.OPEN) {
-      setError('WebSocket is not connected');
+      setError(tr('WebSocket is not connected', 'WebSocket 未连接'));
       return;
     }
     try {
@@ -109,76 +112,87 @@ export default function ClientPanel() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.inputBar}>
-        <div className={styles.label}>URL</div>
-        <input
-          className={styles.textInput}
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder="ws://host:port/path"
-        />
-        <button className={`${styles.actionBtn} ${styles.primaryBtn}`} onClick={connect} disabled={connected}>
-          Connect
-        </button>
-        <button
-          className={`${styles.actionBtn} ${styles.stopBtn}`}
-          onClick={disconnect}
-          disabled={!connected}
-        >
-          Disconnect
-        </button>
-        <div className={styles.hint}>{statusText} · Protocol debugging</div>
-      </div>
-
-      {error ? (
-        <div className={styles.inputBar}>
-          <div className={styles.hint} style={{ color: 'var(--color-error, #e74c3c)' }}>
-            {error}
-          </div>
+      <section className={styles.card}>
+        <div className={styles.cardHeader}>
+          <div className={styles.cardTitle}>{tr('Connection', '连接')}</div>
+          <span className={`${styles.statusChip}${connected ? ` ${styles.statusOn}` : ''}`}>
+            <i className={styles.statusDot} />
+            {statusText}
+          </span>
         </div>
-      ) : null}
+        <div className={styles.urlRow}>
+          <input
+            className={styles.urlInput}
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="ws://host:port/path"
+            spellCheck={false}
+          />
+          <button className={`${styles.btn} ${styles.primary}`} onClick={connect} disabled={connected}>
+            {tr('Connect', '连接')}
+          </button>
+          <button className={`${styles.btn} ${styles.danger}`} onClick={disconnect} disabled={!connected}>
+            {tr('Disconnect', '断开')}
+          </button>
+        </div>
+      </section>
 
-      <div className={styles.outputArea}>
-        {logs.length === 0 ? (
-          <div className={styles.outputEmpty}>No frames.</div>
-        ) : (
-          <div className={styles.logList}>
-            {logs.map((l, idx) => (
-              <div
-                key={`${l.ts}_${idx}`}
-                className={`${styles.logLine} ${
-                  l.kind === 'recv'
-                    ? styles.logRecv
-                    : l.kind === 'send'
-                      ? styles.logSend
-                      : l.kind === 'error'
-                        ? styles.logError
-                        : styles.logSystem
-                }`}
-              >
-                <span className={styles.logTs}>{l.ts}</span>
-                <span className={styles.logLv}>{l.level.toUpperCase()}</span>
-                <span className={styles.logMsg}>{l.text}</span>
-              </div>
-            ))}
+      {error ? <div className={styles.errorBanner}>{error}</div> : null}
+
+      <section className={`${styles.card} ${styles.logCard}`}>
+        <div className={styles.cardHeader}>
+          <div className={styles.cardTitle}>
+            {tr('Frames', '帧')} <span className={styles.count}>{logs.length}</span>
           </div>
-        )}
-      </div>
+          <button className={styles.textBtn} onClick={() => setLogs([])} disabled={logs.length === 0}>
+            {tr('Clear', '清空')}
+          </button>
+        </div>
+        <div className={styles.logArea} role="log" aria-live="polite">
+          {logs.length === 0 ? (
+            <div className={styles.outputEmpty}>{tr('No frames yet.', '暂无帧')}</div>
+          ) : (
+            <div className={styles.logList}>
+              {logs.map((l, idx) => (
+                <div
+                  key={`${l.ts}_${idx}`}
+                  className={`${styles.logLine} ${
+                    l.kind === 'recv'
+                      ? styles.logRecv
+                      : l.kind === 'send'
+                        ? styles.logSend
+                        : l.kind === 'error'
+                          ? styles.logError
+                          : styles.logSystem
+                  }`}
+                >
+                  <span className={styles.logTs}>{l.ts}</span>
+                  <span className={styles.logLv}>{l.level.toUpperCase()}</span>
+                  <span className={styles.logMsg}>{l.text}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
 
-      <div className={styles.row}>
-        <input
-          className={styles.msgInput}
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Payload (text/JSON)"
-        />
-        <button className={`${styles.actionBtn} ${styles.primaryBtn}`} onClick={send} disabled={!connected}>
-          Send Frame
-        </button>
-        <button className={styles.actionBtn} onClick={() => setLogs([])}>
-          Clear
-        </button>
-      </div>
+      <section className={styles.card}>
+        <div className={styles.cardHeader}>
+          <div className={styles.cardTitle}>{tr('Send frame', '发送帧')}</div>
+        </div>
+        <div className={styles.composerRow}>
+          <input
+            className={styles.msgInput}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder={tr('Payload (text/JSON)', '载荷（文本/JSON）')}
+            spellCheck={false}
+          />
+          <button className={`${styles.btn} ${styles.primary}`} onClick={send} disabled={!connected}>
+            {tr('Send', '发送')}
+          </button>
+        </div>
+      </section>
     </div>
   );
 }

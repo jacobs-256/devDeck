@@ -51,7 +51,7 @@ if (!tag) {
   process.exit(1);
 }
 
-const signingKey = String(process.env.DEVTOOLBOX_SIGNING_KEY ?? '').trim();
+const signingKey = String(process.env.DEVDECK_SIGNING_KEY ?? process.env.DEVTOOLBOX_SIGNING_KEY ?? '').trim();
 
 const outDir = path.join(root, 'release-dist');
 rmrf(outDir);
@@ -95,7 +95,7 @@ for (const id of resolvedIds) {
   const builtEntryPath = path.join(pluginDir, entry);
   if (!fs.existsSync(builtEntryPath)) {
     throw new Error(
-      `Entry not built yet: ${builtEntryPath}. Run pnpm --filter @devtoolbox/plugin-${id} build`,
+      `Entry not built yet: ${builtEntryPath}. Run pnpm --filter @devdeck/plugin-${id} build`,
     );
   }
 

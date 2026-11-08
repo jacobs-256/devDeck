@@ -8,7 +8,7 @@ describe('base64', () => {
   });
 
   it('round-trips non-ASCII text', () => {
-    const text = '你好，DevToolBox 🧰';
+    const text = '你好，DevDeck 🧰';
     expect(decodeBase64(encodeBase64(text))).toEqual({ ok: true, value: text });
   });
 

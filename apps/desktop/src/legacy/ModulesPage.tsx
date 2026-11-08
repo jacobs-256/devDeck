@@ -10,7 +10,9 @@ import {
 } from 'react-icons/vsc';
 import styles from './ModulesPage.module.css';
 import {
+  DEFAULT_REGISTRY_URL,
   addSource,
+  formatError,
   installFromRegistry,
   listPlugins,
   listSources,
@@ -33,6 +35,8 @@ function compareVersions(a: string, b: string): number {
   }
   return 0;
 }
+
+const IS_DEV = import.meta.env.DEV;
 
 export default function ModulesPage({
   onInstalledChange,
@@ -63,9 +67,14 @@ export default function ModulesPage({
       onInstalledChange(plugins);
       setSources(sourceList);
       setCatalog(catalogResult.entries);
-      setErrors(catalogResult.errors.map((e) => `${e.sourceName}: ${e.message}`));
+      const officialId = sourceList.find((source) => source.url === DEFAULT_REGISTRY_URL)?.id;
+      setErrors(
+        catalogResult.errors
+          .filter((e) => IS_DEV || e.sourceId === officialId)
+          .map((e) => `${e.sourceName}: ${e.message}`),
+      );
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : String(reason));
+      setError(formatError(reason));
     }
   }, [onInstalledChange]);
 
@@ -73,16 +82,20 @@ export default function ModulesPage({
     void refresh();
   }, [refresh]);
 
+  const officialSourceId = sources.find((source) => source.url === DEFAULT_REGISTRY_URL)?.id;
+  const visibleSources = IS_DEV ? sources : sources.filter((source) => source.url === DEFAULT_REGISTRY_URL);
+
   const latestById = useMemo(() => {
     const map = new Map<string, CatalogEntry>();
     for (const entry of catalog) {
+      if (!IS_DEV && entry.sourceId !== officialSourceId) continue;
       const current = map.get(entry.manifest.id);
       if (!current || compareVersions(entry.manifest.version, current.manifest.version) > 0) {
         map.set(entry.manifest.id, entry);
       }
     }
     return map;
-  }, [catalog]);
+  }, [catalog, officialSourceId]);
 
   const installedById = useMemo(() => new Map(installed.map((p) => [p.manifest.id, p])), [installed]);
   const upgrades = useMemo(
@@ -121,7 +134,7 @@ export default function ModulesPage({
       await installFromRegistry(entry.sourceId, entry.manifest.id, entry.manifest.version);
       await refresh();
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : String(reason));
+      setError(formatError(reason));
     } finally {
       setBusyId(null);
     }
@@ -142,7 +155,7 @@ export default function ModulesPage({
       setSourceUrl('');
       await refresh();
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : String(reason));
+      setError(formatError(reason));
     }
   };
 
@@ -186,39 +199,43 @@ export default function ModulesPage({
 
       <div className={styles.registryBar}>
         <div className={styles.registryList}>
-          {sources.length === 0 ? (
+          {visibleSources.length === 0 ? (
             <span className={styles.registryEmpty}>No registries yet.</span>
           ) : (
-            sources.map((source) => (
+            visibleSources.map((source) => (
               <span key={source.id} className={styles.sourceChip} title={source.url}>
                 {source.name}
                 {source.requireSignature ? <span className={styles.sourceBadge}>signed</span> : null}
-                <button
-                  type="button"
-                  className={styles.sourceRemove}
-                  aria-label={`Remove ${source.name}`}
-                  onClick={() => void removeSource(source.id).then(refresh)}
-                >
-                  ×
-                </button>
+                {IS_DEV ? (
+                  <button
+                    type="button"
+                    className={styles.sourceRemove}
+                    aria-label={`Remove ${source.name}`}
+                    onClick={() => void removeSource(source.id).then(refresh)}
+                  >
+                    ×
+                  </button>
+                ) : null}
               </span>
             ))
           )}
         </div>
-        <div className={styles.registryForm}>
-          <input
-            className={styles.input}
-            value={sourceUrl}
-            placeholder="https://example.com/registry.json"
-            onChange={(e) => setSourceUrl(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') void onAddSource();
-            }}
-          />
-          <button type="button" className={styles.smallBtn} onClick={() => void onAddSource()}>
-            Add registry
-          </button>
-        </div>
+        {IS_DEV ? (
+          <div className={styles.registryForm}>
+            <input
+              className={styles.input}
+              value={sourceUrl}
+              placeholder="https://example.com/registry.json"
+              onChange={(e) => setSourceUrl(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') void onAddSource();
+              }}
+            />
+            <button type="button" className={styles.smallBtn} onClick={() => void onAddSource()}>
+              Add registry
+            </button>
+          </div>
+        ) : null}
       </div>
 
       <div className={styles.topbar}>
@@ -412,7 +429,7 @@ export default function ModulesPage({
                     <button
                       type="button"
                       className={styles.actionBtn}
-                      data-variant={installedEntry ? 'upgrade' : 'install'}
+                      data-variant={installedEntry ? (hasUpdate ? 'upgrade' : 'reinstall') : 'install'}
                       disabled={busyId === entry.manifest.id}
                       onClick={() => void runInstall(entry)}
                     >

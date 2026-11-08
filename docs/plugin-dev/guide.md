@@ -1,6 +1,6 @@
 # Plugin Developer Guide
 
-DevToolBox plugins are small web applications that run in a sandboxed iframe and
+DevDeck plugins are small web applications that run in a sandboxed iframe and
 reach the host only through the SDK. This guide covers the runtime, manifest,
 permissions, local development, and publishing. For a step-by-step tutorial see
 [Marketplace Authoring (SDK 2.0)](marketplace-v2.md).
@@ -16,7 +16,7 @@ permissions, local development, and publishing. For a step-by-step tutorial see
 - Calls travel by `postMessage` to the host renderer, which invokes the single
   gated `plugin_sdk_call` command. The host re-checks installation, enablement,
   and permissions on every call.
-- Events (socket data, SSH output) are pushed back as `devtoolbox:event`
+- Events (socket data, SSH output) are pushed back as `devdeck:event`
   messages; use `onSocketEvent` / `onSshEvent`.
 
 ## 2. Scaffold
@@ -25,7 +25,7 @@ Inside the repository:
 
 ```bash
 node marketplace/scripts/create.mjs --id market-my-tool --name "My Tool"
-pnpm --filter @devtoolbox/plugin-market-my-tool build
+pnpm --filter @devdeck/plugin-market-my-tool build
 ```
 
 The scaffold creates:
@@ -38,12 +38,12 @@ marketplace/modules/market-my-tool/
 ├── src/
 │   ├── App.tsx
 │   ├── main.tsx
-│   ├── sdk.ts          re-exports @devtoolbox/plugin-sdk
+│   ├── sdk.ts          re-exports @devdeck/plugin-sdk
 │   └── style.css
 └── vite.config.ts
 ```
 
-Standalone plugins can depend on `@devtoolbox/plugin-sdk@2` from npm and build
+Standalone plugins can depend on `@devdeck/plugin-sdk@2` from npm and build
 with any bundler; the package shape is `manifest.json` + an entry folder.
 
 ## 3. manifest.json
@@ -69,7 +69,7 @@ with any bundler; the package shape is `manifest.json` + an entry folder.
 }
 ```
 
-Rules (enforced by `crates/devtoolbox-contract/src/manifest.rs`):
+Rules (enforced by `crates/devdeck-contract/src/manifest.rs`):
 
 - `id` is kebab-case and starts with `market-`.
 - `version` is SemVer; `(id, version)` must be unique per registry.
@@ -107,7 +107,7 @@ calls fail with `unimplemented_permission` until a host implementation lands.
 ## 5. Using the SDK
 
 ```ts
-import { sdk, followHostTheme, onSocketEvent } from '@devtoolbox/plugin-sdk';
+import { sdk, followHostTheme, onSocketEvent } from '@devdeck/plugin-sdk';
 
 followHostTheme();
 await sdk.storage.set('lastQuery', 'hello');
@@ -117,7 +117,7 @@ sdk.log.info('loaded', response.status);
 ```
 
 - Every SDK call returns the host `data` payload or throws a
-  `DevToolboxSdkError` with `code`, `message`, and optional `details`.
+  `DevDeckSdkError` with `code`, `message`, and optional `details`.
 - `sdk.capabilities.list()` returns the grant issued for this plugin.
 - See [SDK reference](sdk.md) for every namespace and event.
 
@@ -127,15 +127,15 @@ The host has no “install folder/zip” button; use a local registry:
 
 ```bash
 # Build
-pnpm --filter @devtoolbox/plugin-market-my-tool build
+pnpm --filter @devdeck/plugin-market-my-tool build
 
 # Pack + sign
-pnpm --filter @devtoolbox/marketplace pack market-my-tool
-DEVTOOLBOX_SIGNING_KEY=$(cat .signing/my-key.txt) \
-  pnpm --filter @devtoolbox/marketplace sign .local-dist/market-my-tool-0.1.0.zip
+pnpm --filter @devdeck/marketplace pack market-my-tool
+DEVDECK_SIGNING_KEY=$(cat .signing/my-key.txt) \
+  pnpm --filter @devdeck/marketplace sign .local-dist/market-my-tool-0.1.0.zip
 
 # Registry for the local HTTP server
-pnpm --filter @devtoolbox/marketplace registry market-my-tool \
+pnpm --filter @devdeck/marketplace registry market-my-tool \
   --base-url http://127.0.0.1:8765 --out .local-dist/registry.json
 python3 -m http.server 8765 --directory marketplace/.local-dist
 ```
@@ -162,10 +162,10 @@ symlinks, and nested archives.
 ## 8. Publishing
 
 ```bash
-pnpm --filter @devtoolbox/marketplace registry --all \
+pnpm --filter @devdeck/marketplace registry --all \
   --base-url https://example.com/marketplace --out release-dist/registry.json
-DEVTOOLBOX_SIGNING_KEY=$(cat .signing/marketplace-key.txt) \
-  pnpm --filter @devtoolbox/marketplace sign release-dist/registry.json
+DEVDECK_SIGNING_KEY=$(cat .signing/marketplace-key.txt) \
+  pnpm --filter @devdeck/marketplace sign release-dist/registry.json
 ```
 
 Upload `registry.json`, `registry.json.sig`, and every `*.zip` (+ `.sig`) to any

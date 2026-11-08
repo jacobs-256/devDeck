@@ -3,36 +3,52 @@
 }
 
 .dtb-card {
-  border: 1px solid var(--border-default);
-  background: var(--bg-secondary);
-  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 .dtb-input {
-  border: 1px solid var(--border-subtle);
-  background: var(--bg-tertiary);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg-strong);
   color: var(--text-primary);
-  border-radius: 10px;
+  border-radius: 9px;
   padding: 8px 10px;
   outline: none;
 }
 
 .dtb-input:focus-visible {
   outline: none;
-  box-shadow: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-color-weak);
 }
 
 .dtb-button {
-  border: 1px solid var(--border-subtle);
-  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
   color: var(--text-primary);
-  border-radius: 10px;
+  border-radius: 9px;
   padding: 8px 10px;
 }
 
 .dtb-button:hover:not(:disabled) {
-  border-color: color-mix(in oklab, var(--accent-primary) 60%, var(--border-subtle));
+  border-color: var(--accent-secondary);
   background: var(--bg-hover);
+}
+
+.dtb-button.primary {
+  border-color: transparent;
+  background: var(--aurora-grad);
+  color: #fff;
+  box-shadow: 0 8px 18px -12px var(--accent-primary);
+}
+
+.dtb-button.primary:hover:not(:disabled) {
+  background: var(--aurora-grad-hover);
+  border-color: transparent;
 }
 
 .dtb-button:disabled {
@@ -42,12 +58,12 @@
 
 pre,
 .hljs {
-  background: var(--bg-secondary);
+  background: var(--glass-bg);
   color: var(--text-primary);
 }
 
 pre {
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--glass-border);
   border-radius: 12px;
   padding: 12px 14px;
   overflow: auto;
@@ -67,7 +83,7 @@ pre code {
 .hljs-keyword,
 .hljs-selector-tag,
 .hljs-subst {
-  color: var(--accent-secondary);
+  color: var(--syntax-key);
 }
 
 .hljs-string,
@@ -81,18 +97,18 @@ pre code {
 .hljs-name,
 .hljs-selector-id,
 .hljs-selector-class {
-  color: var(--cat-text);
+  color: var(--syntax-string);
 }
 
 .hljs-number,
 .hljs-symbol,
 .hljs-bullet,
 .hljs-link {
-  color: var(--cat-network);
+  color: var(--syntax-number);
 }
 
 .hljs-meta,
 .hljs-meta-keyword,
 .hljs-meta-string {
-  color: var(--cat-other);
+  color: var(--syntax-null);
 }

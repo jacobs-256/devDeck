@@ -11,7 +11,7 @@
   flex-shrink: 0;
   user-select: none;
   background-color: var(--bg-panel);
-  border-right: 1px dashed rgba(255, 255, 255, 0.12);
+  border-right: 1px dashed var(--border-default);
   overflow: hidden;
 }
 
@@ -77,7 +77,7 @@
 
 /* JSON syntax highlighting */
 .key {
-  color: #9cdcfe;
+  color: var(--syntax-key);
 }
 
 .colon {
@@ -85,19 +85,19 @@
 }
 
 .valStr {
-  color: #ce9178;
+  color: var(--syntax-string);
 }
 
 .valNum {
-  color: #b5cea8;
+  color: var(--syntax-number);
 }
 
 .valBool {
-  color: #569cd6;
+  color: var(--syntax-boolean);
 }
 
 .valNull {
-  color: #569cd6;
+  color: var(--syntax-boolean);
 }
 
 .bracket {

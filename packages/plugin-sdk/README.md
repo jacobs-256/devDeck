@@ -1,21 +1,21 @@
-# @devtoolbox/plugin-sdk
+# @devdeck/plugin-sdk
 
-The official SDK for building **DevToolBox Marketplace** plugins.
+The official SDK for building **DevDeck Marketplace** plugins.
 
 A plugin is a regular web app (HTML + JS/TS, any framework) that runs sandboxed
-inside DevToolBox. It reaches host capabilities only through this SDK, and the
+inside DevDeck. It reaches host capabilities only through this SDK, and the
 host enforces the permissions declared in `manifest.json` on every call.
 
 ## Install
 
 ```bash
-pnpm add @devtoolbox/plugin-sdk
+pnpm add @devdeck/plugin-sdk
 ```
 
 ## Minimal plugin
 
 ```ts
-import { sdk, followHostTheme } from '@devtoolbox/plugin-sdk';
+import { sdk, followHostTheme } from '@devdeck/plugin-sdk';
 
 followHostTheme((theme) => document.documentElement.classList.toggle('dark', theme === 'dark'));
 

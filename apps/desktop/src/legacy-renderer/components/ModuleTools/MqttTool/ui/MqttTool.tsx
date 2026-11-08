@@ -18,12 +18,25 @@ export default function MqttTool() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [hydrated, setHydrated] = useState(false);
+
   const [showEditor, setShowEditor] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showGroupDialog, setShowGroupDialog] = useState(false);
   const [groupName, setGroupName] = useState('');
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [statuses, setStatuses] = useState<Record<string, ConnStatus>>({});
+
+  useEffect(() => {
+    if (!showGroupDialog && !confirmDeleteId) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setShowGroupDialog(false);
+        setConfirmDeleteId(null);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [showGroupDialog, confirmDeleteId]);
 
   useEffect(() => {
     const load = async () => {
@@ -265,7 +278,7 @@ export default function MqttTool() {
 
       {showGroupDialog && (
         <div className={styles.overlay} onClick={() => setShowGroupDialog(false)}>
-          <div className={styles.dialog} onClick={(e) => e.stopPropagation()}>
+          <div className={styles.dialog} role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
             <div className={styles.dialogTitle}>{t('addGroup')}</div>
             <label className={styles.dialogLabel}>{t('groupName')}</label>
             <input
@@ -288,7 +301,7 @@ export default function MqttTool() {
 
       {confirmDeleteId && (
         <div className={styles.overlay} onClick={() => setConfirmDeleteId(null)}>
-          <div className={styles.dialog} onClick={(e) => e.stopPropagation()}>
+          <div className={styles.dialog} role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
             <div className={styles.dialogTitle}>{t('deleteConfirmTitle')}</div>
             <div style={{ color: 'var(--text-secondary)', fontSize: 12 }}>
               {t('deleteConfirmMsg', { name: configs.find((c) => c.id === confirmDeleteId)?.name ?? '' })}

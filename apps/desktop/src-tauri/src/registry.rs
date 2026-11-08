@@ -7,11 +7,11 @@
 
 use std::time::Duration;
 
-use devtoolbox_contract::{
-    DevToolboxError, EntryStatus, PluginId, PluginManifest, RegistryEntry, RegistryIndex,
+use devdeck_contract::{
+    DevDeckError, EntryStatus, PluginId, PluginManifest, RegistryEntry, RegistryIndex,
     SignatureEnvelope,
 };
-use devtoolbox_market::{
+use devdeck_market::{
     verify_detached_signature, verify_sha256, InstallOptions, InstallSource, InstalledPlugin,
     RegistrySource,
 };
@@ -59,12 +59,10 @@ pub struct Catalog {
 }
 
 /// Fetch and verify a registry document.
-pub async fn fetch_registry(source: &RegistrySource) -> Result<RegistryIndex, DevToolboxError> {
+pub async fn fetch_registry(source: &RegistrySource) -> Result<RegistryIndex, DevDeckError> {
     let bytes = fetch_optional(&source.url, MAX_REGISTRY_BYTES)
         .await?
-        .ok_or_else(|| {
-            DevToolboxError::NotFound(format!("registry '{}' returned 404", source.url))
-        })?;
+        .ok_or_else(|| DevDeckError::NotFound(format!("registry '{}' returned 404", source.url)))?;
 
     match source.public_key.as_deref() {
         Some(public_key) => {
@@ -73,16 +71,16 @@ pub async fn fetch_registry(source: &RegistrySource) -> Result<RegistryIndex, De
                 Some(signature_bytes) => {
                     let envelope: SignatureEnvelope = serde_json::from_slice(&signature_bytes)
                         .map_err(|err| {
-                            DevToolboxError::Signature(format!(
+                            DevDeckError::Signature(format!(
                                 "invalid registry signature file: {err}"
                             ))
                         })?;
                     verify_detached_signature(public_key, &bytes, &envelope.signature).map_err(
-                        |err| DevToolboxError::Signature(format!("registry signature: {err}")),
+                        |err| DevDeckError::Signature(format!("registry signature: {err}")),
                     )?;
                 }
                 None if source.require_signature => {
-                    return Err(DevToolboxError::Signature(
+                    return Err(DevDeckError::Signature(
                         "registry signature is required but registry.json.sig is missing"
                             .to_string(),
                     ))
@@ -91,7 +89,7 @@ pub async fn fetch_registry(source: &RegistrySource) -> Result<RegistryIndex, De
             }
         }
         None if source.require_signature => {
-            return Err(DevToolboxError::Signature(
+            return Err(DevDeckError::Signature(
                 "registry requires a signature but no public key is configured".to_string(),
             ))
         }
@@ -102,11 +100,11 @@ pub async fn fetch_registry(source: &RegistrySource) -> Result<RegistryIndex, De
 }
 
 /// Download a package and verify its digest (and declared size).
-pub async fn download_package(entry: &RegistryEntry) -> Result<Vec<u8>, DevToolboxError> {
+pub async fn download_package(entry: &RegistryEntry) -> Result<Vec<u8>, DevDeckError> {
     let bytes = fetch_optional(&entry.download_url, MAX_PACKAGE_BYTES)
         .await?
         .ok_or_else(|| {
-            DevToolboxError::NotFound(format!(
+            DevDeckError::NotFound(format!(
                 "package {}@{} returned 404",
                 entry.manifest.id, entry.manifest.version
             ))
@@ -114,7 +112,7 @@ pub async fn download_package(entry: &RegistryEntry) -> Result<Vec<u8>, DevToolb
 
     verify_sha256(&bytes, &entry.sha256)?;
     if entry.size > 0 && bytes.len() as u64 != entry.size {
-        return Err(DevToolboxError::Integrity(format!(
+        return Err(DevDeckError::Integrity(format!(
             "package size mismatch for {}@{} (registry {}, downloaded {})",
             entry.manifest.id,
             entry.manifest.version,
@@ -134,9 +132,9 @@ pub async fn install_from_registry(
     source_id: &str,
     plugin_id: &PluginId,
     version: Option<&str>,
-) -> Result<InstalledPlugin, DevToolboxError> {
+) -> Result<InstalledPlugin, DevDeckError> {
     let source = state.sources()?.get(source_id).ok_or_else(|| {
-        DevToolboxError::NotFound(format!("registry source '{source_id}' is not configured"))
+        DevDeckError::NotFound(format!("registry source '{source_id}' is not configured"))
     })?;
 
     let index = match state.cached_registry(source_id) {
@@ -153,17 +151,41 @@ pub async fn install_from_registry(
         None => index.latest(plugin_id),
     }
     .ok_or_else(|| {
-        DevToolboxError::NotFound(format!(
+        DevDeckError::NotFound(format!(
             "plugin '{plugin_id}' is not available from registry '{}'",
             source.name
         ))
     })?;
 
     if entry.status != EntryStatus::Active {
-        return Err(DevToolboxError::Unsupported(format!(
+        return Err(DevDeckError::Unsupported(format!(
             "release '{plugin_id}' {} is not installable (status {:?})",
             entry.manifest.version, entry.status
         )));
+    }
+
+    let source_is_file = Url::parse(&source.url).is_ok_and(|url| url.scheme() == "file");
+    if entry.download_url.starts_with("file:") && !source_is_file {
+        return Err(DevDeckError::denied(
+            "remote registries cannot point at local files".to_string(),
+        ));
+    }
+    if entry.download_url.starts_with("file:") {
+        let path = Url::parse(&entry.download_url)
+            .ok()
+            .and_then(|url| url.to_file_path().ok())
+            .ok_or_else(|| {
+                DevDeckError::InvalidArgument("invalid local package URL".to_string())
+            })?;
+        if !path
+            .extension()
+            .and_then(std::ffi::OsStr::to_str)
+            .is_some_and(|ext| ext.eq_ignore_ascii_case("zip"))
+        {
+            return Err(DevDeckError::InvalidArgument(
+                "file package URLs must point to a .zip file".to_string(),
+            ));
+        }
     }
 
     let bytes = download_package(entry).await?;
@@ -172,17 +194,17 @@ pub async fn install_from_registry(
     match &entry.signature {
         Some(signature) => {
             let public_key = source.public_key.as_ref().ok_or_else(|| {
-                DevToolboxError::Signature(
+                DevDeckError::Signature(
                     "package is signed but the registry source has no public key".to_string(),
                 )
             })?;
             // Verify eagerly so the error names the failing artifact.
             verify_detached_signature(public_key, &bytes, &signature.signature)
-                .map_err(|err| DevToolboxError::Signature(format!("package signature: {err}")))?;
+                .map_err(|err| DevDeckError::Signature(format!("package signature: {err}")))?;
             options = options.with_signature(public_key.clone(), signature.signature.clone());
         }
         None if source.require_signature => {
-            return Err(DevToolboxError::Signature(format!(
+            return Err(DevDeckError::Signature(format!(
                 "package '{plugin_id}' {} is unsigned and the source requires signatures",
                 entry.manifest.version
             )))
@@ -246,23 +268,24 @@ fn compare_versions(a: &str, b: &str) -> std::cmp::Ordering {
     }
 }
 
-fn http_client() -> Result<reqwest::Client, DevToolboxError> {
+fn http_client() -> Result<reqwest::Client, DevDeckError> {
     reqwest::Client::builder()
         .timeout(Duration::from_secs(TIMEOUT_SECS))
         .redirect(reqwest::redirect::Policy::none())
-        .user_agent(concat!("DevToolBox/", env!("CARGO_PKG_VERSION")))
+        .user_agent(concat!("DevDeck/", env!("CARGO_PKG_VERSION")))
         .build()
         .map_err(|err| {
-            DevToolboxError::Internal(format!("failed to build registry HTTP client: {err}"))
+            DevDeckError::Internal(format!("failed to build registry HTTP client: {err}"))
         })
 }
 
-fn ensure_scheme(url: &Url) -> Result<(), DevToolboxError> {
+fn ensure_scheme(url: &Url) -> Result<(), DevDeckError> {
     match url.scheme() {
         "https" => Ok(()),
         "http" if is_loopback(url) => Ok(()),
-        other => Err(DevToolboxError::denied(format!(
-            "registry downloads must use https, got '{other}'"
+        "file" => Ok(()),
+        other => Err(DevDeckError::denied(format!(
+            "registry downloads must use https or a local file, got '{other}'"
         ))),
     }
 }
@@ -276,33 +299,66 @@ fn is_loopback(url: &Url) -> bool {
 
 /// Fetch a URL with a byte cap, https enforcement, and manual redirects.
 /// Returns `Ok(None)` for 404 so optional artifacts (`.sig`) stay optional.
-async fn fetch_optional(url: &str, max_bytes: u64) -> Result<Option<Vec<u8>>, DevToolboxError> {
-    let client = http_client()?;
+async fn fetch_optional(url: &str, max_bytes: u64) -> Result<Option<Vec<u8>>, DevDeckError> {
     let mut current = Url::parse(url)
-        .map_err(|err| DevToolboxError::InvalidArgument(format!("invalid URL: {err}")))?;
+        .map_err(|err| DevDeckError::InvalidArgument(format!("invalid URL: {err}")))?;
+
+    if current.scheme() == "file" {
+        let path = current
+            .to_file_path()
+            .map_err(|_| DevDeckError::InvalidArgument("invalid local file URL".to_string()))?;
+        let metadata = match std::fs::metadata(&path) {
+            Ok(metadata) => metadata,
+            Err(err) if err.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+            Err(err) => {
+                return Err(DevDeckError::Internal(format!(
+                    "failed to read {}: {err}",
+                    path.display()
+                )))
+            }
+        };
+        if !metadata.is_file() {
+            return Err(DevDeckError::InvalidArgument(format!(
+                "{} is not a file",
+                path.display()
+            )));
+        }
+        if metadata.len() > max_bytes {
+            return Err(DevDeckError::InvalidArgument(format!(
+                "local artifact {} exceeds the {max_bytes} byte limit",
+                path.display()
+            )));
+        }
+        return std::fs::read(&path).map(Some).map_err(|err| {
+            DevDeckError::Internal(format!("failed to read {}: {err}", path.display()))
+        });
+    }
+
+    let client = http_client()?;
 
     for hop in 0..=MAX_REDIRECTS {
         ensure_scheme(&current)?;
-        let response = client.get(current.clone()).send().await.map_err(|err| {
-            DevToolboxError::Internal(format!("failed to fetch {current}: {err}"))
-        })?;
+        let response =
+            client.get(current.clone()).send().await.map_err(|err| {
+                DevDeckError::Internal(format!("failed to fetch {current}: {err}"))
+            })?;
 
         let status = response.status();
         if status.is_redirection() {
             if hop == MAX_REDIRECTS {
-                return Err(DevToolboxError::denied("too many registry redirects"));
+                return Err(DevDeckError::denied("too many registry redirects"));
             }
             let location = response
                 .headers()
                 .get(reqwest::header::LOCATION)
                 .and_then(|value| value.to_str().ok())
                 .ok_or_else(|| {
-                    DevToolboxError::InvalidArgument(
+                    DevDeckError::InvalidArgument(
                         "redirect response is missing a Location header".to_string(),
                     )
                 })?;
             current = current.join(location).map_err(|err| {
-                DevToolboxError::InvalidArgument(format!("invalid redirect target: {err}"))
+                DevDeckError::InvalidArgument(format!("invalid redirect target: {err}"))
             })?;
             continue;
         }
@@ -311,14 +367,14 @@ async fn fetch_optional(url: &str, max_bytes: u64) -> Result<Option<Vec<u8>>, De
             return Ok(None);
         }
         if !status.is_success() {
-            return Err(DevToolboxError::Internal(format!(
+            return Err(DevDeckError::Internal(format!(
                 "{current} returned HTTP {}",
                 status.as_u16()
             )));
         }
         if let Some(length) = response.content_length() {
             if length > max_bytes {
-                return Err(DevToolboxError::InvalidArgument(format!(
+                return Err(DevDeckError::InvalidArgument(format!(
                     "download from {current} exceeds the {max_bytes} byte limit"
                 )));
             }
@@ -328,7 +384,7 @@ async fn fetch_optional(url: &str, max_bytes: u64) -> Result<Option<Vec<u8>>, De
         return Ok(Some(bytes));
     }
 
-    Err(DevToolboxError::Internal(
+    Err(DevDeckError::Internal(
         "registry redirect loop without a response".to_string(),
     ))
 }
@@ -336,15 +392,15 @@ async fn fetch_optional(url: &str, max_bytes: u64) -> Result<Option<Vec<u8>>, De
 async fn read_capped(
     mut response: reqwest::Response,
     max_bytes: u64,
-) -> Result<Vec<u8>, DevToolboxError> {
+) -> Result<Vec<u8>, DevDeckError> {
     let mut buffer: Vec<u8> = Vec::new();
     while let Some(chunk) = response
         .chunk()
         .await
-        .map_err(|err| DevToolboxError::Internal(format!("failed to read download: {err}")))?
+        .map_err(|err| DevDeckError::Internal(format!("failed to read download: {err}")))?
     {
         if buffer.len() as u64 + chunk.len() as u64 > max_bytes {
-            return Err(DevToolboxError::InvalidArgument(
+            return Err(DevDeckError::InvalidArgument(
                 "download exceeds the configured size limit".to_string(),
             ));
         }
@@ -356,7 +412,22 @@ async fn read_capped(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use devtoolbox_contract::PluginManifest;
+
+    #[tokio::test]
+    async fn reads_local_file_artifacts() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("registry.local.json");
+        std::fs::write(&path, b"{\"schemaVersion\":1,\"plugins\":[]}").unwrap();
+        let url = Url::from_file_path(&path).unwrap().to_string();
+        let bytes = fetch_optional(&url, 1024).await.unwrap().unwrap();
+        assert_eq!(bytes, b"{\"schemaVersion\":1,\"plugins\":[]}");
+
+        let missing = Url::from_file_path(dir.path().join("missing.json"))
+            .unwrap()
+            .to_string();
+        assert!(fetch_optional(&missing, 1024).await.unwrap().is_none());
+    }
+    use devdeck_contract::PluginManifest;
     use serde_json::json;
 
     fn entry(id: &str, version: &str, source: &str, status: EntryStatus) -> CatalogEntry {
@@ -462,7 +533,7 @@ mod tests {
             id: "local".to_string(),
             name: "Local".to_string(),
             url,
-            public_key: Some(devtoolbox_market::signing::encode_base64(&[7u8; 32])),
+            public_key: Some(devdeck_market::signing::encode_base64(&[7u8; 32])),
             require_signature: true,
             added_at_ms: 1,
         };
@@ -556,8 +627,8 @@ mod tests {
 
     #[test]
     fn installs_a_plugin_from_a_local_registry() {
-        use devtoolbox_contract::Permission;
-        use devtoolbox_market::signing::sha256_hex;
+        use devdeck_contract::Permission;
+        use devdeck_market::signing::sha256_hex;
 
         let zip = build_plugin_zip("1.0.0");
         let sha256 = sha256_hex(&zip);
@@ -643,19 +714,76 @@ mod tests {
     }
 
     #[test]
+    fn installs_a_plugin_from_a_local_file_registry() {
+        use devdeck_market::signing::sha256_hex;
+
+        let zip = build_plugin_zip("1.0.0");
+        let sha256 = sha256_hex(&zip);
+        let dir = tempfile::tempdir().unwrap();
+        let package_path = dir.path().join("market-demo-1.0.0.zip");
+        std::fs::write(&package_path, &zip).unwrap();
+        let registry_path = dir.path().join("registry.local.json");
+        let registry_body = serde_json::json!({
+            "schemaVersion": 2,
+            "name": "Local file",
+            "plugins": [{
+                "manifest": {
+                    "schemaVersion": 2,
+                    "id": "market-demo",
+                    "name": "Demo",
+                    "description": "demo plugin",
+                    "version": "1.0.0",
+                    "sdkVersion": "2.0",
+                    "entry": "package/index.html",
+                    "categoryId": "tools",
+                    "author": "Test",
+                    "license": "MIT",
+                    "permissions": ["storage:kv"],
+                    "httpDomains": []
+                },
+                "downloadUrl": Url::from_file_path(&package_path).unwrap().to_string(),
+                "sha256": sha256,
+                "size": zip.len(),
+                "status": "active"
+            }]
+        })
+        .to_string();
+        std::fs::write(&registry_path, registry_body).unwrap();
+        let registry_url = Url::from_file_path(&registry_path).unwrap().to_string();
+
+        let state = AppState::new(
+            dir.path(),
+            std::sync::Arc::new(|_| {}),
+            std::sync::Arc::new(|_| {}),
+        )
+        .unwrap();
+        let source = state
+            .sources()
+            .unwrap()
+            .add(Some("Local file"), &registry_url, None, false, 1)
+            .unwrap();
+        let id = PluginId::new("market-demo").unwrap();
+        let installed =
+            tauri::async_runtime::block_on(install_from_registry(&state, &source.id, &id, None))
+                .unwrap();
+        assert_eq!(installed.manifest.id.as_str(), "market-demo");
+        assert!(installed.dir.join("package/index.html").is_file());
+    }
+
+    #[test]
     fn http_is_only_allowed_for_loopback() {
         assert!(ensure_scheme(&Url::parse("https://example.com/r.json").unwrap()).is_ok());
         assert!(ensure_scheme(&Url::parse("http://localhost:8080/r.json").unwrap()).is_ok());
         assert!(ensure_scheme(&Url::parse("http://127.0.0.1/r.json").unwrap()).is_ok());
         assert!(ensure_scheme(&Url::parse("http://example.com/r.json").unwrap()).is_err());
-        assert!(ensure_scheme(&Url::parse("file:///etc/passwd").unwrap()).is_err());
+        assert!(ensure_scheme(&Url::parse("file:///tmp/registry.local.json").unwrap()).is_ok());
     }
 
     fn signing_fixture() -> (ed25519_dalek::SigningKey, String, String) {
         use ed25519_dalek::SigningKey;
         let key = SigningKey::from_bytes(&[9u8; 32]);
-        let public_key = devtoolbox_market::signing::encode_base64(key.verifying_key().as_bytes());
-        let key_id = devtoolbox_market::KeyId::from_public_key_base64(&public_key)
+        let public_key = devdeck_market::signing::encode_base64(key.verifying_key().as_bytes());
+        let key_id = devdeck_market::KeyId::from_public_key_base64(&public_key)
             .unwrap()
             .as_str()
             .to_string();
@@ -664,11 +792,11 @@ mod tests {
 
     fn sign(key: &ed25519_dalek::SigningKey, bytes: &[u8]) -> String {
         use ed25519_dalek::Signer;
-        devtoolbox_market::signing::encode_base64(&key.sign(bytes).to_bytes())
+        devdeck_market::signing::encode_base64(&key.sign(bytes).to_bytes())
     }
 
     fn signed_registry(base: &str, zip: &[u8], key_id: &str, package_signature: String) -> Vec<u8> {
-        let sha256 = devtoolbox_market::signing::sha256_hex(zip);
+        let sha256 = devdeck_market::signing::sha256_hex(zip);
         serde_json::json!({
             "schemaVersion": 2,
             "name": "Signed Local",
@@ -702,7 +830,7 @@ mod tests {
         state: &AppState,
         base: &str,
         public_key: &str,
-    ) -> devtoolbox_market::RegistrySource {
+    ) -> devdeck_market::RegistrySource {
         state
             .sources()
             .unwrap()
@@ -718,7 +846,7 @@ mod tests {
 
     #[test]
     fn installs_a_signed_plugin_from_a_signed_registry() {
-        use devtoolbox_contract::Permission;
+        use devdeck_contract::Permission;
 
         let (key, public_key, key_id) = signing_fixture();
         let zip = build_plugin_zip("1.0.0");
@@ -892,18 +1020,18 @@ mod tests {
     /// Manual acceptance harness for the real Marketplace pipeline.
     ///
     /// ```bash
-    /// DEVTOOLBOX_ACCEPT_REGISTRY=http://127.0.0.1:8765/registry.json \
-    /// DEVTOOLBOX_ACCEPT_PUBKEY=<base64 public key> \
-    /// cargo test -p devtoolbox-desktop manual_signed_registry_acceptance -- --ignored --nocapture
+    /// DEVDECK_ACCEPT_REGISTRY=http://127.0.0.1:8765/registry.json \
+    /// DEVDECK_ACCEPT_PUBKEY=<base64 public key> \
+    /// cargo test -p devdeck-desktop manual_signed_registry_acceptance -- --ignored --nocapture
     /// ```
     #[test]
-    #[ignore = "manual acceptance: needs DEVTOOLBOX_ACCEPT_REGISTRY and DEVTOOLBOX_ACCEPT_PUBKEY"]
+    #[ignore = "manual acceptance: needs DEVDECK_ACCEPT_REGISTRY and DEVDECK_ACCEPT_PUBKEY"]
     fn manual_signed_registry_acceptance() {
-        let registry_url = std::env::var("DEVTOOLBOX_ACCEPT_REGISTRY")
-            .expect("set DEVTOOLBOX_ACCEPT_REGISTRY to the served registry.json URL");
-        let public_key = std::env::var("DEVTOOLBOX_ACCEPT_PUBKEY")
-            .expect("set DEVTOOLBOX_ACCEPT_PUBKEY to the marketplace public key");
-        let plugin_id = std::env::var("DEVTOOLBOX_ACCEPT_PLUGIN")
+        let registry_url = std::env::var("DEVDECK_ACCEPT_REGISTRY")
+            .expect("set DEVDECK_ACCEPT_REGISTRY to the served registry.json URL");
+        let public_key = std::env::var("DEVDECK_ACCEPT_PUBKEY")
+            .expect("set DEVDECK_ACCEPT_PUBKEY to the marketplace public key");
+        let plugin_id = std::env::var("DEVDECK_ACCEPT_PLUGIN")
             .unwrap_or_else(|_| "market-emoji-search".to_string());
 
         let dir = tempfile::tempdir().unwrap();

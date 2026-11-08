@@ -13,8 +13,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VERSION="$(node -p "require('${ROOT}/apps/desktop/src-tauri/tauri.conf.json').version")"
 PUBKEY="$(node -p "require('${ROOT}/apps/desktop/src-tauri/tauri.conf.json').plugins.updater.pubkey")"
-REPO="${GITHUB_REPOSITORY:-XthingsJacobs/devToolBox}"
-KEY_FILE="${TAURI_SIGNING_PRIVATE_KEY_FILE:-${ROOT}/.signing/devtoolbox.key}"
+REPO="${GITHUB_REPOSITORY:-XthingsJacobs/devDeck}"
+KEY_FILE="${TAURI_SIGNING_PRIVATE_KEY_FILE:-${ROOT}/.signing/devdeck.key}"
 
 if [[ -z "${TAURI_SIGNING_PRIVATE_KEY:-}" ]]; then
   if [[ ! -f "${KEY_FILE}" ]]; then
@@ -69,7 +69,7 @@ const [out, version, platform, url, signaturePath] = process.argv.slice(2);
 const signature = fs.readFileSync(signaturePath, 'utf8').trim();
 const document = {
   version,
-  notes: `DevToolBox ${version}`,
+  notes: `DevDeck ${version}`,
   pub_date: new Date().toISOString(),
   platforms: {
     [platform]: { signature, url },

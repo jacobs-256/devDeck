@@ -2,7 +2,7 @@
 /**
  * Ed25519 signing and verification for Marketplace artifacts.
  *
- * The signature format matches `crates/devtoolbox-market/src/signing.rs`:
+ * The signature format matches `crates/devdeck-market/src/signing.rs`:
  *   - Ed25519
  *   - public key: 32 raw bytes, standard Base64
  *   - signature:  64 raw bytes, standard Base64
@@ -32,9 +32,9 @@ function fail(message) {
 
 function readKeySource(value) {
   if (!value) {
-    const fromEnv = process.env.DEVTOOLBOX_SIGNING_KEY?.trim();
+    const fromEnv = (process.env.DEVDECK_SIGNING_KEY ?? process.env.DEVTOOLBOX_SIGNING_KEY)?.trim();
     if (fromEnv) return fromEnv;
-    fail('missing key: set DEVTOOLBOX_SIGNING_KEY or pass --key <file|base64>');
+    fail('missing key: set DEVDECK_SIGNING_KEY (or legacy DEVTOOLBOX_SIGNING_KEY) or pass --key <file|base64>');
   }
   if (fs.existsSync(value)) return fs.readFileSync(value, 'utf8').trim();
   return value.trim();

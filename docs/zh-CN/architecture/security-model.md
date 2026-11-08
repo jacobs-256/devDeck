@@ -10,7 +10,7 @@
 | --------------- | ----------------------------- | ------------------------------------------------ |
 | 渲染层 → 宿主   | Web 内容（React、第三方插件） | `commands.rs` 参数校验、Tauri capabilities       |
 | 插件 → 宿主     | 来自注册表的任意 JS           | `sdk::dispatch` + `CapabilityBroker`             |
-| 注册表 → 安装器 | 网络文档                      | `devtoolbox-contract` 校验 + `devtoolbox-market` |
+| 注册表 → 安装器 | 网络文档                      | `devdeck-contract` 校验 + `devdeck-market` |
 | 包 → 文件系统   | 攻击者构造的 ZIP              | `package::extract_zip` + `resolve_within`        |
 
 ## 不变量

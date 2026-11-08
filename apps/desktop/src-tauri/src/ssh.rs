@@ -14,7 +14,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use base64::Engine;
-use devtoolbox_contract::{DevToolboxError, PluginId};
+use devdeck_contract::{DevDeckError, PluginId};
 use russh::client::{self, AuthResult, Handle};
 use russh::keys::{decode_secret_key, PrivateKeyWithHashAlg, PublicKeyOrCertificate};
 use russh::{ChannelMsg, Disconnect};
@@ -114,7 +114,7 @@ pub struct KnownHosts {
 }
 
 impl KnownHosts {
-    pub fn open(path: impl Into<PathBuf>) -> Result<Self, DevToolboxError> {
+    pub fn open(path: impl Into<PathBuf>) -> Result<Self, DevDeckError> {
         let path = path.into();
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)?;
@@ -122,9 +122,7 @@ impl KnownHosts {
         let hosts = match std::fs::read(&path) {
             Ok(bytes) => {
                 let file: KnownHostsFile = serde_json::from_slice(&bytes).map_err(|err| {
-                    DevToolboxError::InvalidArgument(format!(
-                        "known-hosts.json is unreadable: {err}"
-                    ))
+                    DevDeckError::InvalidArgument(format!("known-hosts.json is unreadable: {err}"))
                 })?;
                 file.hosts
             }
@@ -144,12 +142,12 @@ impl KnownHosts {
         port: u16,
         fingerprint: &str,
         key_type: &str,
-    ) -> Result<bool, DevToolboxError> {
+    ) -> Result<bool, DevDeckError> {
         let key = format!("{host}:{port}");
         let mut hosts = self
             .hosts
             .lock()
-            .map_err(|_| DevToolboxError::Internal("known hosts lock poisoned".to_string()))?;
+            .map_err(|_| DevDeckError::Internal("known hosts lock poisoned".to_string()))?;
 
         match hosts.get(&key) {
             Some(entry) => Ok(entry.fingerprint == fingerprint),
@@ -168,12 +166,12 @@ impl KnownHosts {
         }
     }
 
-    fn forget(&self, host: &str, port: u16) -> Result<bool, DevToolboxError> {
+    fn forget(&self, host: &str, port: u16) -> Result<bool, DevDeckError> {
         let key = format!("{host}:{port}");
         let mut hosts = self
             .hosts
             .lock()
-            .map_err(|_| DevToolboxError::Internal("known hosts lock poisoned".to_string()))?;
+            .map_err(|_| DevDeckError::Internal("known hosts lock poisoned".to_string()))?;
         let removed = hosts.remove(&key).is_some();
         if removed {
             self.save_locked(&hosts)?;
@@ -181,7 +179,7 @@ impl KnownHosts {
         Ok(removed)
     }
 
-    fn save_locked(&self, hosts: &BTreeMap<String, KnownHost>) -> Result<(), DevToolboxError> {
+    fn save_locked(&self, hosts: &BTreeMap<String, KnownHost>) -> Result<(), DevDeckError> {
         let file = KnownHostsFile {
             schema_version: 1,
             hosts: hosts.clone(),
@@ -311,20 +309,20 @@ impl SshManager {
         &self,
         plugin_id: &PluginId,
         params: ConnectParams,
-    ) -> Result<ConnectResult, DevToolboxError> {
+    ) -> Result<ConnectResult, DevDeckError> {
         self.ensure_capacity(plugin_id)?;
         if params.host.trim().is_empty() {
-            return Err(DevToolboxError::InvalidArgument(
+            return Err(DevDeckError::InvalidArgument(
                 "host is required".to_string(),
             ));
         }
         if params.username.trim().is_empty() {
-            return Err(DevToolboxError::InvalidArgument(
+            return Err(DevDeckError::InvalidArgument(
                 "username is required".to_string(),
             ));
         }
         if params.password.is_none() && params.private_key.is_none() {
-            return Err(DevToolboxError::InvalidArgument(
+            return Err(DevDeckError::InvalidArgument(
                 "provide a password or an OpenSSH private key".to_string(),
             ));
         }
@@ -349,12 +347,12 @@ impl SshManager {
             client::connect(config, (params.host.as_str(), params.port), handler),
         )
         .await
-        .map_err(|_| DevToolboxError::Internal("SSH handshake timed out".to_string()))?
+        .map_err(|_| DevDeckError::Internal("SSH handshake timed out".to_string()))?
         .map_err(|err| {
             let rejected = rejection.lock().ok().and_then(|value| value.clone());
             match rejected {
-                Some(message) => DevToolboxError::denied(message),
-                None => DevToolboxError::Internal(format!("SSH connection failed: {err}")),
+                Some(message) => DevDeckError::denied(message),
+                None => DevDeckError::Internal(format!("SSH connection failed: {err}")),
             }
         })?;
 
@@ -363,18 +361,18 @@ impl SshManager {
             .ok()
             .and_then(|value| value.clone())
             .ok_or_else(|| {
-                DevToolboxError::Internal("server did not present a host key".to_string())
+                DevDeckError::Internal("server did not present a host key".to_string())
             })?;
 
         let auth = if let Some(private_key) = params.private_key.as_deref() {
             let key =
                 decode_secret_key(private_key, params.passphrase.as_deref()).map_err(|err| {
-                    DevToolboxError::InvalidArgument(format!("invalid private key: {err}"))
+                    DevDeckError::InvalidArgument(format!("invalid private key: {err}"))
                 })?;
             let hash = handle
                 .best_supported_rsa_hash()
                 .await
-                .map_err(|err| DevToolboxError::Internal(format!("SSH negotiation failed: {err}")))?
+                .map_err(|err| DevDeckError::Internal(format!("SSH negotiation failed: {err}")))?
                 .flatten();
             handle
                 .authenticate_publickey(
@@ -390,13 +388,13 @@ impl SshManager {
                 )
                 .await
         }
-        .map_err(|err| DevToolboxError::Internal(format!("SSH authentication failed: {err}")))?;
+        .map_err(|err| DevDeckError::Internal(format!("SSH authentication failed: {err}")))?;
 
         if !matches!(auth, AuthResult::Success) {
             let _ = handle
                 .disconnect(Disconnect::ByApplication, "authentication failed", "")
                 .await;
-            return Err(DevToolboxError::denied(
+            return Err(DevDeckError::denied(
                 "SSH authentication failed; check the username and credentials",
             ));
         }
@@ -404,12 +402,12 @@ impl SshManager {
         let session_id = match params.session_id.as_deref() {
             Some(requested) => {
                 if requested.trim().is_empty() || requested.len() > 128 {
-                    return Err(DevToolboxError::InvalidArgument(
+                    return Err(DevDeckError::InvalidArgument(
                         "sessionId must be 1-128 characters".to_string(),
                     ));
                 }
                 if self.lock()?.contains_key(requested) {
-                    return Err(DevToolboxError::InvalidArgument(format!(
+                    return Err(DevDeckError::InvalidArgument(format!(
                         "SSH session '{requested}' already exists"
                     )));
                 }
@@ -450,22 +448,23 @@ impl SshManager {
         rows: u32,
         term: &str,
         channel_id: Option<&str>,
-    ) -> Result<String, DevToolboxError> {
+    ) -> Result<String, DevDeckError> {
         let session = self.session(plugin_id, session_id)?;
-        let channel =
-            session.handle.channel_open_session().await.map_err(|err| {
-                DevToolboxError::Internal(format!("cannot open SSH channel: {err}"))
-            })?;
+        let channel = session
+            .handle
+            .channel_open_session()
+            .await
+            .map_err(|err| DevDeckError::Internal(format!("cannot open SSH channel: {err}")))?;
         let (mut read_half, write_half) = channel.split();
 
         write_half
             .request_pty(true, term, cols.max(1), rows.max(1), 0, 0, &[])
             .await
-            .map_err(|err| DevToolboxError::Internal(format!("PTY request failed: {err}")))?;
+            .map_err(|err| DevDeckError::Internal(format!("PTY request failed: {err}")))?;
         write_half
             .request_shell(true)
             .await
-            .map_err(|err| DevToolboxError::Internal(format!("shell request failed: {err}")))?;
+            .map_err(|err| DevDeckError::Internal(format!("shell request failed: {err}")))?;
 
         let channel_id = match channel_id {
             Some(requested) if !requested.trim().is_empty() => requested.to_string(),
@@ -475,7 +474,7 @@ impl SshManager {
         session
             .commands
             .lock()
-            .map_err(|_| DevToolboxError::Internal("SSH channel lock poisoned".to_string()))?
+            .map_err(|_| DevDeckError::Internal("SSH channel lock poisoned".to_string()))?
             .insert(channel_id.clone(), tx);
 
         let emit = self.emit.clone();
@@ -511,22 +510,23 @@ impl SshManager {
         session_id: &str,
         command: &str,
         channel_id: Option<&str>,
-    ) -> Result<String, DevToolboxError> {
+    ) -> Result<String, DevDeckError> {
         if command.trim().is_empty() {
-            return Err(DevToolboxError::InvalidArgument(
+            return Err(DevDeckError::InvalidArgument(
                 "command must not be empty".to_string(),
             ));
         }
         let session = self.session(plugin_id, session_id)?;
-        let channel =
-            session.handle.channel_open_session().await.map_err(|err| {
-                DevToolboxError::Internal(format!("cannot open SSH channel: {err}"))
-            })?;
+        let channel = session
+            .handle
+            .channel_open_session()
+            .await
+            .map_err(|err| DevDeckError::Internal(format!("cannot open SSH channel: {err}")))?;
         let (mut read_half, write_half) = channel.split();
         write_half
             .exec(true, command.as_bytes())
             .await
-            .map_err(|err| DevToolboxError::Internal(format!("exec request failed: {err}")))?;
+            .map_err(|err| DevDeckError::Internal(format!("exec request failed: {err}")))?;
 
         let channel_id = match channel_id {
             Some(requested) if !requested.trim().is_empty() => requested.to_string(),
@@ -536,7 +536,7 @@ impl SshManager {
         session
             .commands
             .lock()
-            .map_err(|_| DevToolboxError::Internal("SSH channel lock poisoned".to_string()))?
+            .map_err(|_| DevDeckError::Internal("SSH channel lock poisoned".to_string()))?
             .insert(channel_id.clone(), tx);
 
         let emit = self.emit.clone();
@@ -570,16 +570,16 @@ impl SshManager {
         session_id: &str,
         channel_id: &str,
         bytes: Vec<u8>,
-    ) -> Result<(), DevToolboxError> {
+    ) -> Result<(), DevDeckError> {
         if bytes.len() > MAX_WRITE_BYTES {
-            return Err(DevToolboxError::InvalidArgument(format!(
+            return Err(DevDeckError::InvalidArgument(format!(
                 "payload exceeds the {MAX_WRITE_BYTES} byte limit"
             )));
         }
         let sender = self.channel(plugin_id, session_id, channel_id)?;
         sender
             .send(ChannelCommand::Data(bytes))
-            .map_err(|_| DevToolboxError::Internal("SSH channel is already closed".to_string()))
+            .map_err(|_| DevDeckError::Internal("SSH channel is already closed".to_string()))
     }
 
     pub fn resize(
@@ -589,11 +589,11 @@ impl SshManager {
         channel_id: &str,
         cols: u32,
         rows: u32,
-    ) -> Result<(), DevToolboxError> {
+    ) -> Result<(), DevDeckError> {
         let sender = self.channel(plugin_id, session_id, channel_id)?;
         sender
             .send(ChannelCommand::Resize { cols, rows })
-            .map_err(|_| DevToolboxError::Internal("SSH channel is already closed".to_string()))
+            .map_err(|_| DevDeckError::Internal("SSH channel is already closed".to_string()))
     }
 
     pub fn close_channel(
@@ -601,14 +601,14 @@ impl SshManager {
         plugin_id: &PluginId,
         session_id: &str,
         channel_id: &str,
-    ) -> Result<(), DevToolboxError> {
+    ) -> Result<(), DevDeckError> {
         let session = self.session(plugin_id, session_id)?;
         let sender = session
             .commands
             .lock()
-            .map_err(|_| DevToolboxError::Internal("SSH channel lock poisoned".to_string()))?
+            .map_err(|_| DevDeckError::Internal("SSH channel lock poisoned".to_string()))?
             .remove(channel_id)
-            .ok_or_else(|| DevToolboxError::NotFound(format!("unknown channel '{channel_id}'")))?;
+            .ok_or_else(|| DevDeckError::NotFound(format!("unknown channel '{channel_id}'")))?;
         let _ = sender.send(ChannelCommand::Close);
         if let Ok(mut tasks) = session.tasks.lock() {
             if let Some(task) = tasks.remove(channel_id) {
@@ -622,7 +622,7 @@ impl SshManager {
         &self,
         plugin_id: &PluginId,
         session_id: &str,
-    ) -> Result<(), DevToolboxError> {
+    ) -> Result<(), DevDeckError> {
         let session = {
             let mut sessions = self.lock()?;
             match sessions.get(session_id) {
@@ -630,12 +630,12 @@ impl SshManager {
                     sessions.remove(session_id)
                 }
                 Some(_) => {
-                    return Err(DevToolboxError::denied(
+                    return Err(DevDeckError::denied(
                         "session belongs to a different plugin",
                     ))
                 }
                 None => {
-                    return Err(DevToolboxError::NotFound(format!(
+                    return Err(DevDeckError::NotFound(format!(
                         "unknown SSH session '{session_id}'"
                     )))
                 }
@@ -707,7 +707,7 @@ impl SshManager {
         items
     }
 
-    pub fn forget_host(&self, host: &str, port: u16) -> Result<bool, DevToolboxError> {
+    pub fn forget_host(&self, host: &str, port: u16) -> Result<bool, DevDeckError> {
         self.known_hosts.forget(host, port)
     }
 
@@ -718,18 +718,18 @@ impl SshManager {
         plugin_id: &PluginId,
         session_id: &str,
         path: &str,
-    ) -> Result<Vec<SftpEntry>, DevToolboxError> {
+    ) -> Result<Vec<SftpEntry>, DevDeckError> {
         let session = self.session(plugin_id, session_id)?;
         let guard = self.sftp_guard(&session, path).await?;
         let sftp = guard
             .as_ref()
-            .ok_or_else(|| DevToolboxError::Internal("SFTP session unavailable".to_string()))?;
+            .ok_or_else(|| DevDeckError::Internal("SFTP session unavailable".to_string()))?;
 
         let mut entries = Vec::new();
         for entry in sftp
             .read_dir(path)
             .await
-            .map_err(|err| DevToolboxError::Internal(format!("SFTP list failed: {err}")))?
+            .map_err(|err| DevDeckError::Internal(format!("SFTP list failed: {err}")))?
         {
             let metadata = entry.metadata();
             entries.push(SftpEntry {
@@ -762,26 +762,26 @@ impl SshManager {
         session_id: &str,
         path: &str,
         encoding: Option<&str>,
-    ) -> Result<SftpFile, DevToolboxError> {
+    ) -> Result<SftpFile, DevDeckError> {
         let session = self.session(plugin_id, session_id)?;
         let guard = self.sftp_guard(&session, path).await?;
         let sftp = guard
             .as_ref()
-            .ok_or_else(|| DevToolboxError::Internal("SFTP session unavailable".to_string()))?;
+            .ok_or_else(|| DevDeckError::Internal("SFTP session unavailable".to_string()))?;
 
         let metadata = sftp
             .metadata(path)
             .await
-            .map_err(|err| DevToolboxError::Internal(format!("SFTP stat failed: {err}")))?;
+            .map_err(|err| DevDeckError::Internal(format!("SFTP stat failed: {err}")))?;
         if metadata.len() > MAX_SFTP_FILE_BYTES as u64 {
-            return Err(DevToolboxError::InvalidArgument(
+            return Err(DevDeckError::InvalidArgument(
                 "remote file is larger than the 8 MiB limit".to_string(),
             ));
         }
         let bytes = sftp
             .read(path)
             .await
-            .map_err(|err| DevToolboxError::Internal(format!("SFTP read failed: {err}")))?;
+            .map_err(|err| DevDeckError::Internal(format!("SFTP read failed: {err}")))?;
         let (content, encoding) = encode_bytes(&bytes, encoding)?;
         Ok(SftpFile {
             path: path.to_string(),
@@ -798,10 +798,10 @@ impl SshManager {
         path: &str,
         content: &str,
         encoding: Option<&str>,
-    ) -> Result<u64, DevToolboxError> {
+    ) -> Result<u64, DevDeckError> {
         let bytes = decode_content(content, encoding)?;
         if bytes.len() > MAX_SFTP_FILE_BYTES {
-            return Err(DevToolboxError::InvalidArgument(
+            return Err(DevDeckError::InvalidArgument(
                 "content is larger than the 8 MiB limit".to_string(),
             ));
         }
@@ -809,10 +809,10 @@ impl SshManager {
         let guard = self.sftp_guard(&session, path).await?;
         let sftp = guard
             .as_ref()
-            .ok_or_else(|| DevToolboxError::Internal("SFTP session unavailable".to_string()))?;
+            .ok_or_else(|| DevDeckError::Internal("SFTP session unavailable".to_string()))?;
         sftp.write(path, &bytes)
             .await
-            .map_err(|err| DevToolboxError::Internal(format!("SFTP write failed: {err}")))?;
+            .map_err(|err| DevDeckError::Internal(format!("SFTP write failed: {err}")))?;
         Ok(bytes.len() as u64)
     }
 
@@ -821,15 +821,15 @@ impl SshManager {
         plugin_id: &PluginId,
         session_id: &str,
         path: &str,
-    ) -> Result<(), DevToolboxError> {
+    ) -> Result<(), DevDeckError> {
         let session = self.session(plugin_id, session_id)?;
         let guard = self.sftp_guard(&session, path).await?;
         let sftp = guard
             .as_ref()
-            .ok_or_else(|| DevToolboxError::Internal("SFTP session unavailable".to_string()))?;
+            .ok_or_else(|| DevDeckError::Internal("SFTP session unavailable".to_string()))?;
         sftp.create_dir(path)
             .await
-            .map_err(|err| DevToolboxError::Internal(format!("SFTP mkdir failed: {err}")))
+            .map_err(|err| DevDeckError::Internal(format!("SFTP mkdir failed: {err}")))
     }
 
     pub async fn sftp_remove(
@@ -838,20 +838,20 @@ impl SshManager {
         session_id: &str,
         path: &str,
         directory: bool,
-    ) -> Result<(), DevToolboxError> {
+    ) -> Result<(), DevDeckError> {
         let session = self.session(plugin_id, session_id)?;
         let guard = self.sftp_guard(&session, path).await?;
         let sftp = guard
             .as_ref()
-            .ok_or_else(|| DevToolboxError::Internal("SFTP session unavailable".to_string()))?;
+            .ok_or_else(|| DevDeckError::Internal("SFTP session unavailable".to_string()))?;
         if directory {
             sftp.remove_dir(path)
                 .await
-                .map_err(|err| DevToolboxError::Internal(format!("SFTP rmdir failed: {err}")))
+                .map_err(|err| DevDeckError::Internal(format!("SFTP rmdir failed: {err}")))
         } else {
             sftp.remove_file(path)
                 .await
-                .map_err(|err| DevToolboxError::Internal(format!("SFTP remove failed: {err}")))
+                .map_err(|err| DevDeckError::Internal(format!("SFTP remove failed: {err}")))
         }
     }
 
@@ -861,15 +861,15 @@ impl SshManager {
         session_id: &str,
         from: &str,
         to: &str,
-    ) -> Result<(), DevToolboxError> {
+    ) -> Result<(), DevDeckError> {
         let session = self.session(plugin_id, session_id)?;
         let guard = self.sftp_guard(&session, from).await?;
         let sftp = guard
             .as_ref()
-            .ok_or_else(|| DevToolboxError::Internal("SFTP session unavailable".to_string()))?;
+            .ok_or_else(|| DevDeckError::Internal("SFTP session unavailable".to_string()))?;
         sftp.rename(from, to)
             .await
-            .map_err(|err| DevToolboxError::Internal(format!("SFTP rename failed: {err}")))
+            .map_err(|err| DevDeckError::Internal(format!("SFTP rename failed: {err}")))
     }
 
     pub async fn sftp_realpath(
@@ -877,41 +877,39 @@ impl SshManager {
         plugin_id: &PluginId,
         session_id: &str,
         path: &str,
-    ) -> Result<String, DevToolboxError> {
+    ) -> Result<String, DevDeckError> {
         let session = self.session(plugin_id, session_id)?;
         let guard = self.sftp_guard(&session, path).await?;
         let sftp = guard
             .as_ref()
-            .ok_or_else(|| DevToolboxError::Internal("SFTP session unavailable".to_string()))?;
+            .ok_or_else(|| DevDeckError::Internal("SFTP session unavailable".to_string()))?;
         sftp.canonicalize(path)
             .await
-            .map_err(|err| DevToolboxError::Internal(format!("SFTP realpath failed: {err}")))
+            .map_err(|err| DevDeckError::Internal(format!("SFTP realpath failed: {err}")))
     }
 
     async fn sftp_guard<'a>(
         &self,
         session: &'a Arc<SshSession>,
         path: &str,
-    ) -> Result<tokio::sync::MutexGuard<'a, Option<SftpSession>>, DevToolboxError> {
+    ) -> Result<tokio::sync::MutexGuard<'a, Option<SftpSession>>, DevDeckError> {
         if path.trim().is_empty() {
-            return Err(DevToolboxError::InvalidArgument(
+            return Err(DevDeckError::InvalidArgument(
                 "path must not be empty".to_string(),
             ));
         }
         let mut guard = session.sftp.lock().await;
         if guard.is_none() {
             let channel = session.handle.channel_open_session().await.map_err(|err| {
-                DevToolboxError::Internal(format!("cannot open SFTP channel: {err}"))
+                DevDeckError::Internal(format!("cannot open SFTP channel: {err}"))
             })?;
             channel
                 .request_subsystem(true, "sftp")
                 .await
-                .map_err(|err| {
-                    DevToolboxError::Internal(format!("SFTP subsystem failed: {err}"))
-                })?;
+                .map_err(|err| DevDeckError::Internal(format!("SFTP subsystem failed: {err}")))?;
             let sftp = SftpSession::new(channel.into_stream())
                 .await
-                .map_err(|err| DevToolboxError::Internal(format!("SFTP init failed: {err}")))?;
+                .map_err(|err| DevDeckError::Internal(format!("SFTP init failed: {err}")))?;
             *guard = Some(sftp);
         }
         Ok(guard)
@@ -921,13 +919,13 @@ impl SshManager {
         &self,
         plugin_id: &PluginId,
         session_id: &str,
-    ) -> Result<Arc<SshSession>, DevToolboxError> {
+    ) -> Result<Arc<SshSession>, DevDeckError> {
         let sessions = self.lock()?;
-        let session = sessions.get(session_id).ok_or_else(|| {
-            DevToolboxError::NotFound(format!("unknown SSH session '{session_id}'"))
-        })?;
+        let session = sessions
+            .get(session_id)
+            .ok_or_else(|| DevDeckError::NotFound(format!("unknown SSH session '{session_id}'")))?;
         if session.plugin_id != plugin_id.as_str() {
-            return Err(DevToolboxError::denied(
+            return Err(DevDeckError::denied(
                 "SSH session belongs to a different plugin",
             ));
         }
@@ -939,26 +937,26 @@ impl SshManager {
         plugin_id: &PluginId,
         session_id: &str,
         channel_id: &str,
-    ) -> Result<mpsc::UnboundedSender<ChannelCommand>, DevToolboxError> {
+    ) -> Result<mpsc::UnboundedSender<ChannelCommand>, DevDeckError> {
         let session = self.session(plugin_id, session_id)?;
         let commands = session
             .commands
             .lock()
-            .map_err(|_| DevToolboxError::Internal("SSH channel lock poisoned".to_string()))?;
+            .map_err(|_| DevDeckError::Internal("SSH channel lock poisoned".to_string()))?;
         commands
             .get(channel_id)
             .cloned()
-            .ok_or_else(|| DevToolboxError::NotFound(format!("unknown channel '{channel_id}'")))
+            .ok_or_else(|| DevDeckError::NotFound(format!("unknown channel '{channel_id}'")))
     }
 
-    fn ensure_capacity(&self, plugin_id: &PluginId) -> Result<(), DevToolboxError> {
+    fn ensure_capacity(&self, plugin_id: &PluginId) -> Result<(), DevDeckError> {
         let count = self
             .lock()?
             .values()
             .filter(|session| session.plugin_id == plugin_id.as_str())
             .count();
         if count >= MAX_SESSIONS_PER_PLUGIN {
-            return Err(DevToolboxError::denied(format!(
+            return Err(DevDeckError::denied(format!(
                 "plugin '{plugin_id}' already has {MAX_SESSIONS_PER_PLUGIN} SSH sessions"
             )));
         }
@@ -967,10 +965,10 @@ impl SshManager {
 
     fn lock(
         &self,
-    ) -> Result<std::sync::MutexGuard<'_, HashMap<String, Arc<SshSession>>>, DevToolboxError> {
+    ) -> Result<std::sync::MutexGuard<'_, HashMap<String, Arc<SshSession>>>, DevDeckError> {
         self.sessions
             .lock()
-            .map_err(|_| DevToolboxError::Internal("SSH session lock poisoned".to_string()))
+            .map_err(|_| DevDeckError::Internal("SSH session lock poisoned".to_string()))
     }
 }
 
@@ -1109,29 +1107,29 @@ fn emit_into(emit: &EventSink, event: SshEvent) {
     }
 }
 
-fn encode_bytes(bytes: &[u8], encoding: Option<&str>) -> Result<(String, String), DevToolboxError> {
+fn encode_bytes(bytes: &[u8], encoding: Option<&str>) -> Result<(String, String), DevDeckError> {
     match encoding.unwrap_or("utf8") {
         "base64" => Ok((STANDARD.encode(bytes), "base64".to_string())),
         "utf8" | "utf-8" | "text" => String::from_utf8(bytes.to_vec())
             .map(|text| (text, "utf8".to_string()))
             .map_err(|_| {
-                DevToolboxError::InvalidArgument(
+                DevDeckError::InvalidArgument(
                     "remote file is not valid UTF-8; read it with base64 encoding".to_string(),
                 )
             }),
-        other => Err(DevToolboxError::InvalidArgument(format!(
+        other => Err(DevDeckError::InvalidArgument(format!(
             "unknown encoding '{other}' (use 'utf8' or 'base64')"
         ))),
     }
 }
 
-fn decode_content(content: &str, encoding: Option<&str>) -> Result<Vec<u8>, DevToolboxError> {
+fn decode_content(content: &str, encoding: Option<&str>) -> Result<Vec<u8>, DevDeckError> {
     match encoding.unwrap_or("utf8") {
-        "base64" => STANDARD.decode(content.trim()).map_err(|err| {
-            DevToolboxError::InvalidArgument(format!("invalid Base64 content: {err}"))
-        }),
+        "base64" => STANDARD
+            .decode(content.trim())
+            .map_err(|err| DevDeckError::InvalidArgument(format!("invalid Base64 content: {err}"))),
         "utf8" | "utf-8" | "text" => Ok(content.as_bytes().to_vec()),
-        other => Err(DevToolboxError::InvalidArgument(format!(
+        other => Err(DevDeckError::InvalidArgument(format!(
             "unknown encoding '{other}' (use 'utf8' or 'base64')"
         ))),
     }
@@ -1142,7 +1140,7 @@ mod tests {
     use super::*;
 
     fn fingerprint(seed: &str) -> String {
-        devtoolbox_market::signing::sha256_hex(seed.as_bytes())
+        devdeck_market::signing::sha256_hex(seed.as_bytes())
     }
 
     #[test]

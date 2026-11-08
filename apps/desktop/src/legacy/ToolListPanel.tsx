@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { VscClose, VscSearch } from 'react-icons/vsc';
 import styles from './ToolListPanel.module.css';
 import { categoryColor, type Category, type LegacyModule } from './data';
+import { useI18n } from '../legacy-renderer/i18n';
 
 export default function ToolListPanel({
   categories,
@@ -14,6 +15,7 @@ export default function ToolListPanel({
   activeToolId: string | null;
   onSelectTool: (categoryId: string, toolId: string) => void;
 }) {
+  const { t, locale } = useI18n();
   const [search, setSearch] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -67,7 +69,7 @@ export default function ToolListPanel({
             ref={inputRef}
             className={styles.searchInput}
             value={search}
-            placeholder="Search tools…"
+            placeholder={t('dashboard.searchPlaceholder')}
             onChange={(e) => setSearch(e.target.value)}
           />
           {search && (
@@ -78,7 +80,8 @@ export default function ToolListPanel({
         </div>
         <div className={styles.searchMeta}>
           <span className={styles.count}>
-            <span className={styles.countNum}>{tools.length}</span> tool{tools.length !== 1 ? 's' : ''}
+            <span className={styles.countNum}>{tools.length}</span>{' '}
+            {locale === 'zh-CN' ? '个工具' : tools.length === 1 ? 'tool' : 'tools'}
           </span>
         </div>
       </div>
@@ -141,11 +144,11 @@ export default function ToolListPanel({
               <VscSearch />
             </div>
             <div className={styles.emptyTitle}>
-              No tools found
+              {locale === 'zh-CN' ? '没有找到工具' : 'No tools found'}
               {search ? (
                 <>
                   {' '}
-                  for <span className={styles.emptyQuery}>"{search}"</span>
+                  {locale === 'zh-CN' ? '：' : 'for'} <span className={styles.emptyQuery}>"{search}"</span>
                 </>
               ) : null}
             </div>

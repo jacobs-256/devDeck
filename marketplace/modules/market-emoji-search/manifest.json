@@ -3,13 +3,13 @@
   "id": "market-emoji-search",
   "name": "Emoji Search",
   "description": "Filter and search emoji by category and tags, click to copy",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "sdkVersion": "2.0",
   "entry": "package/index.html",
   "categoryId": "text-tools",
-  "author": "DevToolBox",
+  "author": "DevDeck",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/XthingsJacobs/devToolBox",
-  "repository": "https://github.com/XthingsJacobs/devToolBox",
-  "permissions": ["storage:kv"]
+  "homepage": "https://github.com/XthingsJacobs/devDeck",
+  "repository": "https://github.com/XthingsJacobs/devDeck",
+  "permissions": ["storage:kv", "fs:plugin-data"]
 }

@@ -1,0 +1,242 @@
+# DevDeck — Agent Instructions
+
+This file is the mandatory front-end and product-UI standard for DevDeck. It is
+intentionally plain text and English-only so every agent/runtime can discover
+and follow it. Read it before adding or changing any user-facing screen,
+component, or plugin theme. The project is a local-first developer toolbox (27 built-in tools, a
+plugin marketplace, English + Simplified Chinese, light + dark themes) built
+with Tauri 2, React, TypeScript, and Rust.
+
+## 1. Design system: Aurora (Spectrum)
+
+DevDeck uses **Aurora**, selected in the 2026.11 design review. Do not invent a
+new visual direction per feature. Every new module must adopt Aurora by default.
+
+Read these references before UI work:
+
+- `docs/design-system.md` — implemented Aurora specification (also `docs/zh-CN/design-system.md`)
+- `apps/desktop/src/theme/variables.css` — **the single source of truth** for tokens
+- `apps/desktop/src/theme/global.css`, `theme/toolkit.css`,
+  `styles/tool-compat.css` — shared primitives and tool compatibility layer
+- `marketplace/shared/theme/variables.css` — plugin mirror of the same tokens
+- `AGENTS.txt` — the rules in this file are authoritative
+
+Aurora in one sentence: a deep indigo field with violet→cyan gradient signal,
+glass surfaces, generous radii, and high-information-density tool screens.
+
+## 2. Non-negotiable rules
+
+1. **No hard-coded colours** outside `variables.css` (and the plugin mirror).
+   Use tokens. Allowed exceptions: `#fff` for text/knobs on gradient or solid
+   status fills, black/white alpha for shadows and modal scrims, QR code white,
+   image content, and `transparent`/`currentColor`. Everything visible in the
+   product chrome must come from a token.
+2. **Both themes are required.** Every change must be checked in
+   `html[data-theme='dark']` and `html[data-theme='light']`. Never ship a
+   dark-only component.
+3. **The gradient is a signal, not decoration.** Use
+   `var(--aurora-grad)` / `var(--aurora-grad-hover)` only for:
+   primary actions, the active sidebar item, selected segments, checked
+   switches, and one emphasized heading word. Never use it for body text,
+   long code blocks, table rows, or large page backgrounds.
+4. **Glass is a surface, not a filter stack.** Use the glass tokens
+   (`--glass-bg`, `--glass-bg-strong`, `--glass-border`, `--glass-blur`,
+   `--shadow-card`). Apply `backdrop-filter` only to top-level panels, cards,
+   dialogs, and the sidebar — never to every row or scrolling list item.
+   Provide an opaque fallback via token values when `backdrop-filter` is
+   unsupported (WebView2/older GPUs).
+5. **Radii are generous.** Cards/panels `14–16px`; controls/buttons `9–10px`;
+   pills/badges `999px`; sidebar nav `10px`. Do not use 0–4px corners for new
+   controls; some legacy tool stylesheets still contain 4–6px micro-controls —
+   migrate them when you touch that file. Do not use 24px+ except the app
+   icon/dialog hero.
+6. **Preserve information density.** Base UI text `13px`; dense metadata
+   `11–12px`; micro-labels `8.5–9px` uppercase mono with `letter-spacing:
+   0.14–0.16em`. Do not inflate rows just to look airy.
+7. **Keep the layout.** Main shell: fixed sidebar (210px expanded / 52px
+   collapsed) + page. Tools page: `252px` tool list + workspace with tabs and
+   a 58px tool header. Settings uses grouped rows. Marketplace uses a list of
+   plugin cards. Do not replace these structures with dashboards of cards.
+8. **One interaction language.** Hover = subtle surface lift + border/glow
+   (140–200ms); focus = 2px `--border-focus` outline plus a 3–4px soft ring;
+   active = gradient or accent-tinted surface. Respect
+   `prefers-reduced-motion`.
+9. **Colour is never the only signal.** Category colour must be paired with a
+   label and/or icon. Status must include text or an icon.
+10. **Everything is bilingual.** No user-facing literal in CSS or HTML.
+    Add keys to both `en` and `zh-CN` dictionaries; test truncation in both.
+11. **Plugin parity.** If a change affects tokens or shared primitives, update
+    `marketplace/shared/theme/*` and `devdeck-embed.css` in the same change.
+12. **No remote assets or web fonts.** Use the system font stacks. Bundle
+    fonts only if the whole team agrees and the license permits it.
+
+## 3. Token reference
+
+Use the CSS variables; this table is only for quick orientation.
+
+| Purpose | Token | Dark | Light |
+| --- | --- | --- | --- |
+| App field | `--bg-primary` | `#080a14` | `#f2f3fa` |
+| Card / panel | `--bg-secondary` | `rgba(255,255,255,.045)` | `rgba(255,255,255,.74)` |
+| Inset / input | `--bg-tertiary` | `rgba(255,255,255,.07)` | `rgba(24,26,64,.05)` |
+| Floating layer | `--bg-elevated` | `#161a2e` | `#ffffff` |
+| Sidebar | `--bg-sidebar` | `rgba(20,22,42,.72)` | `rgba(255,255,255,.72)` |
+| Default border | `--border-default` | `rgba(255,255,255,.09)` | `rgba(24,26,64,.10)` |
+| Strong border | `--border-subtle` | `rgba(255,255,255,.15)` | `rgba(24,26,64,.17)` |
+| Focus | `--border-focus` | `#a78bfa` | `#6247e8` |
+| Primary text | `--text-primary` | `#eef0ff` | `#15162a` |
+| Secondary text | `--text-secondary` | `#b6bcd8` | `#454a66` |
+| Tertiary text | `--text-tertiary` | `#8d94b4` | `#636a86` |
+| Muted / decorative | `--text-quaternary` | `#666e8f` | `#7f859c` |
+| Accent | `--accent-primary` | `#8b5cf6` | `#6247e8` |
+| Accent text/icon | `--accent-secondary` | `#c4b5fd` | `#7350d8` |
+| Gradient | `--aurora-grad` | `#6a3df0 → #0a6f86` | same |
+| Success / error / warning | `--accent-success/error/warning` | `#34d399 / #fb7185 / #fbbf24` | `#0f9d6e / #d63a5c / #b26a00` |
+| Dev / Text / Network / Security / Other | `--cat-dev/text/network/security/other` | cyan / violet / amber / pink / slate | teal / violet / amber / magenta / slate |
+| Card radius | `--radius` | `14px` | `14px` |
+| Control radius | `--radius-small` | `9px` | `9px` |
+| Card shadow | `--shadow-card` | ambient dark | soft violet |
+
+Token naming notes:
+
+- `--border-default` is the hairline; `--border-subtle` is the *stronger*
+  control border (the historical naming is inverted — keep the mapping).
+- Use `--glass-bg` / `--glass-bg-strong` for translucent surfaces, not
+  `rgba()` literals.
+- Use `--aurora-grad-soft` for tinted icon tiles and decorative accents.
+- Use `--syntax-*` for code highlighting; do not reuse category colours for
+  syntax.
+
+## 4. Layout and density
+
+- Expanded sidebar: **210px**; collapsed: **52px**. Active item is a gradient
+  pill with white icon/text and a soft violet shadow. No left accent bar.
+- Page content: dashboard max-width `1180px`, padding `30px 34px 44px`;
+  settings max-width `1000px`. Workbenches may be full-bleed.
+- Tools: `252px` list panel + tab bar (46px) + tool header (58px) + content.
+  The tool list keeps 28px icon tiles and two-line descriptions.
+- Cards use `14–16px` radius, `1px` glass border, `--shadow-card`, and lift
+  `-2px` on hover with `--shadow-glow`.
+- Page titles: `<h1>` 24–30px / 650 / tight tracking. Section headings 13–14px
+  / 650. Do not use display sizes above 32px inside app pages.
+- Minimum supported viewport: **1024×768**. Verify no horizontal overflow in
+  JSON/certificate/log screens at that width.
+- Responsive workbenches: never keep a dense 3-column layout when each column
+  falls below ~560px — use `repeat(auto-fit, minmax(560px, 1fr))` and stack at
+  ≤1400px. Split editor/result or server/client panes stack at ≤1300px when
+  their headers/input rows stop fitting. Two-column key/detail grids stack at
+  ≤1200px. Long values (IPv4 binary, PEM, logs) must wrap inside a `min-width:
+  0` cell or scroll inside their own pane, never force the page wider.
+- Tool pages own their scrolling. At 1024px there must be no horizontal page
+  scroll; tables with inherently wide rows (diffs) get `min-width` inside an
+  `overflow: auto` pane.
+
+## 5. Component rules
+
+- **Primary button**: gradient fill, white text, 9px radius, subtle violet
+  shadow. Hover uses `--aurora-grad-hover`.
+- **Secondary button**: glass fill + 1px border; hover border becomes
+  `--accent-secondary`.
+- **Ghost/icon button**: transparent; hover `--bg-hover`; 28–32px square.
+- **Inputs/selects/textareas**: glass inset, 9–10px radius, focus border +
+  3px `--accent-color-weak` ring. No 1px-only focus.
+- **Segmented control**: glass track, 10px radius; selected segment uses the
+  gradient with white text.
+- **Tabs**: compact pills (9px radius) with accent-tinted active surface and a
+  thin border; do not use full-width underline tabs.
+- **Cards**: glass + border + shadow; header separated by
+  `--glass-border`; no coloured 3px left bars (legacy style).
+- **Badges/pills**: 8.5–9px mono, uppercase where appropriate, 999px radius.
+- **Switch**: gradient track when on, white round knob, focus ring visible.
+- **Code panes**: 12–14px radius, glass background, 10–11px mono, tabular
+  numbers, line numbers muted. Syntax tokens only.
+- **Empty states**: centred icon in a 14px-radius tile, 13px title, 11–12px
+  description; no illustrations unless approved.
+- **Dialogs**: 18px radius (`--radius-dialog`), opaque `--bg-elevated`, scrim +
+  blur (`--scrim`, `--scrim-blur`), 1px glass border, `--shadow-float`. Close on
+  Escape and on backdrop click; use `role="dialog"` / `aria-modal="true"`.
+- **Tooltips**: use the shared `data-tip` pattern (or the sidebar's specific
+  tooltip rule) with 10px radius, `--bg-elevated`, glass border and
+  `--shadow-float`. Native `title` is only a fallback; do not style one-off
+  tooltip layers per module.
+- **Toasts / inline notices**: glass surface, status-colour text, 12px radius,
+  no full-width saturated fill.
+
+## 6. Motion
+
+- Fast state changes: `--motion-fast` (140ms).
+- Surface enter/hover lift: `--motion-base` (200ms).
+- No bouncing, no large slide-ins, no looping ambient animation.
+- Hover lift is at most 2px. Dialogs fade/scale 2–4px.
+- `prefers-reduced-motion: reduce` must disable transforms/animations.
+
+## 7. Accessibility
+
+- Body text contrast ≥ 4.5:1; decorative metadata may be ≥ 3:1 but must not
+  carry the only copy of critical information.
+- Do not use gradient text for anything that must be read (only accent words).
+- Every interactive element needs a visible focus state and correct semantics
+  (`button`, `label`, `aria-*`).
+- Keyboard flows: `Cmd/Ctrl+K` search, `Cmd/Ctrl+,` settings, arrow keys in
+  result lists, `Esc` closes overlays. New modules must not swallow these.
+- Icon-only buttons require `aria-label`. Toasts/live regions must be announced.
+- Supports light/dark plus `auto`; do not read theme from a custom class.
+
+## 8. Plugins and themes
+
+- Plugins load `marketplace/shared/devdeck-embed.css`, which imports the
+  mirrored tokens. Keep the mirror in sync whenever app tokens change.
+- Plugin UIs must use the host tokens; no separate accent palettes.
+- `followHostTheme()` applies `data-theme`; plugins must style both values.
+- Plugin iframes should opt into the Aurora field via the shared embed CSS, not
+  by painting their own gradients.
+- Do not assume `backdrop-filter` exists; token surfaces must remain legible.
+
+## 9. Adding a new module — checklist
+
+1. Reuse an existing page/panel pattern; do not create a new shell.
+2. Build with tokens and shared primitives only; add no literal colours.
+3. Cover both themes, both languages, keyboard navigation and focus.
+4. Verify long content, 1024px width, and high-density tables.
+5. If the module ships a plugin or theme, mirror tokens and test the iframe.
+6. Run:
+   - `pnpm typecheck`
+   - `pnpm test`
+   - `pnpm lint`
+   - `pnpm build`
+   - `cargo test --workspace` when Rust code changed
+7. For visible UI work, capture before/after screenshots at 1440×900 in both
+   themes and attach them to the change description.
+8. Update `docs/design-system.md` when the shared system changes; it is the
+   design source. Keep the Chinese counterpart in sync.
+
+## 10. Do not
+
+- Do not add a new accent colour, gradient palette, or brand mark treatment.
+- Do not reintroduce the legacy emerald (`#10b981`) as the product accent.
+- Do not use pure black (`#000`) or pure white (`#fff`) as page backgrounds.
+- Do not introduce sharp 0–4px cards, heavy 2px borders, or dense drop shadows.
+- Do not leave an old legible-control colour behind when refactoring a tool;
+  port it to tokens while you are there.
+- Do not put gradients on text blocks, tables, or code editors.
+- Do not apply `backdrop-filter` to long lists; it causes scroll jank.
+- Do not change sidebar/tool-panel widths or tab layout without a design review.
+- Do not hard-code English or Chinese strings in components; use i18n keys.
+- Do not bypass `tool-compat.css` with one-off tool styles unless the tool
+  genuinely needs a new primitive (then add it to the shared layer).
+
+## 11. Where things live
+
+```text
+apps/desktop/src/theme/            tokens, global reset, shared toolkit
+apps/desktop/src/styles/           tool compatibility primitives
+apps/desktop/src/legacy/           shell, dashboard, tools, marketplace, settings
+apps/desktop/src/legacy-renderer/  ported tool UIs and shared tool components
+apps/desktop/src/components/       dialogs, plugin host, shared bits
+marketplace/shared/theme/          plugin token mirror and toolkit
+docs/design-system.md              implemented Aurora specification
+```
+
+When in doubt, match `docs/design-system.md`, the tokens, and the existing
+shell rather than inventing a new pattern. The one-off review prototypes have
+been removed now that Aurora is adopted.

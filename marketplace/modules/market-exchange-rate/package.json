@@ -1,5 +1,5 @@
 {
-  "name": "@devtoolbox/plugin-market-exchange-rate",
+  "name": "@devdeck/plugin-market-exchange-rate",
   "private": true,
   "version": "0.1.3",
   "type": "module",

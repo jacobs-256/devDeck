@@ -14,17 +14,17 @@
         let intervalId = 0;
         window.addEventListener('message', (e) => {
           const d = e.data;
-          if (!d || d.type !== 'devtoolbox:theme') return;
+          if (!d || d.type !== 'devdeck:theme') return;
           if (d.theme === 'dark' || d.theme === 'light') apply(d.theme);
         });
         window.addEventListener('message', (e) => {
           const d = e.data;
-          if (!d || d.type !== 'devtoolbox:plugin:ready:ack') return;
+          if (!d || d.type !== 'devdeck:plugin:ready:ack') return;
           if (intervalId) clearInterval(intervalId);
         });
         const sendReady = () => {
           try {
-            window.parent.postMessage({ type: 'devtoolbox:plugin:ready' }, '*');
+            window.parent.postMessage({ type: 'devdeck:plugin:ready' }, '*');
             return true;
           } catch {
             return false;

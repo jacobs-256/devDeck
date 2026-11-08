@@ -2,25 +2,26 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--scrim);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 200;
-  backdrop-filter: blur(6px);
+  z-index: 9998;
+  backdrop-filter: var(--scrim-blur);
+  -webkit-backdrop-filter: var(--scrim-blur);
 }
 
 .modal {
-  background-color: var(--bg-panel);
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius);
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-dialog);
   width: 90%;
   max-width: 900px;
   max-height: 85vh;
   display: flex;
   flex-direction: column;
   box-shadow: var(--shadow-float);
+  overflow: hidden;
 }
 
 .modalSm {
@@ -35,25 +36,27 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border-color);
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--glass-border);
   font-size: var(--font-size-base);
   font-weight: 600;
   color: var(--text-primary);
   flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--glass-bg);
 }
 
 .closeBtn {
-  border: none;
+  border: 1px solid transparent;
   background: none;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   cursor: pointer;
   font-size: 16px;
-  padding: 4px 8px;
+  width: 30px;
+  height: 30px;
   border-radius: var(--radius-small);
   display: inline-flex;
   align-items: center;
+  justify-content: center;
 }
 
 .closeBtn:hover {
@@ -71,7 +74,9 @@
 
 /* Shared content typography */
 .body h2 {
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
   margin: 24px 0 8px;
   color: var(--text-primary);
 }
@@ -92,9 +97,9 @@
 }
 
 .body code {
-  background-color: var(--bg-active);
-  padding: 1px 5px;
-  border-radius: 3px;
+  background-color: var(--badge-bg);
+  padding: 1px 6px;
+  border-radius: var(--radius-small);
   font-family: var(--font-family-mono);
   font-size: var(--font-size-small);
 }

@@ -4,24 +4,26 @@
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  background: var(--bg-primary);
-  border-right: 1px solid var(--border-default);
+  background: var(--glass-bg);
+  border-right: 1px solid var(--glass-border);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
 .searchArea {
   padding: 12px;
-  border-bottom: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--glass-border);
 }
 
 .searchBox {
-  height: 30px;
+  height: 32px;
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-subtle);
-  border-radius: 10px;
-  padding: 0 10px;
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  padding: 0 11px;
 }
 
 .searchIcon {
@@ -29,6 +31,11 @@
   flex-shrink: 0;
   color: var(--text-disabled);
   transition: color 0.12s ease;
+}
+
+.searchBox:focus-within {
+  border-color: var(--accent-secondary);
+  box-shadow: 0 0 0 3px var(--accent-color-weak);
 }
 
 .searchBox:focus-within .searchIcon {
@@ -57,7 +64,7 @@
   color: var(--text-disabled);
   width: 18px;
   height: 18px;
-  border-radius: 4px;
+  border-radius: var(--radius-small);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -72,7 +79,7 @@
 
 .count {
   font-size: 10.5px;
-  color: var(--border-subtle);
+  color: var(--text-quaternary);
 }
 
 .countNum {
@@ -92,9 +99,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px;
-  background: var(--bg-primary);
-  border-bottom: 1px solid var(--bg-secondary);
+  padding: 8px 14px 6px;
+  background: color-mix(in oklab, var(--bg-primary) 78%, transparent);
+  border-bottom: 1px solid var(--glass-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .groupDot {
@@ -104,39 +113,47 @@
 }
 
 .groupLabel {
-  font-size: 10px;
-  color: var(--border-subtle);
+  font-family: var(--font-family-mono);
+  font-size: 8.5px;
+  color: var(--text-tertiary);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: 600;
+  letter-spacing: 0.14em;
+  font-weight: 500;
 }
 
 .groupCount {
   margin-left: auto;
-  font-size: 9px;
-  color: var(--border-default);
+  font-family: var(--font-family-mono);
+  font-size: 8.5px;
+  color: var(--text-quaternary);
 }
 
 .toolItem {
-  width: 100%;
-  border: none;
+  width: calc(100% - 12px);
+  margin: 1px 6px;
+  border: 1px solid transparent;
   border-left: 2px solid transparent;
+  border-radius: 9px;
   background: transparent;
-  padding: 8px 12px;
+  padding: 7px 8px;
   display: flex;
   gap: 10px;
   text-align: left;
   cursor: pointer;
+  transition:
+    background var(--motion-fast),
+    border-color var(--motion-fast);
 }
 
 .toolItem:hover {
-  background: var(--bg-secondary);
+  background: var(--bg-hover);
+  border-color: var(--glass-border);
 }
 
 .toolIconWrap {
   width: 28px;
   height: 28px;
-  border-radius: 10px;
+  border-radius: 9px;
   border: 1px solid transparent;
   display: flex;
   align-items: center;
@@ -156,8 +173,8 @@
 }
 
 .toolName {
-  font-size: 12.5px;
-  font-weight: 400;
+  font-size: 12px;
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -165,8 +182,8 @@
 
 .toolDesc {
   margin-top: 1px;
-  font-size: 10.5px;
-  color: var(--text-disabled);
+  font-size: 10px;
+  color: var(--text-tertiary);
   line-height: 1.4;
   overflow: hidden;
   display: -webkit-box;
@@ -187,11 +204,11 @@
   height: 40px;
   border-radius: 14px;
   background: var(--bg-secondary);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--glass-border);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--border-subtle);
+  color: var(--text-quaternary);
   margin-bottom: 10px;
 }
 

@@ -1,7 +1,7 @@
 {
-  "name": "@devtoolbox/plugin-sdk",
+  "name": "@devdeck/plugin-sdk",
   "version": "2.0.0",
-  "description": "Official SDK for building DevToolBox Marketplace plugins",
+  "description": "Official SDK for building DevDeck Marketplace plugins",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -18,14 +18,14 @@
     "LICENSE"
   ],
   "keywords": [
-    "devtoolbox",
+    "devdeck",
     "plugin",
     "sdk",
     "marketplace"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/XthingsJacobs/devToolBox.git",
+    "url": "https://github.com/XthingsJacobs/devDeck.git",
     "directory": "packages/plugin-sdk"
   },
   "scripts": {

@@ -1,12 +1,12 @@
 # 用户指南
 
-DevToolBox 是一个包含 27 个内置工具和开放插件市场的桌面工具箱。
+DevDeck 是一个包含 27 个内置工具和开放插件市场的桌面工具箱。
 
 ## 安装
 
-从 [GitHub Releases](https://github.com/XthingsJacobs/devToolBox/releases) 下载：
+从 [GitHub Releases](https://github.com/XthingsJacobs/devDeck/releases) 下载：
 
-- **macOS**：打开 DMG，将 DevToolBox 拖入 Applications。
+- **macOS**：打开 DMG，将 DevDeck 拖入 Applications。
 - **Windows**：运行 NSIS 安装程序（x64）。
 
 应用基于 Tauri 2，使用系统 WebView，安装包约 5.5 MB。
@@ -33,13 +33,17 @@ DevToolBox 是一个包含 27 个内置工具和开放插件市场的桌面工�
 
 插件是运行在沙箱 iframe 中的小型 Web 应用，只能使用清单声明的能力，所有特权调用都由 Rust 宿主校验。
 
-### 添加注册表
+### 默认注册表
 
-1. 打开 **应用市场**。
-2. 在注册表栏粘贴 `registry.json` 地址，点击 **Add registry**。
-3. 目录会自动刷新，也可点击 **Refresh**。
+首次启动会自动添加官方 GitHub 注册表：
 
-注册表地址必须是 HTTPS；本地开发允许 `http://localhost` 与 `http://127.0.0.1`。
+```text
+https://github.com/XthingsJacobs/devToolBox/releases/download/marketplace/registry.json
+```
+
+点击 **Refresh** 可重新加载目录。
+
+正式版只使用该官方注册表。**开发版**额外显示注册表输入框、**Add registry** 和 **Trust options**，支持本地 `file://` 与回环地址。
 
 需要签名验证时，在 **设置 → 注册表 → Trust options** 中粘贴 Ed25519 公钥，并可勾选强制签名。
 
@@ -51,10 +55,12 @@ DevToolBox 是一个包含 27 个内置工具和开放插件市场的桌面工�
 
 ## 设置
 
-- **General**：深色/浅色主题、English/简体中文，均保存到 `settings.json`。
-- **Registries**：添加/移除注册表、配置公钥与强制签名。
-- **Updates**：检查新版本；更新包从 GitHub Releases 下载并用更新公钥验签。
-- **About**：版本、平台、数据目录。
+设置页为单页滚动布局：
+
+- **外观**：主题（自动/深色/浅色）、语言（自动/English/简体中文）、文字大小（小/默认/大/特大），均保存到 `settings.json`。
+- **应用市场注册表**：添加/移除注册表、配置公钥与强制签名。
+- **系统**：本地服务端口（检测、自动选择可用端口）、关闭行为（每次询问/最小化到托盘/退出）、托盘图标开关。
+- **关于页脚**：应用图标、名称/版本、副标题、更新状态，以及「检查更新 / 报告问题 / GitHub」操作。更新包从 GitHub Releases 下载并用更新公钥验签。
 
 ## 快捷键
 
@@ -74,10 +80,10 @@ DevToolBox 是一个包含 27 个内置工具和开放插件市场的桌面工�
 
 ## 数据与隐私
 
-- 数据目录：macOS `~/Library/Application Support/com.devtoolbox.app`，Windows `%APPDATA%\com.devtoolbox.app`。
+- 数据目录：macOS `~/Library/Application Support/com.devdeck.desktop`，Windows `%APPDATA%\com.devdeck.desktop`。
 - 无遥测；内置工具本地运行；插件只有在清单声明 `http:*` / `net:*` 并安装后才会联网。
 - 插件日志位于 `logs/plugins.log`。
 
 ## 反馈
 
-通过 [GitHub Issues](https://github.com/XthingsJacobs/devToolBox/issues) 报告问题，附版本、系统、复现步骤与截图/日志。安全问题请遵循[安全策略](../../governance/security.md)。
+通过 [GitHub Issues](https://github.com/XthingsJacobs/devDeck/issues) 报告问题，附版本、系统、复现步骤与截图/日志。安全问题请遵循[安全策略](../../governance/security.md)。

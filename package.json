@@ -1,12 +1,12 @@
 {
-  "name": "devtoolbox",
+  "name": "devdeck",
   "version": "3.0.0",
   "description": "Plugin-first desktop toolbox built with Rust, React, and Tauri 2",
   "author": "Jacobs",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/XthingsJacobs/devToolBox.git"
+    "url": "https://github.com/XthingsJacobs/devDeck.git"
   },
   "private": true,
   "packageManager": "pnpm@10.10.0",
@@ -16,19 +16,19 @@
     ]
   },
   "scripts": {
-    "dev": "pnpm --filter @devtoolbox/desktop tauri dev",
-    "tauri:dev": "pnpm --filter @devtoolbox/desktop tauri dev",
-    "build": "pnpm --filter @devtoolbox/desktop build && pnpm --filter @devtoolbox/plugin-sdk build",
-    "typecheck": "pnpm --filter @devtoolbox/desktop exec tsc -p tsconfig.json --noEmit && pnpm --filter @devtoolbox/plugin-sdk exec tsc -p tsconfig.json --noEmit",
-    "test": "pnpm --filter @devtoolbox/desktop test",
+    "dev": "pnpm --filter @devdeck/desktop tauri dev",
+    "tauri:dev": "pnpm --filter @devdeck/desktop tauri dev",
+    "build": "pnpm --filter @devdeck/desktop build && pnpm --filter @devdeck/plugin-sdk build",
+    "typecheck": "pnpm --filter @devdeck/desktop exec tsc -p tsconfig.json --noEmit && pnpm --filter @devdeck/plugin-sdk exec tsc -p tsconfig.json --noEmit",
+    "test": "pnpm --filter @devdeck/desktop test",
     "lint": "pnpm lint:manifests && pnpm lint:legacy && eslint . --max-warnings 0",
     "lint:manifests": "node scripts/lint-marketplace.mjs",
     "lint:legacy": "node scripts/check-legacy-imports.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "package:mac": "pnpm --filter @devtoolbox/desktop tauri build --bundles app,dmg",
-    "package:win": "pnpm --filter @devtoolbox/desktop tauri build --bundles nsis",
-    "package:all": "pnpm --filter @devtoolbox/desktop tauri build",
+    "package:mac": "pnpm --filter @devdeck/desktop tauri build --bundles app,dmg",
+    "package:win": "pnpm --filter @devdeck/desktop tauri build --bundles nsis",
+    "package:all": "pnpm --filter @devdeck/desktop tauri build",
     "marketplace:acceptance": "bash scripts/marketplace-acceptance.sh",
     "release:rehearse": "bash scripts/updater-rehearsal.sh"
   },

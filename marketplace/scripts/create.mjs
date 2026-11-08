@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Scaffold a DevToolBox Marketplace plugin.
+ * Scaffold a DevDeck Marketplace plugin.
  *
- *   pnpm --filter @devtoolbox/marketplace create --id market-my-tool --name "My Tool"
+ *   pnpm --filter @devdeck/marketplace create --id market-my-tool --name "My Tool"
  *
  * Options:
  *   --id <slug>            required, lowercase slug (e.g. market-my-tool)
@@ -16,7 +16,7 @@
  *   --force                overwrite an existing directory
  *
  * The generated plugin targets SDK 2.0 and builds into `package/`, ready for
- * `pnpm --filter @devtoolbox/marketplace pack <id>`.
+ * `pnpm --filter @devdeck/marketplace pack <id>`.
  */
 
 import fs from 'node:fs';
@@ -75,7 +75,7 @@ if (!id.startsWith('market-')) {
 }
 
 const name = String(flags.get('name') ?? '').trim() || id.replace(/^market-/, '').replace(/-/g, ' ');
-const description = String(flags.get('description') ?? '').trim() || `A DevToolBox plugin for ${name}.`;
+const description = String(flags.get('description') ?? '').trim() || `A DevDeck plugin for ${name}.`;
 const category = String(flags.get('category') ?? DEFAULT_CATEGORY).trim();
 const author = String(flags.get('author') ?? '').trim() || 'Your Name';
 const license = String(flags.get('license') ?? 'MIT').trim() || 'MIT';
@@ -114,7 +114,7 @@ const manifest = {
 };
 
 const packageJson = {
-  name: `@devtoolbox/plugin-${id}`,
+  name: `@devdeck/plugin-${id}`,
   private: true,
   version: '0.1.0',
   type: 'module',
@@ -123,7 +123,7 @@ const packageJson = {
     build: 'tsc -p tsconfig.json --noEmit && vite build',
   },
   dependencies: {
-    '@devtoolbox/plugin-sdk': 'workspace:*',
+    '@devdeck/plugin-sdk': 'workspace:*',
     react: '^18.3.1',
     'react-dom': '^18.3.1',
   },
@@ -182,7 +182,7 @@ export default defineConfig({
 `,
   'src/main.tsx': `import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { followHostTheme } from '@devtoolbox/plugin-sdk';
+import { followHostTheme } from '@devdeck/plugin-sdk';
 import App from './App';
 import './style.css';
 
@@ -196,7 +196,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
 );
 `,
   'src/App.tsx': `import { useEffect, useState } from 'react';
-import { sdk } from '@devtoolbox/plugin-sdk';
+import { sdk } from '@devdeck/plugin-sdk';
 
 const STORAGE_KEY = '${id}.notes';
 
@@ -307,23 +307,23 @@ button {
 `,
   'README.md': `# ${name}
 
-DevToolBox Marketplace plugin (\`${id}\`).
+DevDeck Marketplace plugin (\`${id}\`).
 
 ## Develop
 
 \`\`\`bash
 pnpm install
-pnpm dev          # Vite preview; SDK calls only work inside DevToolBox
+pnpm dev          # Vite preview; SDK calls only work inside DevDeck
 pnpm build        # emits package/
 \`\`\`
 
 ## Package and install
 
-From the DevToolBox repository:
+From the DevDeck repository:
 
 \`\`\`bash
-pnpm --filter @devtoolbox/marketplace pack ${id}
-pnpm --filter @devtoolbox/marketplace registry ${id} --out release-dist/registry.json
+pnpm --filter @devdeck/marketplace pack ${id}
+pnpm --filter @devdeck/marketplace registry ${id} --out release-dist/registry.json
 \`\`\`
 
 Then add the registry URL in **Marketplace** and install the plugin from the
@@ -348,9 +348,9 @@ for (const [relativePath, content] of Object.entries(files)) {
 console.log(`plugin scaffolded: ${outDir}`);
 console.log('');
 console.log('Next steps:');
-console.log(`  pnpm install --filter @devtoolbox/plugin-${id}`);
-console.log(`  pnpm --filter @devtoolbox/plugin-${id} build`);
-console.log(`  pnpm --filter @devtoolbox/marketplace pack ${id}`);
+console.log(`  pnpm install --filter @devdeck/plugin-${id}`);
+console.log(`  pnpm --filter @devdeck/plugin-${id} build`);
+console.log(`  pnpm --filter @devdeck/marketplace pack ${id}`);
 console.log('');
 console.log(
   `Permissions: ${permissions.length > 0 ? permissions.join(', ') : 'none'}` +

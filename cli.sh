@@ -52,10 +52,10 @@ confirm() {
 }
 
 detect_user_data_dir() {
-  local mac_dev_dir="$HOME/Library/Application Support/DevToolBox-dev"
-  local mac_dir="$HOME/Library/Application Support/DevToolBox"
-  local linux_dev_dir="$HOME/.config/DevToolBox-dev"
-  local linux_dir="$HOME/.config/DevToolBox"
+  local mac_dev_dir="$HOME/Library/Application Support/DevDeck-dev"
+  local mac_dir="$HOME/Library/Application Support/DevDeck"
+  local linux_dev_dir="$HOME/.config/DevDeck-dev"
+  local linux_dir="$HOME/.config/DevDeck"
   if [[ -d "$mac_dev_dir" ]]; then
     echo "$mac_dev_dir"
     return 0
@@ -172,7 +172,7 @@ cmd_doctor() {
 cmd_dev() {
   ensure_pnpm
   unset NODE_OPTIONS
-  export DEVTOOLBOX_DEBUG="${DEVTOOLBOX_DEBUG:-1}"
+  export DEVDECK_DEBUG="${DEVDECK_DEBUG:-${DEVTOOLBOX_DEBUG:-1}}"
   run_pnpm dev
 }
 
@@ -183,11 +183,11 @@ cmd_build() {
 
 cmd_clear() {
   local candidates=()
-  local p0="$HOME/Library/Application Support/DevToolBox-dev"
-  local p1="$HOME/Library/Application Support/DevToolBox"
+  local p0="$HOME/Library/Application Support/DevDeck-dev"
+  local p1="$HOME/Library/Application Support/DevDeck"
   local p2="$HOME/Library/Application Support/cross-platform-toolbox"
-  local p3="$HOME/.config/DevToolBox"
-  local p4="$HOME/.config/DevToolBox-dev"
+  local p3="$HOME/.config/DevDeck"
+  local p4="$HOME/.config/DevDeck-dev"
   [[ -d "$p0" ]] && candidates+=("$p0")
   [[ -d "$p1" ]] && candidates+=("$p1")
   [[ -d "$p2" ]] && candidates+=("$p2")
@@ -222,7 +222,7 @@ cmd_clear() {
     exit 1
   fi
 
-  print_info "This command deletes local files. Close DevToolBox before continuing."
+  print_info "This command deletes local files. Close DevDeck before continuing."
   if ! confirm "Continue" "n"; then
     print_info "Cancelled"
     return 0
@@ -315,7 +315,7 @@ cmd_plugin() {
     local name
     name="$(prompt 'Plugin Name' "$plugin_id")"
     local description
-    description="$(prompt 'Description' 'A marketplace plugin for DevToolBox')"
+    description="$(prompt 'Description' 'A marketplace plugin for DevDeck')"
     local version
     version="$(prompt 'Version' '0.1.0')"
     local sdk_version
@@ -323,7 +323,7 @@ cmd_plugin() {
     local category_id
     category_id="$(prompt 'categoryId (dev-tools/text-tools/network-tools/security-tools/other-tools)' 'dev-tools')"
     local author
-    author="$(prompt 'Author' 'DevToolBox')"
+    author="$(prompt 'Author' 'DevDeck')"
     local license
     license="$(prompt 'License' 'Apache-2.0')"
     local homepage
@@ -388,7 +388,7 @@ EOF
 
     cat >"$module_dir/package.json" <<EOF
 {
-  "name": "@devtoolbox/plugin-$plugin_id",
+  "name": "@devdeck/plugin-$plugin_id",
   "private": true,
   "version": "$version",
   "type": "module",
@@ -449,7 +449,7 @@ EOF
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DevToolBox Plugin</title>
+    <title>DevDeck Plugin</title>
   </head>
   <body>
     <div id="root"></div>
@@ -471,14 +471,14 @@ export type SdkError = { code: string; message: string; details?: unknown };
 export type SdkResult<T> = { ok: true; data?: T } | { ok: false; error: SdkError };
 
 type ResponseMessage =
-  | { type: 'devtoolbox:sdk:response'; requestId: string; ok: true; data?: unknown }
-  | { type: 'devtoolbox:sdk:response'; requestId: string; ok: false; error: SdkError };
+  | { type: 'devdeck:sdk:response'; requestId: string; ok: true; data?: unknown }
+  | { type: 'devdeck:sdk:response'; requestId: string; ok: false; error: SdkError };
 
 const pending = new Map<string, (res: SdkResult<unknown>) => void>();
 
 window.addEventListener('message', (event: MessageEvent) => {
   const msg = event.data as ResponseMessage;
-  if (!msg || msg.type !== 'devtoolbox:sdk:response') return;
+  if (!msg || msg.type !== 'devdeck:sdk:response') return;
   const cb = pending.get(msg.requestId);
   if (!cb) return;
   pending.delete(msg.requestId);
@@ -488,7 +488,7 @@ window.addEventListener('message', (event: MessageEvent) => {
 
 export function callSdk<T = unknown>(method: string, params?: unknown, timeoutMs = 15000): Promise<SdkResult<T>> {
   const requestId = `${Date.now()}_${Math.random().toString(16).slice(2)}`;
-  const payload = { type: 'devtoolbox:sdk:request', requestId, method, params };
+  const payload = { type: 'devdeck:sdk:request', requestId, method, params };
   window.parent.postMessage(payload, '*');
   return new Promise((resolve) => {
     pending.set(requestId, resolve as any);
@@ -548,7 +548,7 @@ export default function App() {
           <button onClick={() => void writeSample()}>Storage Sample</button>
           <button
             onClick={() =>
-              void sdk.system.notify({ title: 'DevToolBox', body: 'Hello from marketplace plugin', level: 'info' })
+              void sdk.system.notify({ title: 'DevDeck', body: 'Hello from marketplace plugin', level: 'info' })
             }
           >
             Notify
@@ -630,7 +630,7 @@ EOF
     print_ok "Created marketplace plugin template: $module_dir"
     print_info "Next:"
     print_info "  pnpm install"
-    print_info "  pnpm --filter @devtoolbox/plugin-$plugin_id dev"
+    print_info "  pnpm --filter @devdeck/plugin-$plugin_id dev"
     print_info "  ./cli.sh plugin $plugin_id"
     return
   fi
@@ -699,7 +699,7 @@ EOF
     print_info "Building plugins: ${#ids[@]}"
     for id in "${ids[@]}"; do
       print_info "  build: $id"
-      run_pnpm --filter "@devtoolbox/plugin-$id" build
+      run_pnpm --filter "@devdeck/plugin-$id" build
     done
     print_ok "All plugin builds completed"
 
@@ -726,7 +726,7 @@ EOF
   fi
 
   print_info "Building plugin: $plugin_id"
-  run_pnpm --filter "@devtoolbox/plugin-$plugin_id" build
+  run_pnpm --filter "@devdeck/plugin-$plugin_id" build
   print_ok "Plugin build completed"
 
   print_info "Packing plugin into local registry zip (merge): $plugin_id"
@@ -778,7 +778,7 @@ cmd_package() {
 
   unset NODE_OPTIONS
   print_info "Packaging with Tauri ($platform${arch:+/$arch})..."
-  run_pnpm --filter "@devtoolbox/desktop" tauri build "${args[@]}"
+  run_pnpm --filter "@devdeck/desktop" tauri build "${args[@]}"
   print_ok "Packaging completed"
 
   local output_dir="target/release/bundle"
@@ -797,8 +797,8 @@ cmd_check() {
   if command -v cargo >/dev/null 2>&1; then
     print_info "Checking Rust workspace"
     cargo fmt --all -- --check
-    cargo clippy -p devtoolbox-contract -p devtoolbox-capability -p devtoolbox-market --all-targets -- -D warnings
-    cargo test -p devtoolbox-contract -p devtoolbox-capability -p devtoolbox-market
+    cargo clippy -p devdeck-contract -p devdeck-capability -p devdeck-market --all-targets -- -D warnings
+    cargo test -p devdeck-contract -p devdeck-capability -p devdeck-market
   else
     print_info "Skipping Rust checks (cargo not found)"
   fi

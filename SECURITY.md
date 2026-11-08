@@ -13,7 +13,7 @@ We will acknowledge receipt and work on a fix.
 
 ## Scope
 
-DevToolBox treats the renderer and Marketplace plugins as untrusted. Relevant
+DevDeck treats the renderer and Marketplace plugins as untrusted. Relevant
 boundaries are documented in
 [docs/architecture/security-model.md](docs/architecture/security-model.md):
 capability broker, plugin iframe CSP, path sandbox, SSH host-key pinning,

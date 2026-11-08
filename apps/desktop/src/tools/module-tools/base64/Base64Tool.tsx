@@ -7,7 +7,7 @@ type Mode = 'encode' | 'decode';
 
 export default function Base64Tool() {
   const { t } = useI18n();
-  const [input, setInput] = useState('Hello, DevToolBox!');
+  const [input, setInput] = useState('Hello, DevDeck!');
   const [mode, setMode] = useState<Mode>('encode');
   const [urlSafe, setUrlSafe] = useState(false);
 

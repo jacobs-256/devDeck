@@ -2,15 +2,15 @@
 
 > 英文源文档：[docs/architecture/release.md](../../architecture/release.md)。
 
-DevToolBox 通过 GitHub Releases 分发，并附带**签名的更新产物**，已安装的客户端可自动更新。
+DevDeck 通过 GitHub Releases 分发，并附带**签名的更新产物**，已安装的客户端可自动更新。
 
 ## 一次性准备
 
 生成更新签名密钥（minisign）：
 
 ```bash
-pnpm --filter @devtoolbox/desktop exec tauri signer generate \
-  -w .signing/devtoolbox.key
+pnpm --filter @devdeck/desktop exec tauri signer generate \
+  -w .signing/devdeck.key
 ```
 
 - **公钥**写入 `apps/desktop/src-tauri/tauri.conf.json` 的 `plugins.updater.pubkey`，会内嵌进应用；轮换公钥必须先发布一个用旧密钥签名的版本。
@@ -43,19 +43,19 @@ git push origin HEAD --tags
 确认无误后手动发布 draft。应用使用的更新地址：
 
 ```
-https://github.com/XthingsJacobs/devToolBox/releases/latest/download/latest.json
+https://github.com/XthingsJacobs/devDeck/releases/latest/download/latest.json
 ```
 
 ## 本地复现签名构建
 
 ```bash
-TAURI_SIGNING_PRIVATE_KEY="$(cat .signing/devtoolbox.key)" \
+TAURI_SIGNING_PRIVATE_KEY="$(cat .signing/devdeck.key)" \
 TAURI_SIGNING_PRIVATE_KEY_PASSWORD="" \
-pnpm --filter @devtoolbox/desktop tauri build --bundles app,dmg \
+pnpm --filter @devdeck/desktop tauri build --bundles app,dmg \
   --config '{"bundle":{"createUpdaterArtifacts":true}}'
 ```
 
-产物：`.dmg` 安装包、`DevToolBox.app.tar.gz` 更新包、对应 `.sig` 签名。`latest.json` 由 `tauri-action` 生成，CLI 不生成。
+产物：`.dmg` 安装包、`DevDeck.app.tar.gz` 更新包、对应 `.sig` 签名。`latest.json` 由 `tauri-action` 生成，CLI 不生成。
 
 ## 应用内更新
 

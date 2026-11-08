@@ -32,7 +32,7 @@ export default function AboutDialog({
             <div className={styles.headerBadge}>
               <img className={styles.appIconSmall} src={brandMark} alt="" />
             </div>
-            <h2 className={styles.headerTitle}>About DevToolBox</h2>
+            <h2 className={styles.headerTitle}>About DevDeck</h2>
           </div>
           <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close">
             <VscClose size={14} />
@@ -44,7 +44,7 @@ export default function AboutDialog({
             <div className={styles.heroIcon}>
               <img className={styles.appIconLarge} src={brandMark} alt="" />
             </div>
-            <div className={styles.heroTitle}>DevToolBox</div>
+            <div className={styles.heroTitle}>DevDeck</div>
             <div className={styles.heroSub}>Developer Productivity Suite</div>
             <div className={styles.heroMeta}>Version {version}</div>
           </div>
@@ -52,7 +52,7 @@ export default function AboutDialog({
           <div className={styles.links}>
             <a
               className={styles.linkBtn}
-              href="https://github.com/XthingsJacobs/devToolBox"
+              href="https://github.com/XthingsJacobs/devDeck"
               target="_blank"
               rel="noreferrer"
             >
@@ -61,7 +61,7 @@ export default function AboutDialog({
             </a>
             <a
               className={styles.linkBtn}
-              href="https://github.com/XthingsJacobs/devToolBox"
+              href="https://github.com/XthingsJacobs/devDeck"
               target="_blank"
               rel="noreferrer"
             >

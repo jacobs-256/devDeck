@@ -5,7 +5,7 @@ import { jsonToXml, xmlToJson } from './json-xml.model';
 
 type Mode = 'json-to-xml' | 'xml-to-json';
 
-const SAMPLE = '{"catalog":{"@_version":"1","book":{"@_id":"b1","title":"DevToolBox"}}}';
+const SAMPLE = '{"catalog":{"@_version":"1","book":{"@_id":"b1","title":"DevDeck"}}}';
 
 export default function JsonXmlTool() {
   const { t } = useI18n();

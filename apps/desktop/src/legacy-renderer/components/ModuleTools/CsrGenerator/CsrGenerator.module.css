@@ -10,7 +10,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 16px;
-  border-bottom: 1px solid var(--bg-active);
+  border-bottom: 1px solid var(--glass-border);
   flex-shrink: 0;
 }
 
@@ -30,7 +30,7 @@
   min-width: 340px;
   padding: 16px 20px;
   overflow-y: auto;
-  border-right: 1px solid var(--bg-active);
+  border-right: 1px solid var(--glass-border);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -55,8 +55,8 @@
 
 .input {
   padding: 7px 10px;
-  border: 1px solid var(--bg-active);
-  border-radius: 5px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
   background-color: var(--bg-panel);
   color: var(--text-primary);
   font-size: 13px;
@@ -70,8 +70,8 @@
 
 .select {
   padding: 7px 10px;
-  border: 1px solid var(--bg-active);
-  border-radius: 5px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
   background-color: var(--bg-panel);
   color: var(--text-primary);
   font-size: 13px;
@@ -87,7 +87,7 @@
   margin-top: 4px;
   padding: 8px 16px;
   border: none;
-  border-radius: 5px;
+  border-radius: var(--radius-small);
   background-color: var(--accent-color);
   color: #fff;
   font-size: 13px;
@@ -113,42 +113,53 @@
 
 .tabs {
   display: flex;
-  border-bottom: 1px solid var(--bg-active);
+  align-items: center;
+  gap: 3px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--glass-border);
+  background: var(--glass-bg);
   flex-shrink: 0;
 }
 
 .tab {
-  padding: 8px 16px;
-  border: none;
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 9px;
   background: none;
-  color: var(--text-secondary);
-  font-size: 13px;
+  color: var(--text-tertiary);
+  font-size: 12px;
   font-family: inherit;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
+  transition:
+    color var(--motion-fast),
+    background var(--motion-fast),
+    border-color var(--motion-fast);
 }
 
 .tab:hover {
   color: var(--text-primary);
+  background: var(--bg-hover);
 }
 
 .tabActive {
-  color: var(--text-active);
-  border-bottom-color: var(--accent-color);
+  color: var(--text-primary);
+  background: var(--accent-color-weak);
+  border-color: var(--glass-border);
 }
 
 .outputActions {
   display: flex;
   gap: 6px;
   padding: 6px 12px;
-  border-bottom: 1px solid var(--bg-active);
+  border-bottom: 1px solid var(--glass-border);
   flex-shrink: 0;
 }
 
 .actionBtn {
   padding: 4px 10px;
-  border: 1px solid var(--bg-active);
-  border-radius: 4px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
   background: none;
   color: var(--text-secondary);
   font-size: 12px;
@@ -157,7 +168,7 @@
 }
 
 .actionBtn:hover {
-  background-color: var(--bg-active);
+  background-color: var(--bg-hover);
   color: var(--text-primary);
 }
 
@@ -185,7 +196,7 @@
 }
 
 .error {
-  color: #f44336;
+  color: var(--accent-error);
   font-size: 12px;
   margin-top: 4px;
 }

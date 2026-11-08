@@ -1,10 +1,11 @@
 .section {
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  background: var(--bg-secondary);
+  background: var(--glass-bg);
+  box-shadow: var(--shadow-card);
   min-width: 0;
 }
 
@@ -18,10 +19,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 8px 12px;
-  background: var(--bg-tertiary);
-  border-bottom: 1px solid var(--border-default);
-  border-left: 3px solid var(--tool-accent, var(--accent-color));
+  padding: 9px 13px;
+  background: var(--glass-bg-strong);
+  border-bottom: 1px solid var(--glass-border);
   flex-shrink: 0;
 }
 
@@ -90,7 +90,7 @@
 .textarea,
 .select {
   width: 100%;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-small);
   background: var(--bg-elevated);
   color: var(--text-primary);
@@ -104,6 +104,7 @@
 .textarea:focus,
 .select:focus {
   border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-color-weak);
 }
 
 .input {
@@ -128,8 +129,8 @@
 .btn {
   padding: 6px 12px;
   border-radius: var(--radius-small);
-  border: 1px solid var(--border-subtle);
-  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
   color: var(--text-primary);
   font-size: var(--font-size-small);
   font-family: inherit;
@@ -141,7 +142,7 @@
 }
 
 .btn:hover {
-  border-color: color-mix(in oklab, var(--accent-primary) 45%, var(--border-subtle));
+  border-color: var(--accent-secondary);
   background: var(--bg-hover);
 }
 
@@ -152,10 +153,11 @@
 
 .btnPrimary {
   border-color: transparent;
-  background: var(--accent-primary);
+  background: var(--aurora-grad);
   color: #fff;
+  box-shadow: 0 8px 18px -12px var(--accent-primary);
 }
 
 .btnPrimary:hover {
-  background: var(--accent-primary-hover);
+  background: var(--aurora-grad-hover);
 }

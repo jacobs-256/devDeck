@@ -27,8 +27,8 @@
 .modeBtn {
   padding: 4px 8px;
   border: none;
-  border-radius: 4px;
-  background-color: var(--bg-active);
+  border-radius: var(--radius-small);
+  background-color: var(--bg-hover);
   color: var(--text-primary);
   cursor: pointer;
   font-size: var(--font-size-small);
@@ -50,8 +50,8 @@
 .actionBtn {
   padding: 4px 8px;
   border: none;
-  border-radius: 4px;
-  background-color: var(--bg-active);
+  border-radius: var(--radius-small);
+  background-color: var(--bg-hover);
   color: var(--text-primary);
   cursor: pointer;
   font-size: var(--font-size-small);
@@ -109,7 +109,7 @@
   background-color: var(--bg-panel);
   flex-shrink: 0;
   gap: 8px;
-  border-top: 1px solid var(--bg-active);
+  border-top: 1px solid var(--glass-border);
 }
 
 .resultBox {

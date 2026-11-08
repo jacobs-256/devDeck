@@ -54,13 +54,13 @@ jobs:
         run: pnpm -C marketplace build
 
       - name: Desktop tool tests
-        run: pnpm --filter @devtoolbox/desktop test
+        run: pnpm --filter @devdeck/desktop test
 
       - name: Scaffold template builds
         run: |
           node marketplace/scripts/create.mjs --id market-ci-template --name "CI Template"
-          pnpm install --filter @devtoolbox/plugin-market-ci-template
-          pnpm --filter @devtoolbox/plugin-market-ci-template build
+          pnpm install --filter @devdeck/plugin-market-ci-template
+          pnpm --filter @devdeck/plugin-market-ci-template build
           rm -rf marketplace/modules/market-ci-template
 
   rust:
@@ -82,10 +82,10 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Clippy
-        run: cargo clippy -p devtoolbox-contract -p devtoolbox-capability -p devtoolbox-market --all-targets -- -D warnings
+        run: cargo clippy -p devdeck-contract -p devdeck-capability -p devdeck-market --all-targets -- -D warnings
 
       - name: Test
-        run: cargo test -p devtoolbox-contract -p devtoolbox-capability -p devtoolbox-market
+        run: cargo test -p devdeck-contract -p devdeck-capability -p devdeck-market
 
   tauri:
     name: Tauri host check
@@ -108,10 +108,10 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Check host crate
-        run: cargo check -p devtoolbox-desktop
+        run: cargo check -p devdeck-desktop
 
       - name: Test host crate
-        run: cargo test -p devtoolbox-desktop
+        run: cargo test -p devdeck-desktop
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4

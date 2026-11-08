@@ -1,5 +1,5 @@
 {
-  "name": "@devtoolbox/plugin-market-matter-catalog",
+  "name": "@devdeck/plugin-market-matter-catalog",
   "private": true,
   "version": "0.1.2",
   "type": "module",

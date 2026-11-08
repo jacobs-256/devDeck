@@ -1,7 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { VscExtensions, VscGear, VscHome, VscLayout, VscTools } from 'react-icons/vsc';
 import { listen } from '@tauri-apps/api/event';
-import { appInfo, listPlugins, setLanguage, setTheme } from './api';
+import {
+  DEFAULT_REGISTRY_URL,
+  addSource,
+  appInfo,
+  listPlugins,
+  listSources,
+  setLanguage,
+  setTextSize,
+  setTheme,
+} from './api';
 import { I18nProvider, translate, type Language, type Translate } from './i18n';
 import { I18nProvider as LegacyI18nProvider } from './legacy-renderer/i18n';
 import AppShell, { type AppShellNavItemId } from './legacy/AppShell';
@@ -14,13 +23,23 @@ import ToolsPage from './legacy/ToolsPage';
 import { buildCategories, type Category } from './legacy/data';
 import { recordModuleUsage } from './legacy/moduleUsage';
 import type { OpenTool } from './legacy/ToolTabs';
-import type { AppInfo, InstalledPlugin, Theme } from './types';
+import type { AppInfo, InstalledPlugin, LanguageSetting, TextSize, Theme, ThemeSetting } from './types';
 
 export default function App() {
   const [info, setInfo] = useState<AppInfo | null>(null);
   const [plugins, setPlugins] = useState<InstalledPlugin[]>([]);
-  const [theme, setThemeState] = useState<Theme>('dark');
-  const [language, setLanguageState] = useState<Language>('en');
+  const [themeSetting, setThemeSetting] = useState<ThemeSetting>('auto');
+  const [languageSetting, setLanguageSetting] = useState<LanguageSetting>('auto');
+  const [textSize, setTextSizeState] = useState<TextSize>('default');
+  const [systemTheme, setSystemTheme] = useState<Theme>(() =>
+    window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark',
+  );
+  const [systemLanguage, setSystemLanguage] = useState<Language>(() =>
+    navigator.language?.toLowerCase().startsWith('zh') ? 'zh-CN' : 'en',
+  );
+
+  const theme: Theme = themeSetting === 'auto' ? systemTheme : themeSetting;
+  const language: Language = languageSetting === 'auto' ? systemLanguage : languageSetting;
 
   const [view, setView] = useState<AppShellNavItemId>('dashboard');
   const [categoryId, setCategoryId] = useState('all');
@@ -38,11 +57,36 @@ export default function App() {
   }, [theme]);
 
   useEffect(() => {
+    const sync = () => setSystemLanguage(navigator.language?.toLowerCase().startsWith('zh') ? 'zh-CN' : 'en');
+    window.addEventListener('languagechange', sync);
+    return () => window.removeEventListener('languagechange', sync);
+  }, []);
+
+  useEffect(() => {
+    const media = window.matchMedia?.('(prefers-color-scheme: light)');
+    if (!media) return;
+    const onChange = () => setSystemTheme(media.matches ? 'light' : 'dark');
+    media.addEventListener?.('change', onChange);
+    return () => media.removeEventListener?.('change', onChange);
+  }, []);
+
+  useEffect(() => {
+    const scales: Record<TextSize, number> = { small: 0.9, default: 1, large: 1.1, xlarge: 1.2 };
+    const root = document.getElementById('root');
+    if (!root) return;
+    const scale = scales[textSize];
+    root.style.zoom = String(scale);
+    root.style.width = scale === 1 ? '' : `calc(100% / ${scale})`;
+    root.style.height = scale === 1 ? '' : `calc(100% / ${scale})`;
+  }, [textSize]);
+
+  useEffect(() => {
     void appInfo()
       .then((next) => {
         setInfo(next);
-        setThemeState(next.theme === 'light' ? 'light' : 'dark');
-        setLanguageState(next.language === 'zh-CN' ? 'zh-CN' : 'en');
+        setThemeSetting(next.theme === 'auto' || next.theme === 'light' ? next.theme : 'dark');
+        setLanguageSetting(next.language === 'auto' || next.language === 'zh-CN' ? next.language : 'en');
+        setTextSizeState(next.textSize);
       })
       .catch(() => undefined);
   }, []);
@@ -51,6 +95,24 @@ export default function App() {
     void listPlugins()
       .then(setPlugins)
       .catch(() => undefined);
+  }, []);
+
+  // Seed the official registry once. Removing it later is respected via the flag.
+  useEffect(() => {
+    const key = 'devdeck.defaultRegistrySeeded';
+    void (async () => {
+      try {
+        const sources = await listSources();
+        const hasDefault = sources.some((source) => source.url === DEFAULT_REGISTRY_URL);
+        if (window.localStorage.getItem(key) === '1') return;
+        if (!hasDefault) {
+          await addSource(DEFAULT_REGISTRY_URL, { name: 'DevDeck Marketplace' });
+        }
+        window.localStorage.setItem(key, '1');
+      } catch {
+        // Offline or validation failure: retry on the next launch.
+      }
+    })();
   }, []);
 
   const categories = useMemo(() => buildCategories(t, plugins), [t, plugins]);
@@ -80,14 +142,19 @@ export default function App() {
     [categories],
   );
 
-  const onTheme = useCallback((next: Theme) => {
-    setThemeState(next);
+  const onTheme = useCallback((next: ThemeSetting) => {
+    setThemeSetting(next);
     void setTheme(next).catch(() => undefined);
   }, []);
 
-  const onLanguage = useCallback((next: Language) => {
-    setLanguageState(next);
+  const onLanguage = useCallback((next: LanguageSetting) => {
+    setLanguageSetting(next);
     void setLanguage(next).catch(() => undefined);
+  }, []);
+
+  const onTextSize = useCallback((next: TextSize) => {
+    setTextSizeState(next);
+    void setTextSize(next).catch(() => undefined);
   }, []);
 
   const openTool = useCallback(
@@ -216,74 +283,78 @@ export default function App() {
 
   return (
     <I18nProvider language={language}>
-      <AppShell
-        navItems={navItems}
-        activeNavId={view}
-        onNavSelect={(id) => {
-          setView(id);
-          if (id !== 'tools') setSelectedModuleId(null);
-        }}
-        categories={toolCategories}
-        activeCategoryId={categoryId}
-        onCategorySelect={(id) => {
-          setView('tools');
-          setCategoryId(id);
-        }}
-        sidebarHidden={view === 'tools' && toolsFullscreen}
-        collapsed={sidebarCollapsed}
-        onCollapsedChange={setSidebarCollapsed}
-      >
-        {view === 'dashboard' && (
-          <DashboardPage
-            categories={categories}
-            appInfo={info ? { version: info.version, platform: info.platform, arch: info.arch } : null}
-            onOpenTool={openTool}
-            onCategorySelect={(id) => {
-              setView('tools');
-              setCategoryId(id);
-            }}
-          />
-        )}
-
-        {view === 'tools' && (
-          <LegacyI18nProvider initialLocale={language}>
-            <ToolsPage
-              categories={toolCategories}
-              selectedCategoryId={categoryId}
-              selectedModuleId={selectedModuleId}
-              openedTools={openedTools}
-              onCategorySelect={setCategoryId}
+      <LegacyI18nProvider initialLocale={language}>
+        <AppShell
+          navItems={navItems}
+          activeNavId={view}
+          onNavSelect={(id) => {
+            setView(id);
+            if (id !== 'tools') setSelectedModuleId(null);
+          }}
+          categories={toolCategories}
+          activeCategoryId={categoryId}
+          onCategorySelect={(id) => {
+            setView('tools');
+            setCategoryId(id);
+          }}
+          sidebarHidden={view === 'tools' && toolsFullscreen}
+          collapsed={sidebarCollapsed}
+          onCollapsedChange={setSidebarCollapsed}
+        >
+          {view === 'dashboard' && (
+            <DashboardPage
+              categories={categories}
+              appInfo={info ? { version: info.version, platform: info.platform, arch: info.arch } : null}
               onOpenTool={openTool}
-              onActivateTool={setSelectedModuleId}
-              onCloseTool={closeTool}
-              onCloseAllTools={closeAllTools}
-              plugins={plugins}
-              theme={theme}
-              isFullscreen={toolsFullscreen}
-              onSetFullscreen={setToolsFullscreen}
-              onRequestCollapseSidebar={() => setSidebarCollapsed(true)}
+              onCategorySelect={(id) => {
+                setView('tools');
+                setCategoryId(id);
+              }}
             />
-          </LegacyI18nProvider>
+          )}
+
+          {view === 'tools' && (
+            <LegacyI18nProvider initialLocale={language}>
+              <ToolsPage
+                categories={toolCategories}
+                selectedCategoryId={categoryId}
+                selectedModuleId={selectedModuleId}
+                openedTools={openedTools}
+                onCategorySelect={setCategoryId}
+                onOpenTool={openTool}
+                onActivateTool={setSelectedModuleId}
+                onCloseTool={closeTool}
+                onCloseAllTools={closeAllTools}
+                plugins={plugins}
+                theme={theme}
+                isFullscreen={toolsFullscreen}
+                onSetFullscreen={setToolsFullscreen}
+                onRequestCollapseSidebar={() => setSidebarCollapsed(true)}
+              />
+            </LegacyI18nProvider>
+          )}
+
+          {view === 'modules' && <ModulesPage onInstalledChange={setPlugins} />}
+
+          {view === 'settings' && (
+            <SettingsPage
+              appInfo={info}
+              themeSetting={themeSetting}
+              languageSetting={languageSetting}
+              textSize={textSize}
+              onTheme={onTheme}
+              onLanguage={onLanguage}
+              onTextSize={onTextSize}
+            />
+          )}
+        </AppShell>
+
+        {showSearch && (
+          <GlobalSearch items={searchItems} onSelect={openTool} onClose={() => setShowSearch(false)} />
         )}
 
-        {view === 'modules' && <ModulesPage onInstalledChange={setPlugins} />}
-
-        {view === 'settings' && (
-          <SettingsPage
-            appInfo={info}
-            theme={theme}
-            language={language}
-            onTheme={onTheme}
-            onLanguage={onLanguage}
-          />
-        )}
-      </AppShell>
-
-      {showSearch && (
-        <GlobalSearch items={searchItems} onSelect={openTool} onClose={() => setShowSearch(false)} />
-      )}
-
-      <AboutDialog isOpen={showAbout} version={info?.version ?? '—'} onClose={() => setShowAbout(false)} />
+        <AboutDialog isOpen={showAbout} version={info?.version ?? '—'} onClose={() => setShowAbout(false)} />
+      </LegacyI18nProvider>
     </I18nProvider>
   );
 }

@@ -11,7 +11,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
 use base64::Engine;
-use devtoolbox_contract::{ensure_within, resolve_within, DevToolboxError, PluginId};
+use devdeck_contract::{ensure_within, resolve_within, DevDeckError, PluginId};
 use serde::Serialize;
 
 const MAX_FILE_BYTES: u64 = 8 * 1024 * 1024;
@@ -52,7 +52,7 @@ pub struct FileAccess {
 }
 
 impl FileAccess {
-    pub fn new(data_root: impl Into<PathBuf>) -> Result<Self, DevToolboxError> {
+    pub fn new(data_root: impl Into<PathBuf>) -> Result<Self, DevDeckError> {
         let data_root = data_root.into();
         std::fs::create_dir_all(&data_root)?;
         Ok(Self {
@@ -67,17 +67,17 @@ impl FileAccess {
         plugin_id: &PluginId,
         path: &Path,
         writable: bool,
-    ) -> Result<GrantedFile, DevToolboxError> {
+    ) -> Result<GrantedFile, DevDeckError> {
         let size = match std::fs::metadata(path) {
             Ok(metadata) => {
                 if !metadata.is_file() {
-                    return Err(DevToolboxError::InvalidArgument(format!(
+                    return Err(DevDeckError::InvalidArgument(format!(
                         "'{}' is not a file",
                         path.display()
                     )));
                 }
                 if metadata.len() > MAX_FILE_BYTES {
-                    return Err(DevToolboxError::InvalidArgument(
+                    return Err(DevDeckError::InvalidArgument(
                         "the selected file is larger than 8 MiB".to_string(),
                     ));
                 }
@@ -96,7 +96,7 @@ impl FileAccess {
 
         self.tokens
             .lock()
-            .map_err(|_| DevToolboxError::Internal("file token lock poisoned".to_string()))?
+            .map_err(|_| DevDeckError::Internal("file token lock poisoned".to_string()))?
             .insert(
                 file_token.clone(),
                 TokenEntry {
@@ -125,7 +125,7 @@ impl FileAccess {
         plugin_id: &PluginId,
         file_token: &str,
         encoding: Option<&str>,
-    ) -> Result<FileContents, DevToolboxError> {
+    ) -> Result<FileContents, DevDeckError> {
         let path = self.resolve(plugin_id, file_token, false)?;
         read_file(&path, encoding)
     }
@@ -136,7 +136,7 @@ impl FileAccess {
         file_token: &str,
         content: &str,
         encoding: Option<&str>,
-    ) -> Result<u64, DevToolboxError> {
+    ) -> Result<u64, DevDeckError> {
         let path = self.resolve(plugin_id, file_token, true)?;
         write_file(&path, content, encoding)
     }
@@ -146,11 +146,11 @@ impl FileAccess {
         plugin_id: &PluginId,
         relative: &str,
         encoding: Option<&str>,
-    ) -> Result<FileContents, DevToolboxError> {
+    ) -> Result<FileContents, DevDeckError> {
         let base = self.data_dir(plugin_id);
         let target = resolve_within(&base, relative)?;
         let canonical = ensure_within(&base, &target).map_err(|_| {
-            DevToolboxError::NotFound(format!("'{relative}' does not exist in plugin data"))
+            DevDeckError::NotFound(format!("'{relative}' does not exist in plugin data"))
         })?;
         read_file(&canonical, encoding)
     }
@@ -161,13 +161,13 @@ impl FileAccess {
         relative: &str,
         content: &str,
         encoding: Option<&str>,
-    ) -> Result<u64, DevToolboxError> {
+    ) -> Result<u64, DevDeckError> {
         let base = self.data_dir(plugin_id);
         std::fs::create_dir_all(&base)?;
         let target = resolve_within(&base, relative)?;
         let parent = target
             .parent()
-            .ok_or_else(|| DevToolboxError::InvalidArgument("path must name a file".to_string()))?;
+            .ok_or_else(|| DevDeckError::InvalidArgument("path must name a file".to_string()))?;
         std::fs::create_dir_all(parent)?;
         ensure_within(&base, parent)?;
         write_file(&target, content, encoding)
@@ -182,21 +182,21 @@ impl FileAccess {
         plugin_id: &PluginId,
         file_token: &str,
         write: bool,
-    ) -> Result<PathBuf, DevToolboxError> {
+    ) -> Result<PathBuf, DevDeckError> {
         let tokens = self
             .tokens
             .lock()
-            .map_err(|_| DevToolboxError::Internal("file token lock poisoned".to_string()))?;
+            .map_err(|_| DevDeckError::Internal("file token lock poisoned".to_string()))?;
         let entry = tokens
             .get(file_token)
-            .ok_or_else(|| DevToolboxError::NotFound("unknown file token".to_string()))?;
+            .ok_or_else(|| DevDeckError::NotFound("unknown file token".to_string()))?;
         if entry.plugin_id != plugin_id.as_str() {
-            return Err(DevToolboxError::denied(
+            return Err(DevDeckError::denied(
                 "file token belongs to a different plugin",
             ));
         }
         if write && !entry.writable {
-            return Err(DevToolboxError::denied(
+            return Err(DevDeckError::denied(
                 "the user selected this file for reading only",
             ));
         }
@@ -204,10 +204,10 @@ impl FileAccess {
     }
 }
 
-fn read_file(path: &Path, encoding: Option<&str>) -> Result<FileContents, DevToolboxError> {
+fn read_file(path: &Path, encoding: Option<&str>) -> Result<FileContents, DevDeckError> {
     let metadata = std::fs::metadata(path)?;
     if metadata.len() > MAX_FILE_BYTES {
-        return Err(DevToolboxError::InvalidArgument(
+        return Err(DevDeckError::InvalidArgument(
             "file is larger than the 8 MiB limit".to_string(),
         ));
     }
@@ -225,10 +225,10 @@ fn read_file(path: &Path, encoding: Option<&str>) -> Result<FileContents, DevToo
     })
 }
 
-fn write_file(path: &Path, content: &str, encoding: Option<&str>) -> Result<u64, DevToolboxError> {
+fn write_file(path: &Path, content: &str, encoding: Option<&str>) -> Result<u64, DevDeckError> {
     let bytes = decode_content(content, encoding)?;
     if bytes.len() as u64 > MAX_FILE_BYTES {
-        return Err(DevToolboxError::InvalidArgument(
+        return Err(DevDeckError::InvalidArgument(
             "content is larger than the 8 MiB write limit".to_string(),
         ));
     }
@@ -244,29 +244,29 @@ fn normalize_encoding(encoding: Option<&str>) -> &str {
     }
 }
 
-fn encode_bytes(bytes: &[u8], encoding: Option<&str>) -> Result<(String, String), DevToolboxError> {
+fn encode_bytes(bytes: &[u8], encoding: Option<&str>) -> Result<(String, String), DevDeckError> {
     match normalize_encoding(encoding) {
         "utf8" => String::from_utf8(bytes.to_vec())
             .map(|text| (text, "utf8".to_string()))
             .map_err(|_| {
-                DevToolboxError::InvalidArgument(
+                DevDeckError::InvalidArgument(
                     "file is not valid UTF-8; read it with base64 encoding".to_string(),
                 )
             }),
         "base64" => Ok((STANDARD.encode(bytes), "base64".to_string())),
-        other => Err(DevToolboxError::InvalidArgument(format!(
+        other => Err(DevDeckError::InvalidArgument(format!(
             "unknown encoding '{other}' (use 'utf8' or 'base64')"
         ))),
     }
 }
 
-fn decode_content(content: &str, encoding: Option<&str>) -> Result<Vec<u8>, DevToolboxError> {
+fn decode_content(content: &str, encoding: Option<&str>) -> Result<Vec<u8>, DevDeckError> {
     match normalize_encoding(encoding) {
         "utf8" => Ok(content.as_bytes().to_vec()),
-        "base64" => STANDARD.decode(content.trim()).map_err(|err| {
-            DevToolboxError::InvalidArgument(format!("invalid Base64 content: {err}"))
-        }),
-        other => Err(DevToolboxError::InvalidArgument(format!(
+        "base64" => STANDARD
+            .decode(content.trim())
+            .map_err(|err| DevDeckError::InvalidArgument(format!("invalid Base64 content: {err}"))),
+        other => Err(DevDeckError::InvalidArgument(format!(
             "unknown encoding '{other}' (use 'utf8' or 'base64')"
         ))),
     }

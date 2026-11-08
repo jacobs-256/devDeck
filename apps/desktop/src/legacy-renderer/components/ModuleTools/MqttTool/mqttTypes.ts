@@ -53,7 +53,7 @@ export function getDefaultMqttConfig(): MqttConfig {
     host: '',
     port: 8883,
     path: '/mqtt',
-    clientId: `devtoolbox_${Math.random().toString(16).slice(2, 10)}`,
+    clientId: `devdeck_${Math.random().toString(16).slice(2, 10)}`,
     username: '',
     password: '',
     sslEnabled: true,

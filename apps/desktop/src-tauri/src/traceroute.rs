@@ -5,10 +5,13 @@
 //! system's traceroute (`traceroute` / `tracert`) with a validated, single
 //! hostname argument — no shell, no option injection, bounded hops and time.
 
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use devtoolbox_contract::DevToolboxError;
+use devdeck_contract::DevDeckError;
 use serde::Serialize;
+use tauri::{AppHandle, Emitter};
+use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Command;
 
 const MAX_HOPS_LIMIT: u32 = 30;
@@ -25,10 +28,10 @@ pub struct TraceReport {
     pub truncated: bool,
 }
 
-fn validate_host(host: &str) -> Result<&str, DevToolboxError> {
+fn validate_host(host: &str) -> Result<&str, DevDeckError> {
     let trimmed = host.trim();
     if trimmed.is_empty() {
-        return Err(DevToolboxError::InvalidArgument(
+        return Err(DevDeckError::InvalidArgument(
             "host is required".to_string(),
         ));
     }
@@ -44,11 +47,20 @@ fn validate_host(host: &str) -> Result<&str, DevToolboxError> {
         || trimmed.contains('$')
         || trimmed.contains('\n')
     {
-        return Err(DevToolboxError::InvalidArgument(
+        return Err(DevDeckError::InvalidArgument(
             "host must be a bare hostname or IP address".to_string(),
         ));
     }
     Ok(trimmed)
+}
+
+fn validate_max_hops(max_hops: u32) -> Result<(), DevDeckError> {
+    if max_hops == 0 || max_hops > MAX_HOPS_LIMIT {
+        return Err(DevDeckError::InvalidArgument(format!(
+            "max hops must be between 1 and {MAX_HOPS_LIMIT}"
+        )));
+    }
+    Ok(())
 }
 
 fn trace_command() -> (&'static str, Vec<&'static str>) {
@@ -60,13 +72,13 @@ fn trace_command() -> (&'static str, Vec<&'static str>) {
 }
 
 /// Trace the route to `host`.
-pub async fn traceroute(host: &str, max_hops: u32) -> Result<TraceReport, DevToolboxError> {
+pub async fn traceroute(
+    app: AppHandle,
+    host: &str,
+    max_hops: u32,
+) -> Result<TraceReport, DevDeckError> {
     let host = validate_host(host)?;
-    if max_hops == 0 || max_hops > MAX_HOPS_LIMIT {
-        return Err(DevToolboxError::InvalidArgument(format!(
-            "max hops must be between 1 and {MAX_HOPS_LIMIT}"
-        )));
-    }
+    validate_max_hops(max_hops)?;
 
     let (program, _) = trace_command();
     let mut command = Command::new(program);
@@ -101,37 +113,80 @@ pub async fn traceroute(host: &str, max_hops: u32) -> Result<TraceReport, DevToo
             .join(" ")
     );
 
-    let output = tokio::time::timeout(TIMEOUT, command.output())
-        .await
-        .map_err(|_| {
-            DevToolboxError::Internal(format!("traceroute to '{host}' timed out after 60s"))
-        })?
+    let mut child = command
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
         .map_err(|err| {
-            DevToolboxError::Internal(format!(
+            DevDeckError::Internal(format!(
                 "could not run '{program}': {err}. Install traceroute or use a supported OS."
             ))
         })?;
 
-    let mut combined = String::from_utf8_lossy(&output.stdout).to_string();
-    let stderr = String::from_utf8_lossy(&output.stderr);
-    if !stderr.trim().is_empty() {
-        if !combined.is_empty() {
-            combined.push('\n');
-        }
-        combined.push_str(&stderr);
+    let stdout = child.stdout.take();
+    let stderr = child.stderr.take();
+    let collected = Arc::new(Mutex::new(String::new()));
+    let emit_lines = |stream: Option<tokio::process::ChildStdout>,
+                      app: AppHandle,
+                      buffer: Arc<Mutex<String>>| {
+        tokio::spawn(async move {
+            let Some(stream) = stream else { return };
+            let mut lines = BufReader::new(stream).lines();
+            while let Ok(Some(line)) = lines.next_line().await {
+                if let Ok(mut output) = buffer.lock() {
+                    output.push_str(&line);
+                    output.push('\n');
+                }
+                let _ = app.emit("tool-traceroute", serde_json::json!({ "line": line }));
+            }
+        })
+    };
+    emit_lines(stdout, app.clone(), collected.clone());
+    if let Some(stream) = stderr {
+        let error_buffer = Arc::new(Mutex::new(String::new()));
+        tokio::spawn(async move {
+            let mut lines = BufReader::new(stream).lines();
+            while let Ok(Some(line)) = lines.next_line().await {
+                if let Ok(mut output) = error_buffer.lock() {
+                    output.push_str(&line);
+                    output.push('\n');
+                }
+                let _ = app.emit("tool-traceroute", serde_json::json!({ "line": line }));
+            }
+        });
     }
 
+    let status = match tokio::time::timeout(TIMEOUT, child.wait()).await {
+        Ok(Ok(status)) => status,
+        Ok(Err(err)) => {
+            return Err(DevDeckError::Internal(format!(
+                "traceroute process failed: {err}"
+            )))
+        }
+        Err(_) => {
+            let _ = child.kill().await;
+            return Err(DevDeckError::Internal(format!(
+                "traceroute to '{host}' timed out after 60s"
+            )));
+        }
+    };
+
+    let combined = collected
+        .lock()
+        .map(|value| value.clone())
+        .unwrap_or_default();
     let truncated = combined.len() > MAX_OUTPUT_BYTES;
-    if truncated {
-        combined.truncate(MAX_OUTPUT_BYTES);
-        combined.push_str("\n… output truncated");
-    }
+    let output = if truncated {
+        format!("{}… output truncated", &combined[..MAX_OUTPUT_BYTES])
+    } else {
+        combined
+    };
 
     Ok(TraceReport {
         host: host.to_string(),
         command: rendered,
-        output: combined,
-        exit_code: output.status.code(),
+        output,
+        exit_code: status.code(),
         truncated,
     })
 }
@@ -161,8 +216,8 @@ mod tests {
 
     #[tokio::test]
     async fn rejects_out_of_range_hops() {
-        assert!(traceroute("example.com", 0).await.is_err());
-        assert!(traceroute("example.com", 31).await.is_err());
+        assert!(validate_max_hops(0).is_err());
+        assert!(validate_max_hops(31).is_err());
     }
 
     #[test]

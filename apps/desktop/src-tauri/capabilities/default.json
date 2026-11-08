@@ -1,6 +1,6 @@
 {
   "identifier": "default",
-  "description": "Capabilities granted to the DevToolBox main window",
+  "description": "Capabilities granted to the DevDeck main window",
   "windows": [
     "main"
   ],

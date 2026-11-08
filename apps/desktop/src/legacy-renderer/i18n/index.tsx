@@ -37,7 +37,7 @@ const messages: Record<Locale, MessageTree> = {
 
 type LocaleSetting = 'auto' | Locale;
 
-const LOCALE_SETTING_KEY = 'devtoolbox_locale_setting';
+const LOCALE_SETTING_KEY = 'devdeck_locale_setting';
 
 function resolveSystemLocale(): Locale {
   const raw = String(navigator.language ?? '').toLowerCase();

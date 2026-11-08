@@ -13,7 +13,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 use base64::Engine;
-use devtoolbox_contract::{DevToolboxError, PluginId};
+use devdeck_contract::{DevDeckError, PluginId};
 use serde::Serialize;
 use serde_json::Value;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -131,9 +131,9 @@ impl SocketManager {
             .unwrap_or(0)
     }
 
-    fn ensure_capacity(&self, plugin_id: &str) -> Result<(), DevToolboxError> {
+    fn ensure_capacity(&self, plugin_id: &str) -> Result<(), DevDeckError> {
         if self.session_count(plugin_id) >= MAX_SESSIONS_PER_PLUGIN {
-            return Err(DevToolboxError::denied(format!(
+            return Err(DevDeckError::denied(format!(
                 "plugin '{plugin_id}' already has {MAX_SESSIONS_PER_PLUGIN} open socket sessions"
             )));
         }
@@ -146,10 +146,10 @@ impl SocketManager {
         plugin_id: &PluginId,
         host: &str,
         port: u16,
-    ) -> Result<String, DevToolboxError> {
+    ) -> Result<String, DevDeckError> {
         self.ensure_capacity(plugin_id.as_str())?;
         if host.trim().is_empty() {
-            return Err(DevToolboxError::InvalidArgument(
+            return Err(DevDeckError::InvalidArgument(
                 "host is required".to_string(),
             ));
         }
@@ -157,15 +157,15 @@ impl SocketManager {
         let address = tokio::net::lookup_host((host, port))
             .await
             .map_err(|err| {
-                DevToolboxError::InvalidArgument(format!("cannot resolve '{host}': {err}"))
+                DevDeckError::InvalidArgument(format!("cannot resolve '{host}': {err}"))
             })?
             .next()
             .ok_or_else(|| {
-                DevToolboxError::InvalidArgument(format!("'{host}' did not resolve to an address"))
+                DevDeckError::InvalidArgument(format!("'{host}' did not resolve to an address"))
             })?;
 
         let stream = TcpStream::connect(address).await.map_err(|err| {
-            DevToolboxError::Internal(format!("TCP connect to {address} failed: {err}"))
+            DevDeckError::Internal(format!("TCP connect to {address} failed: {err}"))
         })?;
         stream.set_nodelay(true).ok();
 
@@ -221,7 +221,7 @@ impl SocketManager {
 
         self.sessions
             .lock()
-            .map_err(|_| DevToolboxError::Internal("socket session lock poisoned".to_string()))?
+            .map_err(|_| DevDeckError::Internal("socket session lock poisoned".to_string()))?
             .insert(
                 session_id.clone(),
                 Session {
@@ -242,20 +242,20 @@ impl SocketManager {
         plugin_id: &PluginId,
         session_id: &str,
         bytes: Vec<u8>,
-    ) -> Result<(), DevToolboxError> {
+    ) -> Result<(), DevDeckError> {
         if bytes.len() > MAX_SEND_BYTES {
-            return Err(DevToolboxError::InvalidArgument(format!(
+            return Err(DevDeckError::InvalidArgument(format!(
                 "payload exceeds the {MAX_SEND_BYTES} byte limit"
             )));
         }
         let sessions = self.lock()?;
         let session = self.find(&sessions, plugin_id, session_id)?;
         let sender = session.outbound.as_ref().ok_or_else(|| {
-            DevToolboxError::InvalidArgument("session is not a TCP client session".to_string())
+            DevDeckError::InvalidArgument("session is not a TCP client session".to_string())
         })?;
         sender
             .send(Outbound::Data(bytes))
-            .map_err(|_| DevToolboxError::Internal("TCP session is already closed".to_string()))
+            .map_err(|_| DevDeckError::Internal("TCP session is already closed".to_string()))
     }
 
     /// Start a TCP server that accepts connections on `port` (0 = ephemeral).
@@ -264,7 +264,7 @@ impl SocketManager {
         plugin_id: &PluginId,
         host: &str,
         port: u16,
-    ) -> Result<(String, u16), DevToolboxError> {
+    ) -> Result<(String, u16), DevDeckError> {
         self.ensure_capacity(plugin_id.as_str())?;
         let bind_host = if host.trim().is_empty() {
             "127.0.0.1"
@@ -272,11 +272,11 @@ impl SocketManager {
             host
         };
         let listener = TcpListener::bind((bind_host, port)).await.map_err(|err| {
-            DevToolboxError::Internal(format!("cannot listen on {bind_host}:{port}: {err}"))
+            DevDeckError::Internal(format!("cannot listen on {bind_host}:{port}: {err}"))
         })?;
         let local = listener
             .local_addr()
-            .map_err(|err| DevToolboxError::Internal(format!("listener address: {err}")))?;
+            .map_err(|err| DevDeckError::Internal(format!("listener address: {err}")))?;
 
         let session_id = uuid::Uuid::new_v4().to_string();
         let clients: ClientMap = Arc::new(Mutex::new(HashMap::new()));
@@ -390,26 +390,26 @@ impl SocketManager {
         session_id: &str,
         client_id: &str,
         bytes: Vec<u8>,
-    ) -> Result<(), DevToolboxError> {
+    ) -> Result<(), DevDeckError> {
         if bytes.len() > MAX_SEND_BYTES {
-            return Err(DevToolboxError::InvalidArgument(format!(
+            return Err(DevDeckError::InvalidArgument(format!(
                 "payload exceeds the {MAX_SEND_BYTES} byte limit"
             )));
         }
         let sessions = self.lock()?;
         let session = self.find(&sessions, plugin_id, session_id)?;
         let clients = session.clients.as_ref().ok_or_else(|| {
-            DevToolboxError::InvalidArgument("session is not a TCP server session".to_string())
+            DevDeckError::InvalidArgument("session is not a TCP server session".to_string())
         })?;
         let map = clients
             .lock()
-            .map_err(|_| DevToolboxError::Internal("client map lock poisoned".to_string()))?;
+            .map_err(|_| DevDeckError::Internal("client map lock poisoned".to_string()))?;
         let sender = map.get(client_id).ok_or_else(|| {
-            DevToolboxError::NotFound(format!("client '{client_id}' is not connected"))
+            DevDeckError::NotFound(format!("client '{client_id}' is not connected"))
         })?;
         sender
             .send(Outbound::Data(bytes))
-            .map_err(|_| DevToolboxError::Internal("client is already closed".to_string()))
+            .map_err(|_| DevDeckError::Internal("client is already closed".to_string()))
     }
 
     /// Disconnect one accepted client (the session keeps listening).
@@ -418,21 +418,21 @@ impl SocketManager {
         plugin_id: &PluginId,
         session_id: &str,
         client_id: &str,
-    ) -> Result<(), DevToolboxError> {
+    ) -> Result<(), DevDeckError> {
         let sessions = self.lock()?;
         let session = self.find(&sessions, plugin_id, session_id)?;
         let clients = session.clients.as_ref().ok_or_else(|| {
-            DevToolboxError::InvalidArgument("session is not a TCP server session".to_string())
+            DevDeckError::InvalidArgument("session is not a TCP server session".to_string())
         })?;
         let map = clients
             .lock()
-            .map_err(|_| DevToolboxError::Internal("client map lock poisoned".to_string()))?;
+            .map_err(|_| DevDeckError::Internal("client map lock poisoned".to_string()))?;
         let sender = map.get(client_id).ok_or_else(|| {
-            DevToolboxError::NotFound(format!("client '{client_id}' is not connected"))
+            DevDeckError::NotFound(format!("client '{client_id}' is not connected"))
         })?;
         sender
             .send(Outbound::Close)
-            .map_err(|_| DevToolboxError::Internal("client is already closed".to_string()))
+            .map_err(|_| DevDeckError::Internal("client is already closed".to_string()))
     }
 
     /// Bind a UDP socket.
@@ -441,7 +441,7 @@ impl SocketManager {
         plugin_id: &PluginId,
         host: &str,
         port: u16,
-    ) -> Result<(String, u16), DevToolboxError> {
+    ) -> Result<(String, u16), DevDeckError> {
         self.ensure_capacity(plugin_id.as_str())?;
         let bind_host = if host.trim().is_empty() {
             "127.0.0.1"
@@ -449,11 +449,11 @@ impl SocketManager {
             host
         };
         let socket = UdpSocket::bind((bind_host, port)).await.map_err(|err| {
-            DevToolboxError::Internal(format!("cannot bind UDP {bind_host}:{port}: {err}"))
+            DevDeckError::Internal(format!("cannot bind UDP {bind_host}:{port}: {err}"))
         })?;
         let local = socket
             .local_addr()
-            .map_err(|err| DevToolboxError::Internal(format!("UDP local address: {err}")))?;
+            .map_err(|err| DevDeckError::Internal(format!("UDP local address: {err}")))?;
         let socket = Arc::new(socket);
 
         let session_id = uuid::Uuid::new_v4().to_string();
@@ -510,9 +510,9 @@ impl SocketManager {
         host: &str,
         port: u16,
         bytes: Vec<u8>,
-    ) -> Result<usize, DevToolboxError> {
+    ) -> Result<usize, DevDeckError> {
         if bytes.len() > MAX_SEND_BYTES {
-            return Err(DevToolboxError::InvalidArgument(format!(
+            return Err(DevDeckError::InvalidArgument(format!(
                 "payload exceeds the {MAX_SEND_BYTES} byte limit"
             )));
         }
@@ -523,34 +523,34 @@ impl SocketManager {
                 .udp
                 .as_ref()
                 .ok_or_else(|| {
-                    DevToolboxError::InvalidArgument("session is not a UDP session".to_string())
+                    DevDeckError::InvalidArgument("session is not a UDP session".to_string())
                 })?
                 .clone()
         };
         let target = tokio::net::lookup_host((host, port))
             .await
             .map_err(|err| {
-                DevToolboxError::InvalidArgument(format!("cannot resolve '{host}': {err}"))
+                DevDeckError::InvalidArgument(format!("cannot resolve '{host}': {err}"))
             })?
             .next()
             .ok_or_else(|| {
-                DevToolboxError::InvalidArgument(format!("'{host}' did not resolve to an address"))
+                DevDeckError::InvalidArgument(format!("'{host}' did not resolve to an address"))
             })?;
         socket
             .send_to(&bytes, target)
             .await
-            .map_err(|err| DevToolboxError::Internal(format!("UDP send failed: {err}")))
+            .map_err(|err| DevDeckError::Internal(format!("UDP send failed: {err}")))
     }
 
     /// Close one session and release its resources.
-    pub fn close(&self, plugin_id: &PluginId, session_id: &str) -> Result<(), DevToolboxError> {
+    pub fn close(&self, plugin_id: &PluginId, session_id: &str) -> Result<(), DevDeckError> {
         let session = {
             let mut sessions = self.lock()?;
-            let session = sessions.get(session_id).ok_or_else(|| {
-                DevToolboxError::NotFound(format!("unknown session '{session_id}'"))
-            })?;
+            let session = sessions
+                .get(session_id)
+                .ok_or_else(|| DevDeckError::NotFound(format!("unknown session '{session_id}'")))?;
             if session.plugin_id != plugin_id.as_str() {
-                return Err(DevToolboxError::denied(
+                return Err(DevDeckError::denied(
                     "session belongs to a different plugin",
                 ));
             }
@@ -558,7 +558,7 @@ impl SocketManager {
         };
 
         let Some(session) = session else {
-            return Err(DevToolboxError::NotFound(format!(
+            return Err(DevDeckError::NotFound(format!(
                 "unknown session '{session_id}'"
             )));
         };
@@ -633,10 +633,10 @@ impl SocketManager {
         }
     }
 
-    fn lock(&self) -> Result<std::sync::MutexGuard<'_, HashMap<String, Session>>, DevToolboxError> {
+    fn lock(&self) -> Result<std::sync::MutexGuard<'_, HashMap<String, Session>>, DevDeckError> {
         self.sessions
             .lock()
-            .map_err(|_| DevToolboxError::Internal("socket session lock poisoned".to_string()))
+            .map_err(|_| DevDeckError::Internal("socket session lock poisoned".to_string()))
     }
 
     fn find<'a>(
@@ -644,12 +644,12 @@ impl SocketManager {
         sessions: &'a HashMap<String, Session>,
         plugin_id: &PluginId,
         session_id: &str,
-    ) -> Result<&'a Session, DevToolboxError> {
+    ) -> Result<&'a Session, DevDeckError> {
         let session = sessions
             .get(session_id)
-            .ok_or_else(|| DevToolboxError::NotFound(format!("unknown session '{session_id}'")))?;
+            .ok_or_else(|| DevDeckError::NotFound(format!("unknown session '{session_id}'")))?;
         if session.plugin_id != plugin_id.as_str() {
-            return Err(DevToolboxError::denied(
+            return Err(DevDeckError::denied(
                 "session belongs to a different plugin",
             ));
         }
@@ -671,13 +671,13 @@ fn dispatch_into(emit: &EventSink, event: SocketEvent) {
 }
 
 /// Decode the SDK payload (`data` + `encoding`) into bytes.
-pub fn decode_payload(data: &str, encoding: Option<&str>) -> Result<Vec<u8>, DevToolboxError> {
+pub fn decode_payload(data: &str, encoding: Option<&str>) -> Result<Vec<u8>, DevDeckError> {
     match encoding.unwrap_or("utf8") {
         "utf8" | "text" => Ok(data.as_bytes().to_vec()),
-        "base64" => STANDARD.decode(data.trim()).map_err(|err| {
-            DevToolboxError::InvalidArgument(format!("invalid Base64 payload: {err}"))
-        }),
-        other => Err(DevToolboxError::InvalidArgument(format!(
+        "base64" => STANDARD
+            .decode(data.trim())
+            .map_err(|err| DevDeckError::InvalidArgument(format!("invalid Base64 payload: {err}"))),
+        other => Err(DevDeckError::InvalidArgument(format!(
             "unknown encoding '{other}' (use 'utf8' or 'base64')"
         ))),
     }

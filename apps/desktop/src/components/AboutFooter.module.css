@@ -1,0 +1,135 @@
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 28px;
+  padding: 22px 0 0;
+  border-top: 1px solid var(--glass-border);
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
+.icon {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+}
+
+.copy {
+  min-width: 0;
+}
+
+.copy h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 22px;
+}
+
+.version {
+  color: var(--text-quaternary);
+  font-family: var(--font-family-mono);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.status {
+  margin: 4px 0 0;
+  color: var(--text-quaternary);
+  font-size: 12px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+
+.available {
+  color: var(--accent-warning);
+}
+
+.error {
+  color: var(--accent-error);
+}
+
+.progress {
+  width: 100%;
+  height: 6px;
+  margin-top: 8px;
+  accent-color: var(--accent-primary);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.action,
+.primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 7px 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
+  background: var(--glass-bg);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.action svg,
+.primary svg {
+  width: 14px;
+  height: 14px;
+}
+
+.action:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.action:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.primary {
+  border-color: transparent;
+  background: var(--aurora-grad);
+  color: #fff;
+  box-shadow: 0 8px 18px -12px var(--accent-primary);
+}
+
+.primary:hover {
+  background: var(--aurora-grad-hover);
+}
+
+@media (max-width: 700px) {
+  .actions {
+    justify-content: flex-start;
+  }
+}

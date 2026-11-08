@@ -1,6 +1,6 @@
 # Architecture Overview
 
-DevToolBox is a desktop toolbox with two halves:
+DevDeck is a desktop toolbox with two halves:
 
 - a **JavaScript/TypeScript front end** that owns everything the user sees, and
 - a **Rust host** that owns every privileged operation and every policy decision.
@@ -17,7 +17,7 @@ hostile code.
 | Auditable security     | One Rust entry point per privilege domain; policy lives in crates without UI code                             |
 | Easy to contribute     | Tools and plugins are plain web apps; Rust is only needed for host capabilities                               |
 | Open ecosystem         | Marketplace protocol, manifest schema, SDK, and signing are documented and versioned independently of the app |
-| Testable policy        | `devtoolbox-contract`, `-capability`, and `-market` have no Tauri dependency and are unit tested in CI        |
+| Testable policy        | `devdeck-contract`, `-capability`, and `-market` have no Tauri dependency and are unit tested in CI        |
 
 ## Layers
 
@@ -37,9 +37,9 @@ hostile code.
 │   └─ state.rs, storage.rs    runtime state and settings         │
 ├─────────────────────────────────────────────────────────────────┤
 │ crates/                     framework-free policy crates        │
-│   ├─ devtoolbox-contract     manifest, permissions, registry    │
-│   ├─ devtoolbox-capability   grants, allowlists, path sandbox   │
-│   └─ devtoolbox-market       verification, install, state       │
+│   ├─ devdeck-contract     manifest, permissions, registry    │
+│   ├─ devdeck-capability   grants, allowlists, path sandbox   │
+│   └─ devdeck-market       verification, install, state       │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -55,9 +55,9 @@ makes it testable and reusable by CLI tooling.
 | `apps/desktop/src/legacy`      | Sidebar, dashboard, tools workspace, module center, settings     |
 | `apps/desktop/src/theme`       | Legacy color/type tokens and global styles                       |
 | `apps/desktop/src-tauri`       | Tauri configuration, Rust host, capabilities                     |
-| `crates/devtoolbox-contract`   | Shared vocabulary: ids, manifests, permissions, registry, errors |
-| `crates/devtoolbox-capability` | Capability broker and filesystem sandbox                         |
-| `crates/devtoolbox-market`     | Package verification, extraction, install state                  |
+| `crates/devdeck-contract`   | Shared vocabulary: ids, manifests, permissions, registry, errors |
+| `crates/devdeck-capability` | Capability broker and filesystem sandbox                         |
+| `crates/devdeck-market`     | Package verification, extraction, install state                  |
 | `packages/plugin-sdk`          | Published npm SDK used by plugin authors                         |
 | `marketplace/`                 | Plugin workspace, pack/sign/registry tooling                     |
 | `scripts/`                     | Acceptance, updater rehearsal, legacy-import guard               |
@@ -106,7 +106,7 @@ service. The Tauri host replaces that with a single gated method:
 
 ```rust
 #[tauri::command]
-async fn plugin_sdk_call(plugin_id, method, params) -> Result<Value, DevToolboxError>
+async fn plugin_sdk_call(plugin_id, method, params) -> Result<Value, DevDeckError>
 ```
 
 `method` selects the capability (`storage.set`, `http.request`, `log.write`, …),
@@ -155,7 +155,7 @@ package fully validates.
 
 ```
 plugin iframe
-   │ postMessage({ type: 'devtoolbox:sdk:request', method, params })
+   │ postMessage({ type: 'devdeck:sdk:request', method, params })
    ▼
 renderer (pluginBridge.ts)  ── event.source check
    │ invoke('plugin_sdk_call', { pluginId, method, params })
@@ -173,8 +173,8 @@ sdk::dispatch
 ## Adding a capability
 
 1. Add the permission id to `Permission` in
-   `crates/devtoolbox-contract/src/permission.rs` (wire string is public API).
-2. Add the allowlist rules to `crates/devtoolbox-capability/src/broker.rs`.
+   `crates/devdeck-contract/src/permission.rs` (wire string is public API).
+2. Add the allowlist rules to `crates/devdeck-capability/src/broker.rs`.
 3. Add one arm to `sdk::dispatch` and implement it in the host.
 4. Expose a typed helper in `packages/plugin-sdk`.
 5. Document it in `docs/plugin-dev/marketplace-v2.md` and add a test.
@@ -213,8 +213,8 @@ Step-by-step instructions live in the [development guide](../development.md).
 | Layer      | Test type                                                                                      | Location                         |
 | ---------- | ---------------------------------------------------------------------------------------------- | -------------------------------- |
 | Contract   | Unit tests for ids, manifests, permissions, registry, path sandbox                             | `crates/*/src/**` `#[cfg(test)]` |
-| Capability | Unit tests for every allowlist rule and each failure mode                                      | `crates/devtoolbox-capability`   |
-| Market     | End-to-end install tests against in-memory ZIP fixtures, including zip-slip and zip-bomb cases | `crates/devtoolbox-market`       |
+| Capability | Unit tests for every allowlist rule and each failure mode                                      | `crates/devdeck-capability`   |
+| Market     | End-to-end install tests against in-memory ZIP fixtures, including zip-slip and zip-bomb cases | `crates/devdeck-market`       |
 | Host       | Command behavior, sockets, MQTT, certificates, SSH end-to-end against an in-process server     | `apps/desktop/src-tauri/src`     |
 | Renderer   | `tsc --noEmit` + `vite build` + Vitest for pure helpers                                        | `apps/desktop`                   |
 

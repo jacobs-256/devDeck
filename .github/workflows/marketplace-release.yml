@@ -51,12 +51,12 @@ jobs:
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
           MARKETPLACE_TAG: ${{ inputs.tag || github.ref_name }}
-          DEVTOOLBOX_SIGNING_KEY: ${{ secrets.MARKETPLACE_SIGNING_KEY }}
+          DEVDECK_SIGNING_KEY: ${{ secrets.MARKETPLACE_SIGNING_KEY }}
         run: node marketplace/scripts/pack-release.mjs
 
       - name: Sign the registry and verify every artifact
         env:
-          DEVTOOLBOX_SIGNING_KEY: ${{ secrets.MARKETPLACE_SIGNING_KEY }}
+          DEVDECK_SIGNING_KEY: ${{ secrets.MARKETPLACE_SIGNING_KEY }}
         run: |
           node marketplace/scripts/sign.mjs sign marketplace/release-dist/registry.json
           PUB="$(node marketplace/scripts/sign.mjs public-key)"

@@ -1,6 +1,6 @@
 # Open Source
 
-DevToolBox is open-source software. This section provides project policies and contributor guidelines.
+DevDeck is open-source software. This section provides project policies and contributor guidelines.
 
 ## Policies
 

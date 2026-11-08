@@ -16,7 +16,7 @@ interface PluginViewProps {
  *
  * `allow-scripts` without `allow-same-origin` gives the frame an opaque origin,
  * so plugin code can never reach into the host document even though it is
- * served from a DevToolBox-owned scheme.
+ * served from a DevDeck-owned scheme.
  */
 export function PluginView({ plugin, theme, className, onError }: PluginViewProps) {
   const frameRef = useRef<HTMLIFrameElement>(null);

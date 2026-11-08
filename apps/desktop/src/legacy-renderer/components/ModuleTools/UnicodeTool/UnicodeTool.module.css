@@ -23,8 +23,8 @@
 
 .select {
   padding: 5px 10px;
-  border: 1px solid var(--bg-active);
-  border-radius: 5px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
   background: var(--bg-panel);
   color: var(--text-primary);
   font-size: var(--font-size-base);
@@ -33,14 +33,15 @@
 }
 
 .btn {
-  padding: 5px 14px;
-  border: none;
-  border-radius: 5px;
-  background: var(--accent-color);
+  padding: 6px 14px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: var(--aurora-grad);
   color: #fff;
   font-size: var(--font-size-small);
   font-family: inherit;
   cursor: pointer;
+  box-shadow: 0 8px 18px -12px var(--accent-primary);
 }
 
 .btn:hover {
@@ -49,8 +50,8 @@
 
 .btnSec {
   padding: 5px 14px;
-  border: 1px solid var(--bg-active);
-  border-radius: 5px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
   background: none;
   color: var(--text-secondary);
   font-size: var(--font-size-small);
@@ -91,8 +92,8 @@
   flex: 1;
   width: 100%;
   padding: 10px;
-  border: 1px solid var(--bg-active);
-  border-radius: 6px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
   background: var(--bg-panel);
   color: var(--text-primary);
   font-family: var(--font-family-mono);
@@ -120,7 +121,7 @@
 }
 
 .err {
-  color: #e74c3c;
+  color: var(--accent-error);
   font-size: var(--font-size-small);
   flex-shrink: 0;
 }

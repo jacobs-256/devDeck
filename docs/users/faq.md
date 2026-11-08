@@ -4,19 +4,27 @@
 
 ### The Marketplace is empty
 
-DevToolBox has no built-in registry. Add one:
+DevDeck adds the official GitHub registry on first launch:
 
-1. Open **Marketplace**.
-2. Paste a `registry.json` URL and click **Add registry**.
-3. Click **Refresh** if the list does not update.
+```text
+https://github.com/XthingsJacobs/devToolBox/releases/download/marketplace/registry.json
+```
 
-For local development, `http://localhost` and `http://127.0.0.1` URLs are
-accepted; everything else must be HTTPS.
+If the list is empty:
+
+1. Open **Marketplace** and click **Refresh**.
+2. Check your network access to GitHub Releases.
+3. Development builds can add custom registries with **Add registry**; release
+   builds use the official registry only.
+
+For local development, `http://localhost`, `http://127.0.0.1`, and local
+`file:///…/registry.local.json` URLs are accepted; everything else must be HTTPS.
 
 ### Install fails with “Only https is allowed”
 
 Registry and download URLs must be `https://`. Loopback (`http://localhost`,
-`http://127.0.0.1`) is allowed only for local development.
+`http://127.0.0.1`) and local `file://` registries/packages are allowed only for
+local development.
 
 ### Install fails with a signature or digest error
 
@@ -41,7 +49,7 @@ They cannot access the filesystem, network, or SSH directly; every privileged
 call is permission-checked by the Rust host. The plugin CSP blocks direct
 network connections.
 
-### Can I use DevToolBox offline?
+### Can I use DevDeck offline?
 
 Yes. All 27 built-in tools work offline. Marketplace actions and plugin network
 features need connectivity only when their manifests declare it.
@@ -79,15 +87,15 @@ English.
 
 ### Where is my data?
 
-- macOS: `~/Library/Application Support/com.devtoolbox.app`
-- Windows: `%APPDATA%\com.devtoolbox.app`
+- macOS: `~/Library/Application Support/com.devdeck.desktop`
+- Windows: `%APPDATA%\com.devdeck.desktop`
 
 It contains `settings.json`, `marketplace-state.json`, `marketplace-sources.json`,
 plugins, plugin storage, logs, and `known-hosts.json`.
 
 ### How do I reset the app?
 
-Quit DevToolBox and remove the data directory (or just `settings.json` for
+Quit DevDeck and remove the data directory (or just `settings.json` for
 appearance/language). This deletes installed plugins and plugin storage.
 
 ## Shortcuts
@@ -99,5 +107,5 @@ tool tab).
 ## Support
 
 Include the version, OS/architecture, steps to reproduce, and screenshots or log
-excerpts in [GitHub Issues](https://github.com/XthingsJacobs/devToolBox/issues).
+excerpts in [GitHub Issues](https://github.com/XthingsJacobs/devDeck/issues).
 For security issues, follow the [Security Policy](../governance/security.md).

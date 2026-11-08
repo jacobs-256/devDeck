@@ -1,4 +1,4 @@
-/** Lightweight i18n for the DevToolBox shell and Marketplace. */
+/** Lightweight i18n for the DevDeck shell and Marketplace. */
 
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 
@@ -19,6 +19,10 @@ const en = {
 
   'action.working': 'Working…',
 
+  'about.subtitle': 'A plugin-first developer toolbox built with Rust and Tauri 2.',
+  'about.currentVersion': 'Current version {version}',
+  'about.reportIssue': 'Report issue',
+  'about.github': 'GitHub',
   'update.title': 'Updates',
   'update.current': 'Current version: {version}.',
   'update.explanation':
@@ -31,7 +35,7 @@ const en = {
   'update.available': 'Version {version} is available.',
   'update.downloading': 'Downloading update…',
   'update.installing': 'Installing update…',
-  'update.ready': 'Update installed. Restart DevToolBox to finish.',
+  'update.ready': 'Update installed. Restart DevDeck to finish.',
   'update.unknown': 'unknown',
 
   'common.copy': 'Copy',
@@ -376,6 +380,10 @@ const zhCN: Dictionary = {
 
   'action.working': '处理中…',
 
+  'about.subtitle': '基于 Rust + Tauri 2 的插件优先开发者工具箱。',
+  'about.currentVersion': '当前版本 {version}',
+  'about.reportIssue': '报告问题',
+  'about.github': 'GitHub',
   'update.title': '更新',
   'update.current': '当前版本：{version}。',
   'update.explanation': '更新从 GitHub Releases 下载，并使用更新签名密钥校验。',
@@ -387,7 +395,7 @@ const zhCN: Dictionary = {
   'update.available': '发现新版本 {version}。',
   'update.downloading': '正在下载更新…',
   'update.installing': '正在安装更新…',
-  'update.ready': '更新已安装，重启 DevToolBox 完成更新。',
+  'update.ready': '更新已安装，重启 DevDeck 完成更新。',
   'update.unknown': '未知',
 
   'common.copy': '复制',

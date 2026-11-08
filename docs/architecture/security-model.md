@@ -10,7 +10,7 @@ each one is enforced. It is meant to be read before changing anything under
 | -------------------- | ------------------------------------------- | ------------------------------------------------------ |
 | Renderer → host      | Web content (React app, third-party plugin) | `commands.rs` argument validation, Tauri capabilities  |
 | Plugin → host        | Arbitrary JavaScript from a registry        | `sdk::dispatch` + `CapabilityBroker`                   |
-| Registry → installer | Network documents                           | `devtoolbox-contract` validation + `devtoolbox-market` |
+| Registry → installer | Network documents                           | `devdeck-contract` validation + `devdeck-market` |
 | Package → filesystem | Attacker-controlled ZIP                     | `package::extract_zip` + `resolve_within`              |
 
 Everything on the untrusted side is assumed to be able to send arbitrary bytes,
@@ -24,7 +24,7 @@ paths, URLs, and JSON. No policy decision may be made in the renderer alone.
 installed manifest at startup and on every install/enable. A plugin cannot widen
 its grant by calling `capability.list` or by editing its own files.
 
-Enforced in: `crates/devtoolbox-capability/src/broker.rs`.
+Enforced in: `crates/devdeck-capability/src/broker.rs`.
 
 ### 2. Installation precedes every call
 
@@ -81,7 +81,7 @@ Two layers:
 The `plugin://` protocol handler applies both: it resolves under the plugin
 directory and serves only files that still live there.
 
-Enforced in: `crates/devtoolbox-contract/src/path.rs`,
+Enforced in: `crates/devdeck-contract/src/path.rs`,
 `apps/desktop/src-tauri/src/protocol.rs`.
 
 ### 4. Network access is allowlisted per host, per hop
@@ -94,7 +94,7 @@ Redirects are **not** followed automatically. `http.rs` loops manually, and
 re-authorizes each `Location` before issuing the next request, so a permitted
 host cannot bounce to an unlisted one.
 
-Enforced in: `crates/devtoolbox-capability/src/broker.rs`,
+Enforced in: `crates/devdeck-capability/src/broker.rs`,
 `apps/desktop/src-tauri/src/http.rs`.
 
 ### 5. Packages are verified before they are unpacked
@@ -107,8 +107,8 @@ The registry document itself carries a detached Ed25519 signature when the
 source has a pinned public key; requiring it is a per-source setting. Signatures
 are verified against the exact bytes before parsing.
 
-Enforced in: `crates/devtoolbox-market/src/signing.rs`,
-`crates/devtoolbox-market/src/package.rs`, `apps/desktop/src-tauri/src/registry.rs`.
+Enforced in: `crates/devdeck-market/src/signing.rs`,
+`crates/devdeck-market/src/package.rs`, `apps/desktop/src-tauri/src/registry.rs`.
 
 ### 6. Upgrades are atomic and never silently downgrade
 
@@ -116,7 +116,7 @@ Extraction happens in `.staging/`, validation runs there, and only then does a
 rename swap the plugin directory. Refusing downgrades by default closes the
 "reinstall an old vulnerable version" path.
 
-Enforced in: `crates/devtoolbox-market/src/store.rs`.
+Enforced in: `crates/devdeck-market/src/store.rs`.
 
 ### 7. Plugin code cannot reach the host document
 

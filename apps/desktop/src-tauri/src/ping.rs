@@ -5,10 +5,13 @@
 //! "is the service reachable" checks actually care about.
 
 use std::net::SocketAddr;
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
-use devtoolbox_contract::DevToolboxError;
+use devdeck_contract::DevDeckError;
 use serde::Serialize;
+use tauri::{AppHandle, Emitter};
+use tokio::io::{AsyncBufReadExt, AsyncRead, BufReader};
 use tokio::net::TcpStream;
 
 const MAX_SAMPLES: u32 = 20;
@@ -49,7 +52,11 @@ pub struct NativePingReport {
 }
 
 /// Run the platform `ping` command (ICMP) for legacy tool compatibility.
-pub async fn system_ping(host: &str, count: u32) -> Result<NativePingReport, DevToolboxError> {
+pub async fn system_ping(
+    app: AppHandle,
+    host: &str,
+    count: u32,
+) -> Result<NativePingReport, DevDeckError> {
     let host = validate_host(host)?;
     let count = count.clamp(1, 20);
 
@@ -59,25 +66,67 @@ pub async fn system_ping(host: &str, count: u32) -> Result<NativePingReport, Dev
     } else {
         command.args(["-c", &count.to_string()]);
     }
-    let output = command
+    let mut child = command
         .arg(host)
-        .output()
-        .await
-        .map_err(|err| DevToolboxError::Internal(format!("failed to run ping: {err}")))?;
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .kill_on_drop(true)
+        .spawn()
+        .map_err(|err| DevDeckError::Internal(format!("failed to run ping: {err}")))?;
 
-    let mut text = String::from_utf8_lossy(&output.stdout).to_string();
-    text.push_str(&String::from_utf8_lossy(&output.stderr));
+    let stdout = child.stdout.take();
+    let stderr = child.stderr.take();
+    let collected = Arc::new(Mutex::new(String::new()));
+
+    stream_lines(stdout, app.clone(), collected.clone());
+    stream_lines(stderr, app.clone(), collected.clone());
+
+    let status = match tokio::time::timeout(Duration::from_secs(60), child.wait()).await {
+        Ok(Ok(status)) => status,
+        Ok(Err(err)) => {
+            return Err(DevDeckError::Internal(format!(
+                "ping process failed: {err}"
+            )))
+        }
+        Err(_) => {
+            let _ = child.kill().await;
+            return Err(DevDeckError::Internal(format!(
+                "ping to '{host}' timed out after 60s"
+            )));
+        }
+    };
+
     Ok(NativePingReport {
         host: host.to_string(),
-        output: text,
-        exit_code: output.status.code(),
+        output: collected
+            .lock()
+            .map(|value| value.clone())
+            .unwrap_or_default(),
+        exit_code: status.code(),
     })
 }
 
-fn validate_host(host: &str) -> Result<&str, DevToolboxError> {
+fn stream_lines<R>(stream: Option<R>, app: AppHandle, buffer: Arc<Mutex<String>>)
+where
+    R: AsyncRead + Unpin + Send + 'static,
+{
+    tokio::spawn(async move {
+        let Some(stream) = stream else { return };
+        let mut lines = BufReader::new(stream).lines();
+        while let Ok(Some(line)) = lines.next_line().await {
+            if let Ok(mut output) = buffer.lock() {
+                output.push_str(&line);
+                output.push('\n');
+            }
+            let _ = app.emit("tool-ping", serde_json::json!({ "line": line }));
+        }
+    });
+}
+
+fn validate_host(host: &str) -> Result<&str, DevDeckError> {
     let trimmed = host.trim();
     if trimmed.is_empty() {
-        return Err(DevToolboxError::InvalidArgument(
+        return Err(DevDeckError::InvalidArgument(
             "host is required".to_string(),
         ));
     }
@@ -87,20 +136,20 @@ fn validate_host(host: &str) -> Result<&str, DevToolboxError> {
         || trimmed.contains(' ')
         || trimmed.contains(';')
     {
-        return Err(DevToolboxError::InvalidArgument(
+        return Err(DevDeckError::InvalidArgument(
             "host must be a bare hostname or IP address".to_string(),
         ));
     }
     Ok(trimmed)
 }
 
-async fn resolve(host: &str, port: u16) -> Result<SocketAddr, DevToolboxError> {
+async fn resolve(host: &str, port: u16) -> Result<SocketAddr, DevDeckError> {
     tokio::net::lookup_host((host, port))
         .await
-        .map_err(|err| DevToolboxError::InvalidArgument(format!("cannot resolve '{host}': {err}")))?
+        .map_err(|err| DevDeckError::InvalidArgument(format!("cannot resolve '{host}': {err}")))?
         .next()
         .ok_or_else(|| {
-            DevToolboxError::InvalidArgument(format!("'{host}' did not resolve to an address"))
+            DevDeckError::InvalidArgument(format!("'{host}' did not resolve to an address"))
         })
 }
 
@@ -110,15 +159,15 @@ pub async fn tcp_ping(
     port: u16,
     count: u32,
     timeout_ms: u64,
-) -> Result<PingReport, DevToolboxError> {
+) -> Result<PingReport, DevDeckError> {
     let host = validate_host(host)?;
     if count == 0 || count > MAX_SAMPLES {
-        return Err(DevToolboxError::InvalidArgument(format!(
+        return Err(DevDeckError::InvalidArgument(format!(
             "count must be between 1 and {MAX_SAMPLES}"
         )));
     }
     if timeout_ms == 0 || timeout_ms > MAX_TIMEOUT_MS {
-        return Err(DevToolboxError::InvalidArgument(format!(
+        return Err(DevDeckError::InvalidArgument(format!(
             "timeout must be between 1 and {MAX_TIMEOUT_MS} ms"
         )));
     }

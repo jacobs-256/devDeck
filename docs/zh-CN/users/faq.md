@@ -4,11 +4,17 @@
 
 ### 应用市场是空的
 
-DevToolBox 没有内置注册表，需要手动添加：
+DevDeck 首次启动会自动添加官方 GitHub 注册表：
 
-1. 打开 **应用市场**。
-2. 粘贴 `registry.json` 地址并点击 **Add registry**。
-3. 如未更新，点击 **Refresh**。
+```text
+https://github.com/XthingsJacobs/devToolBox/releases/download/marketplace/registry.json
+```
+
+如果列表为空：
+
+1. 打开 **应用市场**，点击 **Refresh**。
+2. 检查网络能否访问 GitHub Releases。
+3. 开发版可用 **Add registry** 添加自定义注册表；正式版只使用官方注册表。
 
 本地开发允许 `http://localhost` / `http://127.0.0.1`，其他地址必须是 HTTPS。
 
@@ -42,8 +48,8 @@ DevToolBox 没有内置注册表，需要手动添加：
 
 ## 数据
 
-- macOS：`~/Library/Application Support/com.devtoolbox.app`
-- Windows：`%APPDATA%\com.devtoolbox.app`
+- macOS：`~/Library/Application Support/com.devdeck.desktop`
+- Windows：`%APPDATA%\com.devdeck.desktop`
 
 包含 `settings.json`、`marketplace-state.json`、`marketplace-sources.json`、插件、插件存储、日志与 `known-hosts.json`。
 
@@ -51,4 +57,4 @@ DevToolBox 没有内置注册表，需要手动添加：
 
 ## 支持
 
-在 [GitHub Issues](https://github.com/XthingsJacobs/devToolBox/issues) 提交版本、系统、复现步骤与日志。安全问题请遵循[安全策略](../../governance/security.md)。
+在 [GitHub Issues](https://github.com/XthingsJacobs/devDeck/issues) 提交版本、系统、复现步骤与日志。安全问题请遵循[安全策略](../../governance/security.md)。

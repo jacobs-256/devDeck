@@ -2,7 +2,7 @@
 
 > 英文源文档：[docs/architecture/overview.md](../../architecture/overview.md)。若两者不一致，以英文版为准。
 
-DevToolBox 由两层组成：
+DevDeck 由两层组成：
 
 - **JS/TS 前端**：所有界面与内置工具；
 - **Rust 宿主**：所有特权操作与策略判定。
@@ -17,7 +17,7 @@ DevToolBox 由两层组成：
 | 安全边界可审计   | 每个特权域只有一个 Rust 入口，策略位于无 UI 依赖的 crate                     |
 | 贡献门槛低       | 工具与插件都是普通 Web 应用，只有宿主能力才需要 Rust                         |
 | 开放生态         | 清单、权限、注册表、SDK、签名规范独立版本化                                  |
-| 策略可测试       | `devtoolbox-contract` / `-capability` / `-market` 不依赖 Tauri，可在 CI 单测 |
+| 策略可测试       | `devdeck-contract` / `-capability` / `-market` 不依赖 Tauri，可在 CI 单测 |
 
 ## 分层
 
@@ -35,9 +35,9 @@ apps/desktop/src-tauri     Tauri 宿主（可信）
   └─ state.rs / storage.rs  运行时状态
 
 crates/                    无框架依赖的策略层
-  ├─ devtoolbox-contract    清单、权限、注册表、错误
-  ├─ devtoolbox-capability  授权、白名单、路径沙箱
-  └─ devtoolbox-market      包校验、安装、状态机
+  ├─ devdeck-contract    清单、权限、注册表、错误
+  ├─ devdeck-capability  授权、白名单、路径沙箱
+  └─ devdeck-market      包校验、安装、状态机
 ```
 
 依赖方向严格向下：策略 crate 不引入 Tauri、不读 UI、不直接做网络 I/O，因此可被 CLI 工具复用。
@@ -50,9 +50,9 @@ crates/                    无框架依赖的策略层
 | `apps/desktop/src/legacy`      | 侧边栏、首页、工具页、应用市场、设置         |
 | `apps/desktop/src/theme`       | legacy 颜色/字体 token 与全局样式            |
 | `apps/desktop/src-tauri`       | Tauri 配置、Rust 宿主、capabilities          |
-| `crates/devtoolbox-contract`   | 共享词汇：id、清单、权限、注册表、错误       |
-| `crates/devtoolbox-capability` | 能力代理与文件系统沙箱                       |
-| `crates/devtoolbox-market`     | 包校验、解包、安装状态                       |
+| `crates/devdeck-contract`   | 共享词汇：id、清单、权限、注册表、错误       |
+| `crates/devdeck-capability` | 能力代理与文件系统沙箱                       |
+| `crates/devdeck-market`     | 包校验、解包、安装状态                       |
 | `packages/plugin-sdk`          | 面向插件作者的 npm SDK                       |
 | `marketplace/`                 | 插件工作区、打包/签名/注册表工具             |
 | `scripts/`                     | 验收、更新演练、legacy 导入守卫              |
@@ -83,7 +83,7 @@ crates/                    无框架依赖的策略层
 
 ```rust
 #[tauri::command]
-async fn plugin_sdk_call(plugin_id, method, params) -> Result<Value, DevToolboxError>
+async fn plugin_sdk_call(plugin_id, method, params) -> Result<Value, DevDeckError>
 ```
 
 - `method` 选择能力（`storage.set`、`http.request`、`socket.tcpConnect`、`fs.readFile`…）
@@ -118,7 +118,7 @@ registry.json ──校验──► RegistryIndex
 
 ```
 插件 iframe
-  │ postMessage({ type: 'devtoolbox:sdk:request', method, params })
+  │ postMessage({ type: 'devdeck:sdk:request', method, params })
   ▼
 渲染层 pluginBridge.ts（校验 event.source）
   │ invoke('plugin_sdk_call', { pluginId, method, params })
@@ -132,8 +132,8 @@ commands::plugin_sdk_call → sdk::dispatch
 
 ## 新增能力清单
 
-1. 在 `devtoolbox-contract` 的 `Permission` 增加权限 id（wire 字符串是公共 API）。
-2. 在 `devtoolbox-capability` 增加白名单规则。
+1. 在 `devdeck-contract` 的 `Permission` 增加权限 id（wire 字符串是公共 API）。
+2. 在 `devdeck-capability` 增加白名单规则。
 3. 在 `sdk::dispatch` 增加一个分支并实现宿主逻辑。
 4. 在 `packages/plugin-sdk` 暴露类型化方法。
 5. 更新 `docs/plugin-dev/marketplace-v2.md` 并补测试。
@@ -168,8 +168,8 @@ apps/desktop/src/tools/
 | 层     | 测试                                                        | 位置                           |
 | ------ | ----------------------------------------------------------- | ------------------------------ |
 | 契约   | id、清单、权限、注册表、路径沙箱单测                        | `crates/*/src`                 |
-| 能力   | 每条白名单规则与失败分支                                    | `crates/devtoolbox-capability` |
-| 市场   | 内存 ZIP 的端到端安装（含 zip-slip、签名、降级）            | `crates/devtoolbox-market`     |
+| 能力   | 每条白名单规则与失败分支                                    | `crates/devdeck-capability` |
+| 市场   | 内存 ZIP 的端到端安装（含 zip-slip、签名、降级）            | `crates/devdeck-market`     |
 | 宿主   | socket 回环、文件 token、注册表拉取、MQTT、证书、SSH 端到端 | `apps/desktop/src-tauri`       |
 | 渲染层 | `tsc --noEmit` + `vite build` + 工具 model 单测             | `apps/desktop`                 |
 

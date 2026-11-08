@@ -9,6 +9,7 @@
 export { useSplitPane } from './SplitPane';
 export { HelpModal } from './HelpModal';
 export { JsonTreeView } from './JsonTreeView';
+export { JsonEditor, highlightJson } from './JsonEditor';
 export { useTextSearch, SearchBar } from './TextSearch';
 export type { TextSearchResult } from './TextSearch';
 export { ToolSection, ToolField, ToolInput, ToolSelect, ToolTextarea, ToolButton } from './ToolUI';

@@ -9,10 +9,10 @@ The rewrite landed on the `rust` branch in **3.0.0**. The Electron shell and
 | Area                            | Electron (2.0.x)                   | Rust + Tauri (3.0.0)                                | State                   |
 | ------------------------------- | ---------------------------------- | --------------------------------------------------- | ----------------------- |
 | Shell & packaging               | electron-builder, ~239 MB `.app`   | Tauri 2, `bundle.targets = dmg/app/nsis`            | ✅ done                 |
-| Manifest contract               | TS types in `electron-api.ts`      | `devtoolbox-contract` crate, schema v2 + v1 compat  | ✅ implemented & tested |
-| Permission model                | ad-hoc checks in `marketplace.ts`  | `devtoolbox-capability` broker + allowlists         | ✅ implemented & tested |
-| Package verification            | sha256 in Node script              | SHA-256 + Ed25519 in `devtoolbox-market`            | ✅ implemented & tested |
-| Install/uninstall/enable        | `marketplace.ts` (3020 lines)      | `devtoolbox-market::store`                          | ✅ implemented & tested |
+| Manifest contract               | TS types in `electron-api.ts`      | `devdeck-contract` crate, schema v2 + v1 compat  | ✅ implemented & tested |
+| Permission model                | ad-hoc checks in `marketplace.ts`  | `devdeck-capability` broker + allowlists         | ✅ implemented & tested |
+| Package verification            | sha256 in Node script              | SHA-256 + Ed25519 in `devdeck-market`            | ✅ implemented & tested |
+| Install/uninstall/enable        | `marketplace.ts` (3020 lines)      | `devdeck-market::store`                          | ✅ implemented & tested |
 | Plugin asset serving            | Electron `BrowserWindow`           | `plugin://` custom protocol                         | ✅ implemented          |
 | Plugin bridge                   | `postMessage` + 115 IPC calls      | `postMessage` + one gated `plugin_sdk_call`         | ✅ implemented          |
 | SDK 1.x compatibility           | n/a                                | legacy method aliases + response shapes             | ✅ implemented & tested |

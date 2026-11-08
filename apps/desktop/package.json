@@ -1,9 +1,9 @@
 {
-  "name": "@devtoolbox/desktop",
+  "name": "@devdeck/desktop",
   "private": true,
   "version": "3.0.0",
   "type": "module",
-  "description": "DevToolBox desktop shell (Tauri 2 + React)",
+  "description": "DevDeck desktop shell (Tauri 2 + React)",
   "scripts": {
     "dev": "vite",
     "build": "tsc -p tsconfig.json --noEmit && vite build",

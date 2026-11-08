@@ -1,5 +1,5 @@
 name: Bug Report
-description: Report a problem to help improve DevToolBox
+description: Report a problem to help improve DevDeck
 labels: ['bug']
 body:
   - type: textarea
@@ -26,7 +26,7 @@ body:
     id: version
     attributes:
       label: Version
-      description: DevToolBox version / build number
+      description: DevDeck version / build number
       placeholder: 'v1.0.0 / build xxxx'
 
   - type: dropdown

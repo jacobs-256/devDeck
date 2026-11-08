@@ -11,4 +11,6 @@ export default {
   clear: 'Clear',
   swap: 'Swap',
   copied: 'Copied',
+  help: 'Help',
+  helpTitle: 'Unicode Help',
 };

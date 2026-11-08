@@ -71,7 +71,7 @@ jobs:
         with:
           projectPath: apps/desktop
           tagName: ${{ github.ref_name }}
-          releaseName: DevToolBox ${{ github.ref_name }}
+          releaseName: DevDeck ${{ github.ref_name }}
           releaseBody: 'See CHANGELOG.md for details.'
           releaseDraft: true
           prerelease: false

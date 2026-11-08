@@ -1,6 +1,6 @@
 .wrap {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(560px, 1fr));
   height: 100%;
   gap: 12px;
   padding: 14px;
@@ -18,10 +18,15 @@
   min-height: 0;
 }
 
+.col > * {
+  flex-shrink: 0;
+}
+
 .block {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 .hint {
@@ -77,18 +82,19 @@
 }
 
 .table {
-  border: 1px solid var(--border-default);
-  border-radius: 12px;
+  flex-shrink: 0;
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
   overflow: hidden;
   background: var(--bg-elevated);
 }
 
 .row {
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) minmax(0, 1.2fr) 32px;
+  grid-template-columns: minmax(150px, 0.8fr) minmax(0, 1.3fr) 32px;
   gap: 10px;
   padding: 12px 14px;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--glass-border);
   align-items: center;
 }
 
@@ -114,8 +120,8 @@
 .copyBtn {
   width: 28px;
   height: 28px;
-  border-radius: 10px;
-  border: 1px solid var(--border-subtle);
+  border-radius: 9px;
+  border: 1px solid var(--glass-border);
   background: var(--bg-secondary);
   color: var(--text-quaternary);
   display: inline-flex;
@@ -135,7 +141,7 @@
 }
 
 .rangeTable .row {
-  grid-template-columns: minmax(180px, 0.9fr) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(120px, 0.9fr) minmax(0, 1fr) minmax(0, 1fr);
 }
 
 .rangeHead {
@@ -177,5 +183,28 @@
   }
   .rangeTable .row {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Keep the three calculator columns readable. Below 1400px the columns stack
+   vertically so binary values and range tables never collapse to one glyph. */
+@media (max-width: 1400px) {
+  .wrap {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .col {
+    flex: none;
+    overflow: visible;
+  }
+}
+
+/* With two readable columns, let the range card span the full row so it does
+   not leave an empty hole beside it. */
+@media (min-width: 1401px) and (max-width: 2000px) {
+  .wrap > .col:nth-child(3) {
+    grid-column: 1 / -1;
   }
 }

@@ -2,7 +2,7 @@
 
 The Marketplace is an **open, decentralized plugin distribution protocol**, not
 a single store. Anybody can host a `registry.json`, and any package that passes
-validation can be installed. DevToolBox ships with the official registry
+validation can be installed. DevDeck ships with the official registry
 preconfigured, and users can add or remove registries.
 
 This document is the normative specification for:
@@ -41,7 +41,7 @@ my-plugin-1.2.3.zip
 └── icon.png               optional, referenced by manifest.icon
 ```
 
-Rules enforced by `devtoolbox-market` during extraction:
+Rules enforced by `devdeck-market` during extraction:
 
 | Rule                                                   | Failure code             |
 | ------------------------------------------------------ | ------------------------ |
@@ -68,10 +68,10 @@ Rules enforced by `devtoolbox-market` during extraction:
   "sdkVersion": "2.0",
   "entry": "package/index.html",
   "categoryId": "network-tools",
-  "author": { "name": "DevToolBox", "url": "https://example.com" },
+  "author": { "name": "DevDeck", "url": "https://example.com" },
   "license": "Apache-2.0",
-  "homepage": "https://github.com/example/devtoolbox-ip-lookup",
-  "repository": "https://github.com/example/devtoolbox-ip-lookup",
+  "homepage": "https://github.com/example/devdeck-ip-lookup",
+  "repository": "https://github.com/example/devdeck-ip-lookup",
   "icon": "icon.png",
   "keywords": ["ip", "network", "geo"],
   "permissions": ["storage:kv", "http:proxy"],
@@ -141,12 +141,12 @@ users and reviewers can identify privileged capabilities.
 ```json
 {
   "schemaVersion": 2,
-  "name": "DevToolBox Official",
+  "name": "DevDeck Official",
   "updatedAt": "2026-11-07T00:00:00Z",
   "plugins": [
     {
       "manifest": { "...": "as above" },
-      "downloadUrl": "https://github.com/XthingsJacobs/devToolBox/releases/download/marketplace/market-ip-lookup-1.0.0.zip",
+      "downloadUrl": "https://github.com/XthingsJacobs/devDeck/releases/download/marketplace/market-ip-lookup-1.0.0.zip",
       "sha256": "9f2c…64 hex chars",
       "size": 182344,
       "publishedAt": "2026-11-07T00:00:00Z",
@@ -172,8 +172,9 @@ status `active`, ignoring yanked releases.
 
 ### Registry sources in the app
 
-Users add a registry by URL in the **Marketplace** registry bar. Advanced trust
-settings live in **Settings → Registries → Trust options**. Each source is stored
+In development builds users add a registry by URL in the **Marketplace** registry
+bar. Advanced trust settings live in **Settings → Registries → Trust options**.
+Release builds show only the official registry. Each source is stored
 in `marketplace-sources.json` under the app data directory:
 
 ```json
@@ -206,7 +207,9 @@ Trust policy per source:
 | `publicKey` + `requireSignature: true` | Rejects the registry if the signature is missing or invalid |
 
 URLs must be `https://`; `http://localhost` and `http://127.0.0.1` are allowed
-for local development. Downloads are capped (8 MiB registry, 128 MiB package),
+for local development. A `file:///…/registry.local.json` URL is also accepted
+when it points at a local `.json` registry; file packages must be `.zip`. A
+remote registry cannot reference `file://` downloads. Downloads are capped (8 MiB registry, 128 MiB package),
 every redirect is re-checked against the https rule, and the fetched index is
 cached in memory for the session.
 
@@ -214,10 +217,10 @@ cached in memory for the session.
 
 ```bash
 # 1. Build plugin packages
-pnpm --filter @devtoolbox/marketplace pack
+pnpm --filter @devdeck/marketplace pack
 
 # 2. Generate registry.json (validated by the same Rust rules)
-pnpm --filter @devtoolbox/marketplace registry
+pnpm --filter @devdeck/marketplace registry
 
 # 3. Upload registry.json + *.zip anywhere HTTPS-served
 ```
@@ -246,7 +249,7 @@ Signature format:
 - signature: 64 raw bytes, standard Base64
 - `keyId`: first 16 hex characters of `sha256(public_key_bytes)`
 
-Verification lives in `crates/devtoolbox-market/src/signing.rs` and is exercised
+Verification lives in `crates/devdeck-market/src/signing.rs` and is exercised
 by unit tests, including a tampering test.
 
 ### Trust policy
@@ -291,30 +294,30 @@ Invariants:
 pnpm --filter ./marketplace/modules/market-ip-lookup build
 
 # 2. Package into .local-dist/<id>-<version>.zip (and hash it)
-pnpm --filter @devtoolbox/marketplace pack market-ip-lookup
+pnpm --filter @devdeck/marketplace pack market-ip-lookup
 
 # 3. Create a signing key once, then sign the package
-pnpm --filter @devtoolbox/marketplace keygen --out .signing/marketplace-key.txt
-DEVTOOLBOX_SIGNING_KEY=$(cat .signing/marketplace-key.txt) \
-  pnpm --filter @devtoolbox/marketplace sign .local-dist/market-ip-lookup-1.0.0.zip
+pnpm --filter @devdeck/marketplace keygen --out .signing/marketplace-key.txt
+DEVDECK_SIGNING_KEY=$(cat .signing/marketplace-key.txt) \
+  pnpm --filter @devdeck/marketplace sign .local-dist/market-ip-lookup-1.0.0.zip
 
 # 4. Generate registry.json (embeds digests and signatures)
-pnpm --filter @devtoolbox/marketplace registry --all \
+pnpm --filter @devdeck/marketplace registry --all \
   --base-url https://example.com/marketplace --out release-dist/registry.json
 
 # 5. Sign the registry document and verify the chain
-DEVTOOLBOX_SIGNING_KEY=$(cat .signing/marketplace-key.txt) \
-  pnpm --filter @devtoolbox/marketplace sign release-dist/registry.json
-pnpm --filter @devtoolbox/marketplace verify \
+DEVDECK_SIGNING_KEY=$(cat .signing/marketplace-key.txt) \
+  pnpm --filter @devdeck/marketplace sign release-dist/registry.json
+pnpm --filter @devdeck/marketplace verify \
   release-dist/registry.json release-dist/registry.json.sig --pubkey <base64-public-key>
 ```
 
 `registry.mjs` performs the same structural checks as the Rust validator so a
-release fails locally instead of at install time; `devtoolbox-market` remains
+release fails locally instead of at install time; `devdeck-market` remains
 the authoritative verifier in the app.
 
 > Signing keys are secrets. `.signing/` is git-ignored; CI should read the seed
-> from a repository secret named `DEVTOOLBOX_SIGNING_KEY`.
+> from a repository secret named `DEVDECK_SIGNING_KEY`.
 
 ## 8.1 Local acceptance run
 
@@ -328,7 +331,7 @@ The repository ships an end-to-end rehearsal of the whole pipeline:
 It builds the plugin, runs the same `pack-release.mjs` + `sign.mjs` pipeline as
 the release workflow with a **throwaway** key, verifies every signature, serves
 the artifacts on loopback HTTP, and installs the plugin through the host's
-signed-registry path (`cargo test -p devtoolbox-desktop
+signed-registry path (`cargo test -p devdeck-desktop
 manual_signed_registry_acceptance -- --ignored`). The script verifies that the served registry bytes match the signed
 file and cleans up the key and artifacts afterwards.
 

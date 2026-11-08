@@ -1,4 +1,4 @@
-@import '../../../shared/devtoolbox-embed.css';
+@import '../../../shared/devdeck-embed.css';
 
 .app {
   padding: 16px;
@@ -17,8 +17,9 @@
 }
 
 .title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 650;
+  letter-spacing: -0.02em;
 }
 
 .sub {
@@ -44,37 +45,39 @@
 input {
   width: 100%;
   padding: 8px 10px;
-  border-radius: 10px;
-  border: 1px solid var(--border-subtle);
-  background: color-mix(in oklab, var(--bg-tertiary) 88%, transparent);
+  border-radius: var(--radius-small);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg-strong);
   color: var(--text-primary);
   outline: none;
 }
 
 input:focus {
   border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-color-weak);
 }
 
 select {
   width: 100%;
   padding: 8px 10px;
-  border-radius: 10px;
-  border: 1px solid var(--border-subtle);
-  background: color-mix(in oklab, var(--bg-tertiary) 88%, transparent);
+  border-radius: var(--radius-small);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg-strong);
   color: var(--text-primary);
   outline: none;
 }
 
 select:focus {
   border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-color-weak);
 }
 
 .gridWrap {
   flex: 1;
   min-height: 0;
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px;
-  background: color-mix(in oklab, var(--bg-secondary) 85%, transparent);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  background: var(--glass-bg);
   overflow: auto;
 }
 
@@ -88,9 +91,9 @@ select:focus {
 .emojiBtn {
   width: var(--emoji-cell, 46px);
   height: var(--emoji-cell, 46px);
-  border-radius: 12px;
-  border: 1px solid var(--border-subtle);
-  background: color-mix(in oklab, var(--bg-tertiary) 85%, transparent);
+  border-radius: var(--radius);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
   color: var(--text-primary);
   cursor: pointer;
   display: inline-flex;
@@ -102,7 +105,7 @@ select:focus {
 
 .emojiBtn:hover {
   border-color: color-mix(in oklab, var(--accent-primary) 65%, var(--border-subtle));
-  background: color-mix(in oklab, var(--bg-tertiary) 78%, transparent);
+  background: var(--glass-bg);
 }
 
 .footer {
@@ -122,9 +125,9 @@ select:focus {
 
 .sizeBtn {
   padding: 6px 8px;
-  border-radius: 10px;
-  border: 1px solid var(--border-subtle);
-  background: color-mix(in oklab, var(--bg-secondary) 85%, transparent);
+  border-radius: var(--radius-small);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
   color: var(--text-primary);
   cursor: pointer;
   font-size: 12px;
@@ -142,9 +145,9 @@ select:focus {
 
 .moreBtn {
   padding: 8px 10px;
-  border-radius: 10px;
-  border: 1px solid var(--border-subtle);
-  background: color-mix(in oklab, var(--bg-secondary) 85%, transparent);
+  border-radius: var(--radius-small);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
   color: var(--text-primary);
   cursor: pointer;
 }
@@ -158,13 +161,13 @@ select:focus {
   left: 50%;
   bottom: 18px;
   transform: translateX(-50%);
-  background: color-mix(in oklab, var(--bg-panel) 88%, transparent);
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px;
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
   padding: 10px 12px;
   font-size: 12px;
   color: var(--text-primary);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shadow-float);
   max-width: min(520px, calc(100vw - 24px));
   overflow: hidden;
   text-overflow: ellipsis;

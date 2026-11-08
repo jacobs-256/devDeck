@@ -1,14 +1,14 @@
 # User Guide
 
-DevToolBox is a desktop toolbox with 27 built-in utilities and an open plugin
+DevDeck is a desktop toolbox with 27 built-in utilities and an open plugin
 marketplace. This guide covers the interface, plugins, settings, and shortcuts.
 
 ## Install
 
 Download the latest installer from
-[GitHub Releases](https://github.com/XthingsJacobs/devToolBox/releases):
+[GitHub Releases](https://github.com/XthingsJacobs/devDeck/releases):
 
-- **macOS** — open the DMG and drag DevToolBox into Applications.
+- **macOS** — open the DMG and drag DevDeck into Applications.
 - **Windows** — run the NSIS installer (x64).
 
 The app is built with Tauri 2 and uses the system WebView, so the download is
@@ -16,7 +16,7 @@ about 5.5 MB.
 
 ## Interface
 
-The app uses the same layout as the original DevToolBox:
+The app uses the same layout as the original DevDeck:
 
 - **Sidebar** — Dashboard, Tools, Marketplace, Settings. Use the footer button to
   collapse it to an icon rail.
@@ -44,14 +44,20 @@ Plugins are small web apps that run in a sandboxed iframe. They can only use the
 capabilities declared in their manifest, and every privileged call is checked by
 the Rust host.
 
-### Add a registry
+### Default registry
 
-1. Open **Marketplace**.
-2. Paste a `registry.json` URL into the registry bar and click **Add registry**.
-3. The catalog refreshes automatically; use **Refresh** to reload it.
+DevDeck ships with the official GitHub registry as the default source:
 
-Registry URLs must be HTTPS. `http://localhost` and `http://127.0.0.1` are
-allowed for local development.
+```text
+https://github.com/XthingsJacobs/devToolBox/releases/download/marketplace/registry.json
+```
+
+It is added once on first launch. Use **Refresh** to reload the catalog.
+
+Release builds use this official registry only. **Development builds** additionally
+show the registry input, **Add registry**, and **Trust options** for local
+`file://` or loopback registries. Registry URLs must be HTTPS in production. `http://localhost`, `http://127.0.0.1`, and local
+`file:///…/registry.local.json` URLs are allowed for local development.
 
 For a signed registry, open **Settings → Registries → Trust options**, paste the
 registry's Ed25519 public key, and optionally require signatures before adding
@@ -74,7 +80,7 @@ Plugin data is stored in the app data directory and survives updates.
   are saved to `settings.json` and restored on startup.
 - **Registries** — add/remove registry sources and configure the Ed25519 trust
   options described above.
-- **Updates** — check for a new DevToolBox release. Updates are downloaded from
+- **Updates** — check for a new DevDeck release. Updates are downloaded from
   GitHub Releases and verified with the update signing key.
 - **About** — version, platform, and data directory.
 
@@ -96,8 +102,8 @@ Plugin data is stored in the app data directory and survives updates.
 
 ## Data and privacy
 
-- Data directory: `~/Library/Application Support/com.devtoolbox.app` (macOS) or
-  `%APPDATA%\com.devtoolbox.app` (Windows).
+- Data directory: `~/Library/Application Support/com.devdeck.desktop` (macOS) or
+  `%APPDATA%\com.devdeck.desktop` (Windows).
 - The app does not send telemetry. Built-in tools are local-only; plugins only
   reach the network if their manifest declares `http:*` or `net:*` and you
   install them.
@@ -105,6 +111,6 @@ Plugin data is stored in the app data directory and survives updates.
 
 ## Report an issue
 
-Use [GitHub Issues](https://github.com/XthingsJacobs/devToolBox/issues) and
+Use [GitHub Issues](https://github.com/XthingsJacobs/devDeck/issues) and
 include the version, OS/architecture, steps to reproduce, and screenshots or log
 excerpts. For security reports, follow the [Security Policy](../governance/security.md).

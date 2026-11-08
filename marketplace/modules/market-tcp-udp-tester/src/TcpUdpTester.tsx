@@ -97,6 +97,15 @@ export default function TcpUdpTester() {
   const [draftHost, setDraftHost] = useState('');
   const [draftPort, setDraftPort] = useState<number>(0);
 
+  useEffect(() => {
+    if (!modalOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setModalOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [modalOpen]);
+
   const serverConnections = useMemo(() => {
     if (!isRecord(serverStatus)) return [];
     const list = serverStatus.connections;
@@ -348,7 +357,11 @@ export default function TcpUdpTester() {
   const clientSend = async () => {
     const payload = clientSendPayload;
     if (!payload) return;
-    const res = await sdk.socket.clientSend({ protocol: clientProtocol, encoding: clientSendEncoding, payload });
+    const res = await sdk.socket.clientSend({
+      protocol: clientProtocol,
+      encoding: clientSendEncoding,
+      payload,
+    });
     if (!res.ok) appendLog(`client ERROR ${res.error.message}`);
   };
 
@@ -379,7 +392,11 @@ export default function TcpUdpTester() {
         <div className={`dtb-card ${styles.card}`}>
           <div className={styles.row}>
             <label>Saved</label>
-            <select className={`dtb-input ${styles.grow}`} value={serverEndpointId} onChange={(e) => setServerEndpointId(e.target.value)}>
+            <select
+              className={`dtb-input ${styles.grow}`}
+              value={serverEndpointId}
+              onChange={(e) => setServerEndpointId(e.target.value)}
+            >
               <option value="">Select…</option>
               {endpoints.map((ep) => (
                 <option key={ep.id} value={ep.id}>
@@ -398,18 +415,30 @@ export default function TcpUdpTester() {
           <div className={styles.grid2}>
             <div className={styles.row}>
               <label>Protocol</label>
-              <select className={`dtb-input ${styles.grow}`} value={serverProtocol} onChange={(e) => setServerProtocol(e.target.value === 'udp' ? 'udp' : 'tcp')}>
+              <select
+                className={`dtb-input ${styles.grow}`}
+                value={serverProtocol}
+                onChange={(e) => setServerProtocol(e.target.value === 'udp' ? 'udp' : 'tcp')}
+              >
                 <option value="tcp">TCP</option>
                 <option value="udp">UDP</option>
               </select>
             </div>
             <div className={styles.row}>
               <label>Port</label>
-              <input className={`dtb-input ${styles.grow}`} value={String(serverPort)} onChange={(e) => setServerPort(normalizePort(e.target.value) || 0)} />
+              <input
+                className={`dtb-input ${styles.grow}`}
+                value={String(serverPort)}
+                onChange={(e) => setServerPort(normalizePort(e.target.value) || 0)}
+              />
             </div>
             <div className={styles.row}>
               <label>Host</label>
-              <input className={`dtb-input ${styles.grow}`} value={serverHost} onChange={(e) => setServerHost(e.target.value)} />
+              <input
+                className={`dtb-input ${styles.grow}`}
+                value={serverHost}
+                onChange={(e) => setServerHost(e.target.value)}
+              />
             </div>
             <div className={styles.row}>
               <label>Status</label>
@@ -424,7 +453,10 @@ export default function TcpUdpTester() {
             <button className="dtb-button" onClick={stopServer} disabled={!serverRunning}>
               Stop
             </button>
-            <button className="dtb-button" onClick={() => void sdk.socket.serverStatus().then((r) => r.ok && setServerStatus(r.data))}>
+            <button
+              className="dtb-button"
+              onClick={() => void sdk.socket.serverStatus().then((r) => r.ok && setServerStatus(r.data))}
+            >
               Refresh Status
             </button>
           </div>
@@ -432,7 +464,11 @@ export default function TcpUdpTester() {
           <div className={styles.grid2} style={{ marginTop: 10 }}>
             <div className={styles.row}>
               <label>Encoding</label>
-              <select className={`dtb-input ${styles.grow}`} value={serverSendEncoding} onChange={(e) => setServerSendEncoding(e.target.value as Encoding)}>
+              <select
+                className={`dtb-input ${styles.grow}`}
+                value={serverSendEncoding}
+                onChange={(e) => setServerSendEncoding(e.target.value as Encoding)}
+              >
                 <option value="utf8">UTF-8</option>
                 <option value="hex">HEX</option>
                 <option value="base64">Base64</option>
@@ -441,7 +477,11 @@ export default function TcpUdpTester() {
             {serverProtocol === 'tcp' ? (
               <div className={styles.row}>
                 <label>Conn</label>
-                <select className={`dtb-input ${styles.grow}`} value={serverSendConnId} onChange={(e) => setServerSendConnId(e.target.value)}>
+                <select
+                  className={`dtb-input ${styles.grow}`}
+                  value={serverSendConnId}
+                  onChange={(e) => setServerSendConnId(e.target.value)}
+                >
                   <option value="">Broadcast</option>
                   {serverConnections.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -453,28 +493,48 @@ export default function TcpUdpTester() {
             ) : (
               <div className={styles.row}>
                 <label>Remote</label>
-                <input className={`dtb-input ${styles.grow}`} value={serverSendRemote} onChange={(e) => setServerSendRemote(e.target.value)} placeholder={serverLastRemote || 'host:port'} />
+                <input
+                  className={`dtb-input ${styles.grow}`}
+                  value={serverSendRemote}
+                  onChange={(e) => setServerSendRemote(e.target.value)}
+                  placeholder={serverLastRemote || 'host:port'}
+                />
               </div>
             )}
           </div>
 
           <div className={styles.row} style={{ marginTop: 10, alignItems: 'stretch' }}>
             <label>Payload</label>
-            <textarea className={`dtb-input ${styles.grow} ${styles.textarea}`} value={serverSendPayload} onChange={(e) => setServerSendPayload(e.target.value)} />
+            <textarea
+              className={`dtb-input ${styles.grow} ${styles.textarea}`}
+              value={serverSendPayload}
+              onChange={(e) => setServerSendPayload(e.target.value)}
+            />
           </div>
 
           <div className={styles.actions}>
-            <button className="dtb-button" onClick={serverSend} disabled={!serverRunning || !serverSendPayload}>
+            <button
+              className="dtb-button"
+              onClick={serverSend}
+              disabled={!serverRunning || !serverSendPayload}
+            >
               Send
             </button>
-            <button className="dtb-button" onClick={serverKick} disabled={serverProtocol !== 'tcp' || !serverSendConnId}>
+            <button
+              className="dtb-button"
+              onClick={serverKick}
+              disabled={serverProtocol !== 'tcp' || !serverSendConnId}
+            >
               Kick
             </button>
           </div>
 
           <div className={styles.row} style={{ marginTop: 10, alignItems: 'stretch' }}>
             <label>Raw</label>
-            <pre className={`dtb-card ${styles.grow}`} style={{ padding: 10, margin: 0, whiteSpace: 'pre-wrap' }}>
+            <pre
+              className={`dtb-card ${styles.grow}`}
+              style={{ padding: 10, margin: 0, whiteSpace: 'pre-wrap' }}
+            >
               {stringify(serverStatus)}
             </pre>
           </div>
@@ -485,7 +545,11 @@ export default function TcpUdpTester() {
         <div className={`dtb-card ${styles.card}`}>
           <div className={styles.row}>
             <label>Saved</label>
-            <select className={`dtb-input ${styles.grow}`} value={clientEndpointId} onChange={(e) => setClientEndpointId(e.target.value)}>
+            <select
+              className={`dtb-input ${styles.grow}`}
+              value={clientEndpointId}
+              onChange={(e) => setClientEndpointId(e.target.value)}
+            >
               <option value="">Select…</option>
               {endpoints.map((ep) => (
                 <option key={ep.id} value={ep.id}>
@@ -504,18 +568,30 @@ export default function TcpUdpTester() {
           <div className={styles.grid2}>
             <div className={styles.row}>
               <label>Protocol</label>
-              <select className={`dtb-input ${styles.grow}`} value={clientProtocol} onChange={(e) => setClientProtocol(e.target.value === 'udp' ? 'udp' : 'tcp')}>
+              <select
+                className={`dtb-input ${styles.grow}`}
+                value={clientProtocol}
+                onChange={(e) => setClientProtocol(e.target.value === 'udp' ? 'udp' : 'tcp')}
+              >
                 <option value="tcp">TCP</option>
                 <option value="udp">UDP</option>
               </select>
             </div>
             <div className={styles.row}>
               <label>Port</label>
-              <input className={`dtb-input ${styles.grow}`} value={String(clientPort)} onChange={(e) => setClientPort(normalizePort(e.target.value) || 0)} />
+              <input
+                className={`dtb-input ${styles.grow}`}
+                value={String(clientPort)}
+                onChange={(e) => setClientPort(normalizePort(e.target.value) || 0)}
+              />
             </div>
             <div className={styles.row}>
               <label>Host</label>
-              <input className={`dtb-input ${styles.grow}`} value={clientHost} onChange={(e) => setClientHost(e.target.value)} />
+              <input
+                className={`dtb-input ${styles.grow}`}
+                value={clientHost}
+                onChange={(e) => setClientHost(e.target.value)}
+              />
             </div>
             <div className={styles.row}>
               <label>Status</label>
@@ -530,14 +606,21 @@ export default function TcpUdpTester() {
             <button className="dtb-button" onClick={disconnectClient} disabled={!clientConnected}>
               Disconnect
             </button>
-            <button className="dtb-button" onClick={() => void sdk.socket.clientStatus().then((r) => r.ok && setClientStatus(r.data))}>
+            <button
+              className="dtb-button"
+              onClick={() => void sdk.socket.clientStatus().then((r) => r.ok && setClientStatus(r.data))}
+            >
               Refresh Status
             </button>
           </div>
 
           <div className={styles.row} style={{ marginTop: 10 }}>
             <label>Encoding</label>
-            <select className={`dtb-input ${styles.grow}`} value={clientSendEncoding} onChange={(e) => setClientSendEncoding(e.target.value as Encoding)}>
+            <select
+              className={`dtb-input ${styles.grow}`}
+              value={clientSendEncoding}
+              onChange={(e) => setClientSendEncoding(e.target.value as Encoding)}
+            >
               <option value="utf8">UTF-8</option>
               <option value="hex">HEX</option>
               <option value="base64">Base64</option>
@@ -546,18 +629,29 @@ export default function TcpUdpTester() {
 
           <div className={styles.row} style={{ marginTop: 10, alignItems: 'stretch' }}>
             <label>Payload</label>
-            <textarea className={`dtb-input ${styles.grow} ${styles.textarea}`} value={clientSendPayload} onChange={(e) => setClientSendPayload(e.target.value)} />
+            <textarea
+              className={`dtb-input ${styles.grow} ${styles.textarea}`}
+              value={clientSendPayload}
+              onChange={(e) => setClientSendPayload(e.target.value)}
+            />
           </div>
 
           <div className={styles.actions}>
-            <button className="dtb-button" onClick={clientSend} disabled={!clientConnected || !clientSendPayload}>
+            <button
+              className="dtb-button"
+              onClick={clientSend}
+              disabled={!clientConnected || !clientSendPayload}
+            >
               Send
             </button>
           </div>
 
           <div className={styles.row} style={{ marginTop: 10, alignItems: 'stretch' }}>
             <label>Raw</label>
-            <pre className={`dtb-card ${styles.grow}`} style={{ padding: 10, margin: 0, whiteSpace: 'pre-wrap' }}>
+            <pre
+              className={`dtb-card ${styles.grow}`}
+              style={{ padding: 10, margin: 0, whiteSpace: 'pre-wrap' }}
+            >
               {stringify(clientStatus)}
             </pre>
           </div>
@@ -570,7 +664,12 @@ export default function TcpUdpTester() {
             <button className="dtb-button" onClick={openCreateEndpoint}>
               Add Endpoint
             </button>
-            <button className="dtb-button" onClick={() => void sdk.storage.get(ENDPOINTS_KEY).then((r) => r.ok && setEndpoints(parseEndpoints(r.data)))}>
+            <button
+              className="dtb-button"
+              onClick={() =>
+                void sdk.storage.get(ENDPOINTS_KEY).then((r) => r.ok && setEndpoints(parseEndpoints(r.data)))
+              }
+            >
               Reload
             </button>
           </div>
@@ -615,7 +714,13 @@ export default function TcpUdpTester() {
 
       {modalOpen && (
         <div className={styles.modalMask} onMouseDown={closeModal}>
-          <div className={`dtb-card ${styles.modal}`} onMouseDown={(e) => e.stopPropagation()}>
+          <div
+            className={`dtb-card ${styles.modal}`}
+            role="dialog"
+            aria-modal="true"
+            aria-label={editing ? 'Edit Endpoint' : 'Add Endpoint'}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <div className={styles.modalHead}>
               <div className={styles.modalTitle}>{editing ? 'Edit Endpoint' : 'Add Endpoint'}</div>
               <button className="dtb-button" onClick={closeModal}>
@@ -626,27 +731,43 @@ export default function TcpUdpTester() {
             <div className={styles.grid2}>
               <div className={styles.row}>
                 <label>Name</label>
-                <input className={`dtb-input ${styles.grow}`} value={draftName} onChange={(e) => setDraftName(e.target.value)} />
+                <input
+                  className={`dtb-input ${styles.grow}`}
+                  value={draftName}
+                  onChange={(e) => setDraftName(e.target.value)}
+                />
               </div>
               <div className={styles.row}>
                 <label>Protocol</label>
-                <select className={`dtb-input ${styles.grow}`} value={draftProtocol} onChange={(e) => setDraftProtocol(e.target.value === 'udp' ? 'udp' : 'tcp')}>
+                <select
+                  className={`dtb-input ${styles.grow}`}
+                  value={draftProtocol}
+                  onChange={(e) => setDraftProtocol(e.target.value === 'udp' ? 'udp' : 'tcp')}
+                >
                   <option value="tcp">TCP</option>
                   <option value="udp">UDP</option>
                 </select>
               </div>
               <div className={styles.row}>
                 <label>Host</label>
-                <input className={`dtb-input ${styles.grow}`} value={draftHost} onChange={(e) => setDraftHost(e.target.value)} />
+                <input
+                  className={`dtb-input ${styles.grow}`}
+                  value={draftHost}
+                  onChange={(e) => setDraftHost(e.target.value)}
+                />
               </div>
               <div className={styles.row}>
                 <label>Port</label>
-                <input className={`dtb-input ${styles.grow}`} value={draftPort ? String(draftPort) : ''} onChange={(e) => setDraftPort(normalizePort(e.target.value) || 0)} />
+                <input
+                  className={`dtb-input ${styles.grow}`}
+                  value={draftPort ? String(draftPort) : ''}
+                  onChange={(e) => setDraftPort(normalizePort(e.target.value) || 0)}
+                />
               </div>
             </div>
 
             <div className={styles.actions} style={{ marginTop: 10 }}>
-              <button className="dtb-button" onClick={() => void saveEndpoint()}>
+              <button className="dtb-button primary" onClick={() => void saveEndpoint()}>
                 Save
               </button>
             </div>

@@ -5,7 +5,7 @@ import { jsonToYaml, yamlToJson } from './json-yaml.model';
 
 type Mode = 'json-to-yaml' | 'yaml-to-json';
 
-const SAMPLE = '{"name":"DevToolBox","version":"2.1.0","plugins":[{"id":"market-demo"}]}';
+const SAMPLE = '{"name":"DevDeck","version":"2.1.0","plugins":[{"id":"market-demo"}]}';
 
 export default function JsonYamlTool() {
   const { t } = useI18n();

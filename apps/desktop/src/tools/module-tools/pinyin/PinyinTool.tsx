@@ -5,7 +5,7 @@ import { toInitials, toPinyin, type ToneStyle } from './pinyin.model';
 
 export default function PinyinTool() {
   const { t } = useI18n();
-  const [input, setInput] = useState('你好，欢迎使用 DevToolBox');
+  const [input, setInput] = useState('你好，欢迎使用 DevDeck');
   const [tone, setTone] = useState<ToneStyle>('symbol');
   const [separator, setSeparator] = useState(' ');
 

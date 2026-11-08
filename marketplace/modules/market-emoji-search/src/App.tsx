@@ -41,6 +41,27 @@ type EmojiDataset = {
 
 type CachedDataset = { schemaVersion: 1; updatedAt: number; dataset: EmojiDataset };
 
+// The dataset is ~0.6 MB per locale: too much for the 8 MiB key/value store,
+// so it is cached as a file in the plugin's own data folder. Bump the version
+// whenever the cached shape or the bundled emoji data changes.
+const CACHE_VERSION = 1;
+const cachePath = (locale: Locale) => `emoji-dataset.v${CACHE_VERSION}.${locale}.json`;
+const legacyCacheKey = (locale: Locale) => `emojiSearch.dataset.v1.${locale}`;
+
+function parseCachedDataset(raw: string): CachedDataset | null {
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!isRecord(parsed) || parsed.schemaVersion !== 1) return null;
+    const dataset = parsed.dataset;
+    if (!isRecord(dataset)) return null;
+    if (!Array.isArray(dataset.emojis)) return null;
+    if (!isRecord(dataset.groups) || !isRecord(dataset.subgroups)) return null;
+    return parsed as unknown as CachedDataset;
+  } catch {
+    return null;
+  }
+}
+
 type EmojiEntry = {
   id: string;
   unicode: string;
@@ -177,7 +198,7 @@ export default function App() {
       const d = e.data;
       if (!d || typeof d !== 'object') return;
       const type = (d as { type?: unknown }).type;
-      if (type !== 'devtoolbox:locale') return;
+      if (type !== 'devdeck:locale') return;
       const next = resolveLocale((d as { locale?: unknown }).locale);
       setLocale(next);
     };
@@ -202,26 +223,36 @@ export default function App() {
     let alive = true;
     void sdk.log.info('app mounted', { locale });
     void (async () => {
-      const cacheKey = `emojiSearch.dataset.v1.${locale}`;
+      const path = cachePath(locale);
+      let cacheHit = false;
       try {
-        const cached = await sdk.storage.get<unknown>(cacheKey);
-        const cachedValue = cached.ok ? cached.data?.value : undefined;
-        if (cached.ok && isRecord(cachedValue)) {
-          const c = cachedValue as unknown as CachedDataset;
-          const schemaOk = (c as { schemaVersion?: unknown }).schemaVersion === 1;
-          const dataOk = isRecord((c as { dataset?: unknown }).dataset);
-          if (schemaOk && dataOk && alive) {
-            const ds = (c as { dataset: EmojiDataset }).dataset;
-            setDataset(ds);
-            void sdk.log.info('cache:hit', { updatedAt: (c as { updatedAt?: unknown }).updatedAt, count: ds.emojis.length });
+        const cached = await sdk.fs.readPluginData({ path });
+        const contents = cached.ok ? cached.data : undefined;
+        if (contents) {
+          const parsed = parseCachedDataset(contents.content);
+          if (parsed) {
+            cacheHit = true;
+            if (alive) {
+              setDataset(parsed.dataset);
+              void sdk.log.info('cache:hit', { updatedAt: parsed.updatedAt, count: parsed.dataset.emojis.length });
+            }
+          } else {
+            void sdk.log.info('cache:invalid');
           }
-        } else if (cached.ok) {
-          void sdk.log.info('cache:miss');
         } else {
-          void sdk.log.warn('cache:read_failed', cached.error);
+          void sdk.log.info('cache:miss', cached.ok ? undefined : cached.error);
         }
       } catch (e: unknown) {
         void sdk.log.warn('cache:read_error', { error: e instanceof Error ? e.message : String(e) });
+      }
+
+      // A valid cache means the bundled dataset would only be re-parsed and
+      // re-serialized; skip both until the cache version changes.
+      if (cacheHit) {
+        // Also covers a crash between writing the file cache and cleaning up
+        // the key/value copy kept by earlier releases.
+        void sdk.storage.delete(legacyCacheKey(locale));
+        return;
       }
 
       try {
@@ -252,10 +283,17 @@ export default function App() {
         };
         setDataset(nextDataset);
         void sdk.log.info('dataset loading:ok', { count: (emojis.default as unknown as EmojiData[]).length });
-        void sdk.storage.set(cacheKey, { schemaVersion: 1, updatedAt: Date.now(), dataset: nextDataset }).then((r) => {
-          if (r.ok) void sdk.log.info('cache:updated');
-          else void sdk.log.warn('cache:update_failed', r.error);
-        });
+
+        const payload: CachedDataset = { schemaVersion: 1, updatedAt: Date.now(), dataset: nextDataset };
+        const written = await sdk.fs.writePluginData({ path, content: JSON.stringify(payload) });
+        if (written.ok) {
+          void sdk.log.info('cache:updated');
+          // Older releases kept the dataset in the key/value store; drop that
+          // copy so it stops consuming the plugin's quota.
+          void sdk.storage.delete(legacyCacheKey(locale));
+        } else {
+          void sdk.log.warn('cache:update_failed', written.error);
+        }
       } catch (e: unknown) {
         void sdk.log.error('dataset loading:error', { error: e instanceof Error ? e.message : String(e) });
       }

@@ -1,0 +1,23 @@
+// @ts-nocheck
+export default {
+  name: 'JSON ⇄ YAML',
+  description: '在 JSON 与 YAML 之间转换，支持语法高亮',
+  mode: '模式',
+  modeJsonToYaml: 'JSON → YAML',
+  modeYamlToJson: 'YAML → JSON',
+  inputJson: '输入 JSON',
+  inputYaml: '输入 YAML',
+  outputJson: 'JSON 输出',
+  outputYaml: 'YAML 输出',
+  placeholderJson: '在此粘贴 JSON…',
+  placeholderYaml: 'YAML 将显示在这里…',
+  importJson: '导入 JSON',
+  importYaml: '导入 YAML',
+  formatJson: '格式化',
+  copy: '复制',
+  copied: '已复制',
+  save: '保存',
+  clear: '清空',
+  errorInvalidJson: 'JSON 无效',
+  errorInvalidYaml: 'YAML 无效',
+};

@@ -1,5 +1,5 @@
 {
-  "name": "@devtoolbox/plugin-market-tcp-udp-tester",
+  "name": "@devdeck/plugin-market-tcp-udp-tester",
   "private": true,
   "version": "0.1.0",
   "type": "module",

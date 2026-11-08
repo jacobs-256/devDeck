@@ -1,5 +1,5 @@
 {
-  "name": "@devtoolbox/plugin-market-ssh-sftp",
+  "name": "@devdeck/plugin-market-ssh-sftp",
   "private": true,
   "version": "0.1.0",
   "type": "module",

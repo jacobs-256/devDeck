@@ -7,7 +7,7 @@
 
 use std::borrow::Cow;
 
-use devtoolbox_contract::{ensure_within, resolve_within, PluginId};
+use devdeck_contract::{ensure_within, resolve_within, PluginId};
 use tauri::http::{header, Request, Response, StatusCode};
 use tauri::Manager;
 

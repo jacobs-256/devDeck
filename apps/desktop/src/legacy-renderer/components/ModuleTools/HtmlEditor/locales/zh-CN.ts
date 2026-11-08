@@ -1,0 +1,22 @@
+// @ts-nocheck
+export default {
+  name: 'HTML 编辑器',
+  description: '编辑 HTML 并实时预览',
+  htmlEdit: 'HTML 编辑',
+  open: '打开',
+  save: '保存',
+  saveAs: '另存为',
+  compress: '压缩',
+  beautify: '美化',
+  copied: '已复制',
+  copy: '复制',
+  download: '下载',
+  clear: '清空',
+  scrollTop: '回到顶部',
+  chars: '字符',
+  lines: '行数',
+  livePreview: '实时预览',
+  htmlPreview: 'HTML 预览',
+  htmlFiles: 'HTML 文件',
+  allFiles: '所有文件',
+};

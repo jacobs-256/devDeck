@@ -1,5 +1,6 @@
 // @ts-nocheck
 import type { ReactNode } from 'react';
+import { useEscapeClose } from '../useEscapeClose';
 import styles from './HelpModal.module.css';
 import { VscChromeClose } from 'react-icons/vsc';
 
@@ -24,10 +25,15 @@ interface HelpModalProps {
  * ```
  */
 export default function HelpModal({ title, children, onClose, size = 'md' }: HelpModalProps) {
+  useEscapeClose(onClose);
+
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div
         className={`${styles.modal}${size === 'sm' ? ` ${styles.modalSm}` : size === 'lg' ? ` ${styles.modalLg}` : ''}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
         onClick={(e) => e.stopPropagation()}
       >
         <div className={styles.header}>

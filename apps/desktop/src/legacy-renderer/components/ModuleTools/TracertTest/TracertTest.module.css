@@ -10,7 +10,7 @@
   align-items: center;
   gap: 8px;
   padding: 12px 16px;
-  border-bottom: 1px solid var(--bg-active);
+  border-bottom: 1px solid var(--glass-border);
   flex-wrap: wrap;
 }
 
@@ -24,8 +24,8 @@
   flex: 1;
   min-width: 180px;
   padding: 6px 10px;
-  border: 1px solid var(--bg-active);
-  border-radius: 4px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
   background: var(--bg-panel);
   color: var(--text-primary);
   font-size: 13px;
@@ -38,8 +38,8 @@
 
 .hopsSelect {
   padding: 6px 8px;
-  border: 1px solid var(--bg-active);
-  border-radius: 4px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
   background: var(--bg-panel);
   color: var(--text-primary);
   font-size: 13px;
@@ -48,8 +48,8 @@
 
 .actionBtn {
   padding: 6px 14px;
-  border: 1px solid var(--bg-active);
-  border-radius: 4px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
   background: var(--bg-panel);
   color: var(--text-primary);
   font-size: 12px;
@@ -58,7 +58,7 @@
 }
 
 .actionBtn:hover {
-  background: var(--bg-active);
+  background: var(--bg-hover);
 }
 
 .actionBtn:disabled {
@@ -67,19 +67,21 @@
 }
 
 .primaryBtn {
-  background: var(--accent-color);
+  background: var(--aurora-grad);
   color: #fff;
-  border-color: var(--accent-color);
+  border-color: transparent;
+  box-shadow: 0 8px 18px -12px var(--accent-primary);
 }
 
 .primaryBtn:hover:not(:disabled) {
-  opacity: 0.85;
+  background: var(--aurora-grad-hover);
+  opacity: 1;
 }
 
 .stopBtn {
-  background: var(--color-error, #e74c3c);
+  background: var(--color-error, var(--accent-error));
   color: #fff;
-  border-color: var(--color-error, #e74c3c);
+  border-color: var(--color-error, var(--accent-error));
 }
 
 .stopBtn:hover {
@@ -102,7 +104,7 @@
 }
 
 .error {
-  color: var(--color-error, #e74c3c);
+  color: var(--color-error, var(--accent-error));
 }
 
 .placeholder {

@@ -1,93 +1,81 @@
 // @ts-nocheck
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import styles from './WebSocketTester.module.css';
+import { useI18n } from '../../../i18n';
 import ClientPanel from './ClientPanel';
 import ServerPanel from './ServerPanel';
-import { VscChevronLeft, VscChevronRight, VscChromeRestore } from 'react-icons/vsc';
 
-type CollapsedSide = 'none' | 'client' | 'server';
+type ViewMode = 'both' | 'server' | 'client';
+
+const MODES: Array<{ id: ViewMode; label: string; zh: string }> = [
+  { id: 'both', label: 'Both', zh: '双端' },
+  { id: 'server', label: 'Server', zh: '服务端' },
+  { id: 'client', label: 'Client', zh: '客户端' },
+];
+
+function initialMode(): ViewMode {
+  if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1300px)').matches) {
+    return 'server';
+  }
+  return 'both';
+}
 
 export default function WebSocketTester() {
-  const [collapsed, setCollapsed] = useState<CollapsedSide>('none');
+  const { locale } = useI18n();
+  const tr = (en: string, zh: string) => (locale === 'zh-CN' ? zh : en);
+  const [view, setView] = useState<ViewMode>(initialMode);
 
-  const showClient = collapsed !== 'client';
-  const showServer = collapsed !== 'server';
-
-  const toggleClient = () => {
-    setCollapsed((cur) => {
-      if (cur === 'client') return 'none';
-      return 'client';
-    });
-  };
-
-  const toggleServer = () => {
-    setCollapsed((cur) => {
-      if (cur === 'server') return 'none';
-      return 'server';
-    });
-  };
-
-  const layoutHint = useMemo(() => {
-    if (collapsed === 'client') return 'Client collapsed';
-    if (collapsed === 'server') return 'Server collapsed';
-    return 'Side-by-side';
-  }, [collapsed]);
+  const hint =
+    view === 'both'
+      ? tr('Server and client side by side', '服务端与客户端并排显示')
+      : view === 'server'
+        ? tr('Accept incoming WebSocket connections', '接受传入的 WebSocket 连接')
+        : tr('Connect to a WebSocket endpoint', '连接到 WebSocket 端点');
 
   return (
     <div className={styles.container}>
-      <div className={styles.split}>
-        <div className={`${styles.pane} ${styles.paneLeft} ${showServer ? '' : styles.paneCollapsed}`}>
-          <div className={styles.paneHeader}>
-            <div className={styles.paneTitle}>Server</div>
+      <div className={styles.workspaceBar}>
+        <div
+          className={styles.modeTabs}
+          role="tablist"
+          aria-label={tr('WebSocket workspace view', 'WebSocket 工作区视图')}
+        >
+          {MODES.map((mode) => (
             <button
-              className={styles.paneBtn}
-              onClick={toggleServer}
+              key={mode.id}
               type="button"
-              aria-label={showServer ? 'Collapse server' : 'Expand server'}
-              title={showServer ? 'Collapse' : 'Expand'}
+              role="tab"
+              aria-selected={view === mode.id}
+              className={`${styles.modeTab}${view === mode.id ? ` ${styles.modeTabActive}` : ''}`}
+              onClick={() => setView(mode.id)}
             >
-              {showServer ? <VscChevronLeft /> : <VscChevronRight />}
+              {locale === 'zh-CN' ? mode.zh : mode.label}
             </button>
+          ))}
+        </div>
+        <span className={styles.workspaceHint}>{hint}</span>
+      </div>
+
+      <div className={styles.split} data-view={view}>
+        <div className={`${styles.pane}${view === 'client' ? ` ${styles.paneHidden}` : ''}`}>
+          <div className={styles.paneHeader}>
+            <div className={styles.paneTitle}>{tr('Server', '服务端')}</div>
+            <span className={styles.paneRole}>{tr('Inbound', '入站')}</span>
           </div>
           <div className={styles.paneBody}>
             <ServerPanel />
           </div>
         </div>
 
-        {collapsed === 'none' ? <div className={styles.divider} /> : null}
-
-        <div className={`${styles.pane} ${styles.paneRight} ${showClient ? '' : styles.paneCollapsed}`}>
+        <div className={`${styles.pane}${view === 'server' ? ` ${styles.paneHidden}` : ''}`}>
           <div className={styles.paneHeader}>
-            <div className={styles.paneTitle}>Client</div>
-            <button
-              className={styles.paneBtn}
-              onClick={toggleClient}
-              type="button"
-              aria-label={showClient ? 'Collapse client' : 'Expand client'}
-              title={showClient ? 'Collapse' : 'Expand'}
-            >
-              {showClient ? <VscChevronRight /> : <VscChevronLeft />}
-            </button>
+            <div className={styles.paneTitle}>{tr('Client', '客户端')}</div>
+            <span className={styles.paneRole}>{tr('Outbound', '出站')}</span>
           </div>
           <div className={styles.paneBody}>
             <ClientPanel />
           </div>
         </div>
-      </div>
-
-      <div className={styles.footerBar}>
-        <div className={styles.footerHint}>{layoutHint}</div>
-        {collapsed !== 'none' ? (
-          <button
-            className={styles.footerBtn}
-            onClick={() => setCollapsed('none')}
-            type="button"
-            aria-label="Expand both"
-            title="Expand Both"
-          >
-            <VscChromeRestore />
-          </button>
-        ) : null}
       </div>
     </div>
   );

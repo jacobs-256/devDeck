@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { VscSearch } from 'react-icons/vsc';
 import styles from './GlobalSearch.module.css';
 import type { LegacyModule } from './data';
+import { useI18n } from '../legacy-renderer/i18n';
 
 interface SearchItem {
   module: LegacyModule;
@@ -18,6 +19,7 @@ export default function GlobalSearch({
   onSelect: (categoryId: string, moduleId: string) => void;
   onClose: () => void;
 }) {
+  const { t, locale } = useI18n();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -85,6 +87,9 @@ export default function GlobalSearch({
   return (
     <div
       className={styles.overlay}
+      role="dialog"
+      aria-modal="true"
+      aria-label={t('dashboard.searchLabel')}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -98,11 +103,11 @@ export default function GlobalSearch({
             ref={inputRef}
             className={styles.input}
             type="text"
-            placeholder="Search tools…"
+            placeholder={t('dashboard.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onKeyDown={handleKeyDown}
-            aria-label="Search tools"
+            aria-label={t('dashboard.searchLabel')}
           />
           <span className={styles.shortcut}>ESC</span>
         </div>
@@ -127,7 +132,9 @@ export default function GlobalSearch({
             ))}
           </ul>
         ) : searchTerm.trim() ? (
-          <p className={styles.empty}>No tools match “{searchTerm}”.</p>
+          <p className={styles.empty}>
+            {locale === 'zh-CN' ? `没有匹配“${searchTerm}”的工具。` : `No tools match “${searchTerm}”.`}
+          </p>
         ) : null}
       </div>
     </div>

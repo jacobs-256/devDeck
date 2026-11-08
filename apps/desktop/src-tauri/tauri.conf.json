@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "DevToolBox",
+  "productName": "DevDeck",
   "version": "3.0.0",
-  "identifier": "com.devtoolbox.app",
+  "identifier": "com.devdeck.desktop",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:5173",
@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "DevToolBox",
+        "title": "DevDeck",
         "width": 1280,
         "height": 820,
         "minWidth": 960,
@@ -39,7 +39,7 @@
     ],
     "category": "DeveloperTool",
     "shortDescription": "Cross-platform developer toolbox",
-    "longDescription": "DevToolBox bundles everyday developer utilities and an open plugin Marketplace with an explicit, auditable permission model.",
+    "longDescription": "DevDeck bundles everyday developer utilities and an open plugin Marketplace with an explicit, auditable permission model.",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -59,7 +59,7 @@
   "plugins": {
     "updater": {
       "endpoints": [
-        "https://github.com/XthingsJacobs/devToolBox/releases/latest/download/latest.json"
+        "https://github.com/XthingsJacobs/devDeck/releases/latest/download/latest.json"
       ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEY5REEzRkZGQjZFQThBM0QKUldROWl1cTIvei9hK2NXcS9OVlJlVkxTQnFycHRpL2dsM3djZjNwWDNnWEV5NFA0aWxERHRERjgK"
     }

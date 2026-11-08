@@ -369,7 +369,7 @@ export default function UuidGenerator() {
                     <option value="url">URL</option>
                     <option value="oid">OID</option>
                     <option value="x500">X.500</option>
-                    <option value="custom">Custom</option>
+                    <option value="custom">{mt('custom')}</option>
                   </ToolSelect>
                 </ToolField>
 

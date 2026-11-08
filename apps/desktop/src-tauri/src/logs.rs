@@ -6,7 +6,7 @@
 use std::io::Write;
 use std::path::Path;
 
-use devtoolbox_contract::{DevToolboxError, PluginId};
+use devdeck_contract::{DevDeckError, PluginId};
 use serde_json::{json, Value};
 
 use crate::state::now_ms;
@@ -20,7 +20,7 @@ pub fn write_plugin_log(
     level: &str,
     message: &str,
     data: Option<&Value>,
-) -> Result<(), DevToolboxError> {
+) -> Result<(), DevDeckError> {
     let level = match level {
         "debug" | "info" | "warn" | "error" => level,
         _ => "info",
@@ -48,7 +48,7 @@ pub fn write_plugin_log(
     Ok(())
 }
 
-fn rotate_if_needed(path: &Path) -> Result<(), DevToolboxError> {
+fn rotate_if_needed(path: &Path) -> Result<(), DevDeckError> {
     let Ok(metadata) = std::fs::metadata(path) else {
         return Ok(());
     };

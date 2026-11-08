@@ -3,20 +3,20 @@ import { jsonToYaml, yamlToJson } from './json-yaml.model';
 
 describe('json <-> yaml', () => {
   it('converts JSON to YAML', () => {
-    const result = jsonToYaml('{"name":"DevToolBox","plugins":[{"id":"demo"}],"enabled":true}');
+    const result = jsonToYaml('{"name":"DevDeck","plugins":[{"id":"demo"}],"enabled":true}');
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.value).toContain('name: DevToolBox');
+    expect(result.value).toContain('name: DevDeck');
     expect(result.value).toContain('- id: demo');
     expect(result.value).toContain('enabled: true');
   });
 
   it('converts YAML to JSON', () => {
-    const result = yamlToJson('name: DevToolBox\ncount: 3\nplugins:\n  - id: demo\n');
+    const result = yamlToJson('name: DevDeck\ncount: 3\nplugins:\n  - id: demo\n');
     expect(result).toEqual({
       ok: true,
       value:
-        '{\n  "name": "DevToolBox",\n  "count": 3,\n  "plugins": [\n    {\n      "id": "demo"\n    }\n  ]\n}',
+        '{\n  "name": "DevDeck",\n  "count": 3,\n  "plugins": [\n    {\n      "id": "demo"\n    }\n  ]\n}',
     });
   });
 

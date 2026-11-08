@@ -1,18 +1,20 @@
 .page {
   height: 100%;
   overflow-y: auto;
-  background: var(--bg-primary);
+  background: transparent;
   scrollbar-width: thin;
   scrollbar-color: var(--border-subtle) transparent;
 }
 
 .inner {
-  padding: 28px 40px 48px;
   width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 30px 34px 44px;
 }
 
 .header {
-  margin-bottom: 28px;
+  margin-bottom: 26px;
 }
 
 .headerTopRow {
@@ -36,65 +38,65 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
-  background: linear-gradient(
-    135deg,
-    color-mix(in oklab, var(--accent-primary) 12%, transparent),
-    color-mix(in oklab, var(--cat-security) 12%, transparent)
-  );
-  border: 1px solid color-mix(in oklab, var(--accent-primary) 20%, transparent);
+  border-radius: 11px;
+  background: var(--aurora-grad-soft);
+  border: 1px solid var(--glass-border);
   color: var(--accent-secondary);
 }
 
 .headerKicker {
-  font-size: 11px;
-  color: var(--text-disabled);
+  font-family: var(--font-family-mono);
+  font-size: 8.5px;
+  color: var(--text-tertiary);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: 600;
+  letter-spacing: 0.16em;
+  font-weight: 500;
 }
 
 .headerTitle {
-  font-size: 21px;
+  font-size: 30px;
   color: var(--text-primary);
-  font-weight: 600;
+  font-weight: 650;
   margin: 0;
-  letter-spacing: -0.02em;
+  line-height: 1.12;
+  letter-spacing: -0.035em;
 }
 
 .headerSub {
-  font-size: 13px;
-  color: var(--text-quaternary);
-  margin: 3px 0 0;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin: 6px 0 0;
 }
 
 .searchWrap {
   position: relative;
-  border-radius: 12px;
-  transition: box-shadow 0.12s ease;
+  border-radius: 999px;
+  transition: box-shadow var(--motion-fast);
   flex: 1;
   min-width: 260px;
-  max-width: 560px;
+  max-width: 420px;
 }
 
 .searchBox {
-  height: 44px;
+  height: 40px;
   display: flex;
   align-items: center;
   gap: 12px;
-  border-radius: 12px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
   padding: 0 16px;
-  box-shadow: 0 2px 12px #00000033;
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   transition:
-    border-color 0.12s ease,
-    box-shadow 0.12s ease;
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast);
 }
 
 .searchBox[data-focused='1'] {
-  border-color: var(--border-subtle);
-  box-shadow: 0 2px 12px #00000033;
+  border-color: var(--accent-secondary);
+  box-shadow: 0 0 0 4px var(--accent-color-weak);
 }
 
 .searchIcon {
@@ -126,11 +128,12 @@
 }
 
 .clearBtn {
-  font-size: 11px;
-  color: var(--text-disabled);
-  background: var(--border-subtle);
-  border-radius: 4px;
-  padding: 1px 6px;
+  font-size: 10px;
+  color: var(--text-tertiary);
+  background: var(--badge-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  padding: 2px 8px;
 }
 
 .kbd {
@@ -148,11 +151,11 @@
   top: 100%;
   left: 0;
   right: 0;
-  margin-top: 6px;
-  border-radius: 12px;
-  border: 1px solid var(--border-subtle);
+  margin-top: 8px;
+  border-radius: 14px;
+  border: 1px solid var(--glass-border);
   background: var(--bg-elevated);
-  box-shadow: 0 16px 44px #000000aa;
+  box-shadow: var(--shadow-float);
   overflow: hidden;
   z-index: 20;
 }
@@ -250,22 +253,23 @@
 .quickNavItem {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 7px 11px;
-  border: 1px solid transparent;
-  border-radius: 10px;
+  gap: 7px;
+  padding: 7px 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  background: var(--glass-bg);
   color: var(--text-secondary);
   flex-shrink: 0;
   transition:
-    background 0.12s ease,
-    border-color 0.12s ease,
-    color 0.12s ease;
+    background var(--motion-fast),
+    border-color var(--motion-fast),
+    color var(--motion-fast);
 }
 
 .quickNavItem:hover {
-  color: var(--accent-secondary);
-  background: color-mix(in oklab, var(--accent-secondary) 12%, transparent);
-  border-color: color-mix(in oklab, var(--accent-secondary) 35%, transparent);
+  color: var(--text-primary);
+  background: var(--accent-color-weak);
+  border-color: var(--accent-secondary);
 }
 
 .quickNavIcon {
@@ -382,9 +386,12 @@
 }
 
 .widget {
-  border-radius: 12px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-default);
+  border-radius: 16px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   overflow: hidden;
   min-width: 0;
   position: relative;
@@ -426,15 +433,15 @@
 }
 
 .widgetHeader {
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--border-default);
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--glass-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  border-left: 3px solid var(--accent-secondary);
+  border-left: 0;
   cursor: grab;
-  background: var(--bg-tertiary);
+  background: var(--glass-bg-strong);
 }
 
 .widgetHeader:active {
@@ -449,8 +456,8 @@
 }
 
 .widgetIcon {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 8px;
   border: 1px solid color-mix(in oklab, currentColor 28%, transparent);
   background: color-mix(in oklab, currentColor 10%, transparent);
@@ -550,7 +557,7 @@
 }
 
 .section {
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 .sectionHeader {
@@ -567,11 +574,11 @@
 }
 
 .sectionTitle h2 {
-  font-size: 13px;
+  font-size: 13.5px;
   color: var(--text-primary);
-  font-weight: 600;
+  font-weight: 650;
   margin: 0;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
 }
 
 .sectionTitle :global(svg) {
@@ -584,13 +591,22 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
-  color: var(--accent-secondary);
-  transition: color 0.12s ease;
+  padding: 4px 10px;
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  background: var(--glass-bg);
+  font-size: 10px;
+  color: var(--text-tertiary);
+  transition:
+    color var(--motion-fast),
+    border-color var(--motion-fast),
+    background var(--motion-fast);
 }
 
 .sectionAction:hover {
-  color: var(--accent-primary-hover);
+  color: var(--accent-secondary);
+  border-color: var(--accent-secondary);
+  background: var(--accent-color-weak);
 }
 
 .sectionAction :global(svg) {
@@ -600,29 +616,34 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: 12px;
 }
 
 .toolCard {
   text-align: left;
-  border-radius: 12px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-default);
-  padding: 14px;
-  min-height: 140px;
+  border-radius: 16px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 15px;
+  min-height: 148px;
   display: flex;
   flex-direction: column;
   transition:
-    background 0.12s ease,
-    border-color 0.12s ease,
-    box-shadow 0.12s ease;
+    background var(--motion-base),
+    border-color var(--motion-base),
+    box-shadow var(--motion-base),
+    transform var(--motion-base);
 }
 
 .toolCard:hover {
-  background: var(--bg-elevated);
-  border-color: color-mix(in oklab, var(--accent-primary) 28%, var(--border-default));
-  box-shadow: 0 4px 16px #00000022;
+  transform: translateY(-2px);
+  background: var(--glass-bg-strong);
+  border-color: var(--accent-secondary);
+  box-shadow: var(--shadow-glow);
 }
 
 .toolCardTop {
@@ -632,9 +653,9 @@
 }
 
 .toolCardIcon {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
   border: 1px solid transparent;
   display: flex;
   align-items: center;
@@ -667,8 +688,8 @@
 }
 
 .toolCardDesc {
-  font-size: 11px;
-  color: var(--text-quaternary);
+  font-size: 10.5px;
+  color: var(--text-tertiary);
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -683,15 +704,16 @@
 }
 
 .infoCard {
-  border-radius: 12px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-default);
+  border-radius: 16px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-card);
   overflow: hidden;
 }
 
 .infoHeader {
   padding: 12px 16px;
-  border-bottom: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--glass-border);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -700,7 +722,7 @@
 .infoHeaderIcon {
   width: 28px;
   height: 28px;
-  border-radius: 10px;
+  border-radius: 9px;
   border: 1px solid transparent;
   display: inline-flex;
   align-items: center;
@@ -800,7 +822,7 @@
 .simpleWidgetGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 16px;
+  gap: 12px;
 }
 
 .categoryGrid {

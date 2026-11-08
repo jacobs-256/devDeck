@@ -1,6 +1,6 @@
-# Contributing to DevToolBox
+# Contributing to DevDeck
 
-Thanks for helping. DevToolBox is a Rust + Tauri 2 host with a React renderer and
+Thanks for helping. DevDeck is a Rust + Tauri 2 host with a React renderer and
 an open plugin marketplace.
 
 - **Setup and architecture:** [docs/development.md](docs/development.md)

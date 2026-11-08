@@ -1,6 +1,6 @@
 # Docs Site (MkDocs Material)
 
-This folder contains the MkDocs Material configuration for the DevToolBox documentation site.
+This folder contains the MkDocs Material configuration for the DevDeck documentation site.
 
 - Content source: `../docs`
 - MkDocs config: `mkdocs.yml`

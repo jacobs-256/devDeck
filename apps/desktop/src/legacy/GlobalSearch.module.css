@@ -3,11 +3,13 @@
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(4, 6, 16, 0.55);
   display: flex;
   justify-content: center;
   padding-top: 15vh;
-  animation: fadeIn 0.12s ease;
+  animation: fadeIn var(--motion-fast);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 @keyframes fadeIn {
@@ -20,13 +22,13 @@
 }
 
 .container {
-  width: 520px;
-  max-height: 420px;
+  width: 560px;
+  max-height: 440px;
   display: flex;
   flex-direction: column;
-  background: var(--bg-panel);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
   box-shadow: var(--shadow-float);
   overflow: hidden;
   align-self: flex-start;
@@ -35,8 +37,8 @@
 .inputWrap {
   display: flex;
   align-items: center;
-  padding: 0 16px;
-  border-bottom: 1px solid var(--border-color);
+  padding: 0 18px;
+  border-bottom: 1px solid var(--glass-border);
   flex-shrink: 0;
 }
 
@@ -63,8 +65,8 @@
   border: none;
   outline: none;
   color: var(--text-primary);
-  font-size: var(--font-size-base);
-  padding: 14px 0;
+  font-size: 13px;
+  padding: 16px 0;
   font-family: var(--font-family);
 }
 
@@ -97,8 +99,10 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  width: 100%;
-  padding: 10px 16px;
+  width: calc(100% - 12px);
+  margin: 1px 6px;
+  border-radius: 9px;
+  padding: 9px 10px;
   background: none;
   border: none;
   cursor: pointer;
@@ -112,7 +116,7 @@
 }
 
 .resultActive {
-  background: var(--bg-hover);
+  background: var(--accent-color-weak);
 }
 
 .resultIcon {

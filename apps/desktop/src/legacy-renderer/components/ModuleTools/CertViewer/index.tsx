@@ -170,7 +170,7 @@ export default function CertViewer() {
               <table className={styles.table}>
                 <tbody>
                   <tr>
-                    <td>Serial Number</td>
+                    <td>{mt('serialNumber')}</td>
                     <td>{certInfo.serialNumber}</td>
                   </tr>
                 </tbody>

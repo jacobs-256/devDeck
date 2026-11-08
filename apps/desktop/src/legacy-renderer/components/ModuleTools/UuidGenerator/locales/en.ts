@@ -3,6 +3,7 @@ export default {
   name: 'UUID Generator',
   description: 'Generate UUIDs (nil, v1, v3, v4, v5)',
   config: 'Config',
+  custom: 'Custom',
   version: 'UUID version',
   quantity: 'Quantity',
   namespace: 'Namespace',

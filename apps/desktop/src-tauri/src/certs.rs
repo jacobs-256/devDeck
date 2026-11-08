@@ -4,7 +4,7 @@
 //! Tauri commands and never touch the network. Private keys only exist in the
 //! renderer's memory unless the user copies them somewhere.
 
-use devtoolbox_contract::DevToolboxError;
+use devdeck_contract::DevDeckError;
 use rcgen::{
     BasicConstraints, CertificateParams, DistinguishedName, DnType, ExtendedKeyUsagePurpose, IsCa,
     Issuer, KeyPair, KeyUsagePurpose, PKCS_ECDSA_P256_SHA256, PKCS_ECDSA_P384_SHA384, PKCS_ED25519,
@@ -103,7 +103,7 @@ pub struct CertificateInfo {
     pub fingerprint_sha256: String,
 }
 
-fn generate_key(algorithm: KeyAlgorithm) -> Result<KeyPair, DevToolboxError> {
+fn generate_key(algorithm: KeyAlgorithm) -> Result<KeyPair, DevDeckError> {
     let bits = match algorithm {
         KeyAlgorithm::Rsa2048 => Some(2048),
         KeyAlgorithm::Rsa4096 => Some(4096),
@@ -111,23 +111,22 @@ fn generate_key(algorithm: KeyAlgorithm) -> Result<KeyPair, DevToolboxError> {
     };
     if let Some(bits) = bits {
         let mut rng = rand::thread_rng();
-        let private = rsa::RsaPrivateKey::new(&mut rng, bits).map_err(|err| {
-            DevToolboxError::Internal(format!("RSA key generation failed: {err}"))
-        })?;
+        let private = rsa::RsaPrivateKey::new(&mut rng, bits)
+            .map_err(|err| DevDeckError::Internal(format!("RSA key generation failed: {err}")))?;
         let pem = private
             .to_pkcs8_pem(rsa::pkcs8::LineEnding::LF)
-            .map_err(|err| DevToolboxError::Internal(format!("RSA key encoding failed: {err}")))?;
+            .map_err(|err| DevDeckError::Internal(format!("RSA key encoding failed: {err}")))?;
         return KeyPair::from_pem(&pem)
-            .map_err(|err| DevToolboxError::Internal(format!("RSA key import failed: {err}")));
+            .map_err(|err| DevDeckError::Internal(format!("RSA key import failed: {err}")));
     }
     KeyPair::generate_for(algorithm.signature_algorithm())
-        .map_err(|err| DevToolboxError::Internal(format!("key generation failed: {err}")))
+        .map_err(|err| DevDeckError::Internal(format!("key generation failed: {err}")))
 }
 
-fn distinguished_name(subject: &SubjectInput) -> Result<DistinguishedName, DevToolboxError> {
+fn distinguished_name(subject: &SubjectInput) -> Result<DistinguishedName, DevDeckError> {
     let common_name = subject.common_name.trim();
     if common_name.is_empty() {
-        return Err(DevToolboxError::InvalidArgument(
+        return Err(DevDeckError::InvalidArgument(
             "common name (CN) is required".to_string(),
         ));
     }
@@ -149,9 +148,9 @@ fn distinguished_name(subject: &SubjectInput) -> Result<DistinguishedName, DevTo
     Ok(dn)
 }
 
-fn validity(days: u32) -> Result<(OffsetDateTime, OffsetDateTime), DevToolboxError> {
+fn validity(days: u32) -> Result<(OffsetDateTime, OffsetDateTime), DevDeckError> {
     if days == 0 || i64::from(days) > MAX_DAYS {
-        return Err(DevToolboxError::InvalidArgument(format!(
+        return Err(DevDeckError::InvalidArgument(format!(
             "validity must be between 1 and {MAX_DAYS} days"
         )));
     }
@@ -163,7 +162,7 @@ fn validity(days: u32) -> Result<(OffsetDateTime, OffsetDateTime), DevToolboxErr
 }
 
 /// Generate a fresh key pair.
-pub fn generate_key_pair(algorithm: KeyAlgorithm) -> Result<KeyMaterial, DevToolboxError> {
+pub fn generate_key_pair(algorithm: KeyAlgorithm) -> Result<KeyMaterial, DevDeckError> {
     let key = generate_key(algorithm)?;
     Ok(KeyMaterial {
         private_key_pem: key.serialize_pem(),
@@ -177,7 +176,7 @@ pub fn generate_ca(
     subject: &SubjectInput,
     days: u32,
     algorithm: KeyAlgorithm,
-) -> Result<CertificateMaterial, DevToolboxError> {
+) -> Result<CertificateMaterial, DevDeckError> {
     let key = generate_key(algorithm)?;
     let mut params = CertificateParams::default();
     params.distinguished_name = distinguished_name(subject)?;
@@ -193,7 +192,7 @@ pub fn generate_ca(
 
     let certificate = params
         .self_signed(&key)
-        .map_err(|err| DevToolboxError::Internal(format!("CA generation failed: {err}")))?;
+        .map_err(|err| DevDeckError::Internal(format!("CA generation failed: {err}")))?;
 
     Ok(CertificateMaterial {
         certificate_pem: certificate.pem(),
@@ -207,17 +206,17 @@ pub fn generate_ca(
 pub fn generate_csr(
     subject: &SubjectInput,
     algorithm: KeyAlgorithm,
-) -> Result<CsrMaterial, DevToolboxError> {
+) -> Result<CsrMaterial, DevDeckError> {
     let key = generate_key(algorithm)?;
     let mut params = CertificateParams::default();
     params.distinguished_name = distinguished_name(subject)?;
 
     let csr = params
         .serialize_request(&key)
-        .map_err(|err| DevToolboxError::Internal(format!("CSR generation failed: {err}")))?;
+        .map_err(|err| DevDeckError::Internal(format!("CSR generation failed: {err}")))?;
     let csr_pem = csr
         .pem()
-        .map_err(|err| DevToolboxError::Internal(format!("CSR encoding failed: {err}")))?;
+        .map_err(|err| DevDeckError::Internal(format!("CSR encoding failed: {err}")))?;
 
     Ok(CsrMaterial {
         csr_pem,
@@ -234,16 +233,14 @@ pub fn issue_certificate(
     csr_pem: &str,
     days: u32,
     client_auth: bool,
-) -> Result<String, DevToolboxError> {
-    let ca_key = KeyPair::from_pem(ca_private_key_pem).map_err(|err| {
-        DevToolboxError::InvalidArgument(format!("invalid CA private key: {err}"))
-    })?;
-    let issuer = Issuer::from_ca_cert_pem(ca_certificate_pem, ca_key).map_err(|err| {
-        DevToolboxError::InvalidArgument(format!("invalid CA certificate: {err}"))
-    })?;
+) -> Result<String, DevDeckError> {
+    let ca_key = KeyPair::from_pem(ca_private_key_pem)
+        .map_err(|err| DevDeckError::InvalidArgument(format!("invalid CA private key: {err}")))?;
+    let issuer = Issuer::from_ca_cert_pem(ca_certificate_pem, ca_key)
+        .map_err(|err| DevDeckError::InvalidArgument(format!("invalid CA certificate: {err}")))?;
 
     let csr = rcgen::CertificateSigningRequestParams::from_pem(csr_pem)
-        .map_err(|err| DevToolboxError::InvalidArgument(format!("invalid CSR: {err}")))?;
+        .map_err(|err| DevDeckError::InvalidArgument(format!("invalid CSR: {err}")))?;
 
     let mut params = csr.params;
     let (not_before, not_after) = validity(days)?;
@@ -262,24 +259,23 @@ pub fn issue_certificate(
 
     let certificate = params
         .signed_by(&csr.public_key, &issuer)
-        .map_err(|err| DevToolboxError::Internal(format!("issuance failed: {err}")))?;
+        .map_err(|err| DevDeckError::Internal(format!("issuance failed: {err}")))?;
     Ok(certificate.pem())
 }
 
 /// Parse a PEM certificate into a display-friendly structure.
-pub fn parse_certificate(pem: &str) -> Result<CertificateInfo, DevToolboxError> {
+pub fn parse_certificate(pem: &str) -> Result<CertificateInfo, DevDeckError> {
     if !pem.contains("BEGIN CERTIFICATE") {
-        return Err(DevToolboxError::InvalidArgument(
+        return Err(DevDeckError::InvalidArgument(
             "input is not a PEM certificate".to_string(),
         ));
     }
 
-    let (_, pem_block) = x509_parser::pem::parse_x509_pem(pem.as_bytes()).map_err(|err| {
-        DevToolboxError::InvalidArgument(format!("cannot parse PEM block: {err}"))
-    })?;
-    let certificate = pem_block.parse_x509().map_err(|err| {
-        DevToolboxError::InvalidArgument(format!("cannot parse certificate: {err}"))
-    })?;
+    let (_, pem_block) = x509_parser::pem::parse_x509_pem(pem.as_bytes())
+        .map_err(|err| DevDeckError::InvalidArgument(format!("cannot parse PEM block: {err}")))?;
+    let certificate = pem_block
+        .parse_x509()
+        .map_err(|err| DevDeckError::InvalidArgument(format!("cannot parse certificate: {err}")))?;
 
     let der: &[u8] = certificate.as_ref();
 
@@ -291,7 +287,7 @@ pub fn parse_certificate(pem: &str) -> Result<CertificateInfo, DevToolboxError> 
         not_after: certificate.validity().not_after.timestamp(),
         is_ca: certificate.is_ca(),
         key_algorithm: certificate.public_key().algorithm.algorithm.to_string(),
-        fingerprint_sha256: devtoolbox_market::signing::sha256_hex(der),
+        fingerprint_sha256: devdeck_market::signing::sha256_hex(der),
     })
 }
 
@@ -302,7 +298,7 @@ mod tests {
     fn subject(cn: &str) -> SubjectInput {
         SubjectInput {
             common_name: cn.to_string(),
-            organization: "DevToolBox".to_string(),
+            organization: "DevDeck".to_string(),
             country: "CN".to_string(),
             ..Default::default()
         }
@@ -325,10 +321,10 @@ mod tests {
     #[test]
     fn generates_a_parseable_ca() {
         for algorithm in [KeyAlgorithm::EcdsaP256, KeyAlgorithm::Rsa2048] {
-            let material = generate_ca(&subject("DevToolBox Root CA"), 365, algorithm).unwrap();
+            let material = generate_ca(&subject("DevDeck Root CA"), 365, algorithm).unwrap();
             let info = parse_certificate(&material.certificate_pem).unwrap();
             assert!(info.is_ca);
-            assert!(info.subject.contains("DevToolBox Root CA"));
+            assert!(info.subject.contains("DevDeck Root CA"));
             assert_eq!(info.subject, info.issuer);
             assert!(info.not_after > info.not_before);
         }
@@ -346,7 +342,7 @@ mod tests {
 
     #[test]
     fn issues_a_client_certificate_from_a_csr() {
-        let ca = generate_ca(&subject("DevToolBox Root CA"), 365, KeyAlgorithm::EcdsaP256).unwrap();
+        let ca = generate_ca(&subject("DevDeck Root CA"), 365, KeyAlgorithm::EcdsaP256).unwrap();
         let csr = generate_csr(&subject("client-01"), KeyAlgorithm::EcdsaP256).unwrap();
 
         let issued = issue_certificate(
@@ -360,7 +356,7 @@ mod tests {
 
         let info = parse_certificate(&issued).unwrap();
         assert!(info.subject.contains("client-01"));
-        assert!(info.issuer.contains("DevToolBox Root CA"));
+        assert!(info.issuer.contains("DevDeck Root CA"));
         assert!(!info.is_ca);
     }
 

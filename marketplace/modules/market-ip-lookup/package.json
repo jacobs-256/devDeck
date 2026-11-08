@@ -1,5 +1,5 @@
 {
-  "name": "@devtoolbox/plugin-market-ip-lookup",
+  "name": "@devdeck/plugin-market-ip-lookup",
   "private": true,
   "version": "0.1.3",
   "type": "module",
@@ -10,7 +10,7 @@
   "dependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "@devtoolbox/plugin-sdk": "workspace:*"
+    "@devdeck/plugin-sdk": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^18.3.12",

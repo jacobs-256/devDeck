@@ -1,5 +1,5 @@
 // @ts-nocheck
-type EventMessage = { type: 'devtoolbox:sdk:event'; event: string; data?: unknown };
+type EventMessage = { type: 'devdeck:sdk:event'; event: string; data?: unknown };
 type Listener<T = unknown> = (data: T) => void;
 
 function isRecord(v: unknown): v is Record<string, unknown> {
@@ -8,7 +8,7 @@ function isRecord(v: unknown): v is Record<string, unknown> {
 
 function asEventMessage(v: unknown): EventMessage | null {
   if (!isRecord(v)) return null;
-  if (v.type !== 'devtoolbox:sdk:event') return null;
+  if (v.type !== 'devdeck:sdk:event') return null;
   if (typeof v.event !== 'string') return null;
   return v as EventMessage;
 }

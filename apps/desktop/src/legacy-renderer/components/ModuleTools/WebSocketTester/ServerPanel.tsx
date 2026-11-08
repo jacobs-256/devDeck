@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { useEffect, useMemo, useRef, useState } from 'react';
 import styles from './ServerPanel.module.css';
+import { useI18n } from '../../../i18n';
 
 type ClientInfo = {
   id: string;
@@ -39,6 +40,8 @@ function isElectronApi(): boolean {
 }
 
 export default function ServerPanel() {
+  const { locale } = useI18n();
+  const tr = (en: string, zh: string) => (locale === 'zh-CN' ? zh : en);
   const [host, setHost] = useState('0.0.0.0');
   const [port, setPort] = useState('8080');
   const [path, setPath] = useState('/ws');
@@ -217,166 +220,213 @@ export default function ServerPanel() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.inputBar}>
-        <div className={styles.label}>Host</div>
-        <input className={styles.textInput} value={host} onChange={(e) => setHost(e.target.value)} />
-        <div className={styles.label}>Port</div>
-        <input className={styles.textInput} value={port} onChange={(e) => setPort(e.target.value)} />
-        <div className={styles.label}>Path</div>
-        <input
-          className={`${styles.textInput} ${styles.wideInput}`}
-          value={path}
-          onChange={(e) => setPath(e.target.value)}
-        />
-
-        <div className={styles.label}>TLS</div>
-        <select
-          className={styles.select}
-          value={tls ? '1' : '0'}
-          onChange={(e) => setTls(e.target.value === '1')}
-        >
-          <option value="0">Off</option>
-          <option value="1">On</option>
-        </select>
-
-        <button
-          className={`${styles.actionBtn} ${styles.primaryBtn}`}
-          onClick={start}
-          disabled={startDisabled}
-        >
-          Start
-        </button>
-        <button className={`${styles.actionBtn} ${styles.stopBtn}`} onClick={stop} disabled={!running}>
-          Stop
-        </button>
-
-        <span className={styles.badge}>{running ? `Running: ${status.url}` : 'Stopped'}</span>
-        <span className={styles.badge}>Clients: {clients.length}</span>
-        <span className={styles.badge}>
-          Sent: {status.stats.totalSent} · Recv: {status.stats.totalRecv}
-        </span>
-        <span className={styles.badge}>Protocol debugging</span>
-      </div>
-
-      {tls ? (
-        <div className={styles.inputBar}>
-          <button
-            className={styles.actionBtn}
-            onClick={() =>
-              void pickPem()
-                .then(setCertPem)
-                .catch((e) => setError(e.message))
-            }
-            disabled={running}
-          >
-            Load Cert
-          </button>
-          <button
-            className={styles.actionBtn}
-            onClick={() =>
-              void pickPem()
-                .then(setKeyPem)
-                .catch((e) => setError(e.message))
-            }
-            disabled={running}
-          >
-            Load Key
-          </button>
-          <span className={styles.hint}>
-            {certPem ? 'Cert loaded' : 'Cert missing'} · {keyPem ? 'Key loaded' : 'Key missing'}
+      <section className={styles.card}>
+        <div className={styles.cardHeader}>
+          <div className={styles.cardTitle}> {tr('Connection', '连接')} </div>
+          <span className={`${styles.statusChip}${running ? ` ${styles.statusOn}` : ''}`}>
+            <i className={styles.statusDot} />
+            {running ? tr('Running', '运行中') : tr('Stopped', '已停止')}
           </span>
         </div>
-      ) : null}
 
-      {error ? (
-        <div className={styles.inputBar}>
-          <div className={styles.hint} style={{ color: 'var(--color-error, #e74c3c)' }}>
-            {error}
-          </div>
+        <div className={styles.fieldGrid}>
+          <label className={styles.field}>
+            <span>{tr('Host', '主机')}</span>
+            <input className={styles.input} value={host} onChange={(e) => setHost(e.target.value)} />
+          </label>
+          <label className={styles.field}>
+            <span>{tr('Port', '端口')}</span>
+            <input className={styles.input} value={port} onChange={(e) => setPort(e.target.value)} />
+          </label>
+          <label className={styles.field}>
+            <span>{tr('Path', '路径')}</span>
+            <input className={styles.input} value={path} onChange={(e) => setPath(e.target.value)} />
+          </label>
+          <label className={styles.field}>
+            <span>{tr('TLS', 'TLS')}</span>
+            <select
+              className={styles.select}
+              value={tls ? '1' : '0'}
+              onChange={(e) => setTls(e.target.value === '1')}
+            >
+              <option value="0">{tr('Off', '关闭')}</option>
+              <option value="1">{tr('On', '开启')}</option>
+            </select>
+          </label>
         </div>
-      ) : null}
 
-      <div className={styles.outputArea}>
-        {logs.length === 0 ? (
-          <div className={styles.outputEmpty}>No logs.</div>
-        ) : (
-          <div className={styles.logList}>
-            {logs.map((l, idx) => (
-              <div
-                key={`${l.ts}_${idx}`}
-                className={`${styles.logLine} ${
-                  l.kind === 'recv'
-                    ? styles.logRecv
-                    : l.kind === 'send'
-                      ? styles.logSend
-                      : l.kind === 'error'
-                        ? styles.logError
-                        : styles.logSystem
-                }`}
-              >
-                <span className={styles.logTs}>{l.ts}</span>
-                <span className={styles.logLv}>{l.level.toUpperCase()}</span>
-                <span className={styles.logMsg}>{l.text}</span>
-              </div>
-            ))}
+        {tls ? (
+          <div className={styles.certRow}>
+            <button
+              className={styles.btn}
+              onClick={() =>
+                void pickPem()
+                  .then(setCertPem)
+                  .catch((e) => setError(e.message))
+              }
+              disabled={running}
+            >
+              {tr('Load cert', '加载证书')}
+            </button>
+            <button
+              className={styles.btn}
+              onClick={() =>
+                void pickPem()
+                  .then(setKeyPem)
+                  .catch((e) => setError(e.message))
+              }
+              disabled={running}
+            >
+              {tr('Load key', '加载私钥')}
+            </button>
+            <span className={styles.certState}>
+              {certPem ? tr('Cert loaded', '证书已加载') : tr('Cert missing', '缺少证书')} ·{' '}
+              {keyPem ? tr('Key loaded', '私钥已加载') : tr('Key missing', '缺少私钥')}
+            </span>
           </div>
-        )}
-      </div>
+        ) : null}
 
-      <div className={styles.row}>
-        <div className={styles.label}>Target</div>
-        <select
-          className={styles.select}
-          value={selectedClientId}
-          onChange={(e) => setSelectedClientId(e.target.value)}
-        >
-          <option value="broadcast">Broadcast</option>
-          {clients.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.remote} · {c.id.slice(0, 6)}
-            </option>
-          ))}
-        </select>
-        <input
-          className={`${styles.textInput} ${styles.wideInput}`}
-          value={broadcastText}
-          onChange={(e) => setBroadcastText(e.target.value)}
-          placeholder="Payload (text/JSON)"
-        />
-        <button className={`${styles.actionBtn} ${styles.primaryBtn}`} onClick={send} disabled={!running}>
-          Send Frame
-        </button>
-        <button
-          className={styles.actionBtn}
-          onClick={kick}
-          disabled={!running || selectedClientId === 'broadcast'}
-        >
-          Kick
-        </button>
-        <button className={styles.actionBtn} onClick={() => setLogs([])}>
-          Clear
-        </button>
-      </div>
+        <div className={styles.actionRow}>
+          <button className={`${styles.btn} ${styles.primary}`} onClick={start} disabled={startDisabled}>
+            {tr('Start', '启动')}
+          </button>
+          <button className={`${styles.btn} ${styles.danger}`} onClick={stop} disabled={!running}>
+            {tr('Stop', '停止')}
+          </button>
+          <span className={styles.endpoint} title={running ? status.url : undefined}>
+            {running
+              ? status.url || `${tls ? 'wss' : 'ws'}://${host}:${port}${path}`
+              : tr('Not listening', '未监听')}
+          </span>
+        </div>
 
-      <div className={styles.row}>
-        <div className={styles.label}>Stress</div>
-        <input
-          className={styles.textInput}
-          value={stressIntervalMs}
-          onChange={(e) => setStressIntervalMs(e.target.value)}
-          placeholder="interval ms"
-        />
-        <input
-          className={styles.textInput}
-          value={stressPayloadBytes}
-          onChange={(e) => setStressPayloadBytes(e.target.value)}
-          placeholder="payload bytes"
-        />
-        <button className={styles.actionBtn} onClick={toggleStress} disabled={!running}>
-          {stressEnabled ? 'Stop' : 'Start'}
-        </button>
-        <span className={styles.hint}>Broadcast a fixed-size payload to all clients</span>
-      </div>
+        <div className={styles.metaRow}>
+          <span className={styles.metaChip}>
+            {tr('Clients', '客户端')} <b>{clients.length}</b>
+          </span>
+          <span className={styles.metaChip}>
+            {tr('Sent', '已发送')} <b>{status.stats.totalSent}</b>
+          </span>
+          <span className={styles.metaChip}>
+            {tr('Recv', '已接收')} <b>{status.stats.totalRecv}</b>
+          </span>
+        </div>
+      </section>
+
+      {error ? <div className={styles.errorBanner}>{error}</div> : null}
+
+      <details className={styles.stressCard}>
+        <summary className={styles.stressSummary}>
+          <span>{tr('Load test', '负载测试')}</span>
+          <span className={`${styles.stressState}${stressEnabled ? ` ${styles.stressStateOn}` : ''}`}>
+            {stressEnabled ? tr('Running', '运行中') : tr('Idle', '空闲')}
+          </span>
+        </summary>
+        <div className={styles.stressBody}>
+          <label className={styles.inlineField}>
+            <span>{tr('Interval', '间隔')}</span>
+            <input
+              className={styles.smallInput}
+              value={stressIntervalMs}
+              onChange={(e) => setStressIntervalMs(e.target.value)}
+            />
+            <em>{tr('ms', '毫秒')}</em>
+          </label>
+          <label className={styles.inlineField}>
+            <span>{tr('Payload', '载荷')}</span>
+            <input
+              className={styles.smallInput}
+              value={stressPayloadBytes}
+              onChange={(e) => setStressPayloadBytes(e.target.value)}
+            />
+            <em>{tr('bytes', '字节')}</em>
+          </label>
+          <button
+            className={`${styles.btn}${stressEnabled ? ` ${styles.danger}` : ''}`}
+            onClick={toggleStress}
+            disabled={!running}
+          >
+            {stressEnabled ? tr('Stop', '停止') : tr('Start', '开始')}
+          </button>
+          <p className={styles.stressHint}>
+            {tr('Broadcast a fixed-size payload to all clients.', '向所有客户端广播固定大小的载荷。')}
+          </p>
+        </div>
+      </details>
+
+      <section className={`${styles.card} ${styles.logCard}`}>
+        <div className={styles.cardHeader}>
+          <div className={styles.cardTitle}>
+            {tr('Server log', '服务端日志')} <span className={styles.count}>{logs.length}</span>
+          </div>
+          <button className={styles.textBtn} onClick={() => setLogs([])} disabled={logs.length === 0}>
+            {tr('Clear', '清空')}
+          </button>
+        </div>
+        <div className={styles.logArea} role="log" aria-live="polite">
+          {logs.length === 0 ? (
+            <div className={styles.outputEmpty}>{tr('No server events yet.', '暂无服务端事件')}</div>
+          ) : (
+            <div className={styles.logList}>
+              {logs.map((l, idx) => (
+                <div
+                  key={`${l.ts}_${idx}`}
+                  className={`${styles.logLine} ${
+                    l.kind === 'recv'
+                      ? styles.logRecv
+                      : l.kind === 'send'
+                        ? styles.logSend
+                        : l.kind === 'error'
+                          ? styles.logError
+                          : styles.logSystem
+                  }`}
+                >
+                  <span className={styles.logTs}>{l.ts}</span>
+                  <span className={styles.logLv}>{l.level.toUpperCase()}</span>
+                  <span className={styles.logMsg}>{l.text}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className={styles.card}>
+        <div className={styles.cardHeader}>
+          <div className={styles.cardTitle}>{tr('Send frame', '发送帧')}</div>
+          <select
+            className={styles.targetSelect}
+            value={selectedClientId}
+            onChange={(e) => setSelectedClientId(e.target.value)}
+            aria-label={tr('Send target', '发送目标')}
+          >
+            <option value="broadcast">{tr('Broadcast', '广播')}</option>
+            {clients.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.remote} · {c.id.slice(0, 6)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className={styles.composerRow}>
+          <input
+            className={styles.payloadInput}
+            value={broadcastText}
+            onChange={(e) => setBroadcastText(e.target.value)}
+            placeholder={tr('Payload (text/JSON)', '载荷（文本/JSON）')}
+          />
+          <button className={`${styles.btn} ${styles.primary}`} onClick={send} disabled={!running}>
+            {tr('Send', '发送')}
+          </button>
+          <button
+            className={styles.btn}
+            onClick={kick}
+            disabled={!running || selectedClientId === 'broadcast'}
+          >
+            {tr('Kick', '断开')}
+          </button>
+        </div>
+      </section>
     </div>
   );
 }

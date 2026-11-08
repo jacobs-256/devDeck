@@ -1,23 +1,55 @@
 # Changelog
 
-All notable changes to DevToolBox are documented here. The format follows
+All notable changes to DevDeck are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/) and SemVer.
 
 ## Unreleased
 
+### Added
+
+- Local `file://` registry and `.zip` package support for offline plugin
+  development (development builds only; release builds use the official registry).
+- Release builds hide custom registry inputs/removal and show only the official
+  GitHub marketplace source; development builds retain the full registry tools.
+
+### Fixed
+
+- Tauri `{ code, message }` errors render as readable messages instead of
+  `[object Object]`.
+- JSON editors (JWT header/payload and the JSON formatter/converter editors)
+  highlight syntax while typing.
+- Tool pages now scroll when their content exceeds the available height
+  (String Encryption, IP Calculator, RSA Key Pair Generator and the shared
+  tool-section layouts).
+- Traceroute and Ping output stream line by line instead of waiting for the
+  whole run; Ping uses the native system ping command with a visible initial
+  status.
+- WebSocket tester server mode is implemented (start/stop, client list,
+  broadcast/send, kick, status and log events); TLS is not supported yet.
+- Removed the global card border/background from `<pre>` blocks so full-pane
+  tool output no longer renders an inner framed box.
+
 ### Changed
 
+- Adopted the **Aurora (Spectrum)** design system: deep indigo field, violet→cyan
+  gradient, glass surfaces and 14–16px radii, in both light and dark themes. The
+  previous zinc/emerald palette is superseded.
+- Added `AGENTS.txt` as the mandatory UI standard for future modules, and
+  mirrored the Aurora tokens into `marketplace/shared/theme`.
+- Kept the legacy `ssh-hold-deck` layout structure while restyling the shell,
+  dashboard, tools workspace, marketplace and settings.
 - Restored the main-branch layouts for all 27 built-in tools.
 - Reworked Settings into a flat, grouped preferences page modeled on
-  `ssh-hold-deck`: theme/language segmented controls, registry management,
-  updates, and about in one scrolling view.
+  `ssh-hold-deck`, with auto theme/language, text-size scaling, registry
+  management, a loopback status service port, window close behavior, tray icon,
+  and a footer about block with update / report / GitHub actions.
 
 ## 3.0.0 — Rust + Tauri 2 rewrite
 
 ### Added
 
-- Rust workspace: `devtoolbox-contract`, `devtoolbox-capability`,
-  `devtoolbox-market`, and the Tauri host in `apps/desktop/src-tauri`.
+- Rust workspace: `devdeck-contract`, `devdeck-capability`,
+  `devdeck-market`, and the Tauri host in `apps/desktop/src-tauri`.
 - Tauri 2 packaging for macOS (`.app`/`.dmg`) and Windows (NSIS), with signed
   updater artifacts and a `latest.json` feed.
 - Open marketplace: registry sources, SHA-256 + Ed25519 verification, package

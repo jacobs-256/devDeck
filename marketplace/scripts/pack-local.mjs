@@ -70,7 +70,7 @@ for (const id of ids) {
   const builtEntryPath = path.join(pluginDir, String(manifest.entry || ''));
   if (!fs.existsSync(builtEntryPath)) {
     throw new Error(
-      `Entry not built yet: ${builtEntryPath}. Run pnpm --filter @devtoolbox/plugin-${id} build`,
+      `Entry not built yet: ${builtEntryPath}. Run pnpm --filter @devdeck/plugin-${id} build`,
     );
   }
 

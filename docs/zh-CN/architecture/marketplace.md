@@ -2,7 +2,7 @@
 
 > 英文源文档：[docs/architecture/marketplace.md](../../architecture/marketplace.md)。
 
-Marketplace 是一个**开放、去中心化的插件分发协议**，不是单一商店。任何人都可以托管 `registry.json`；通过校验的包即可安装。DevToolBox 预置官方注册表，用户也可以增删来源。
+Marketplace 是一个**开放、去中心化的插件分发协议**，不是单一商店。任何人都可以托管 `registry.json`；通过校验的包即可安装。DevDeck 预置官方注册表，用户也可以增删来源。
 
 ## 设计原则
 
@@ -37,7 +37,7 @@ my-plugin-1.2.3.zip
   "sdkVersion": "2.0",
   "entry": "package/index.html",
   "categoryId": "network-tools",
-  "author": { "name": "DevToolBox", "url": "https://example.com" },
+  "author": { "name": "DevDeck", "url": "https://example.com" },
   "license": "Apache-2.0",
   "permissions": ["storage:kv", "http:proxy"],
   "httpDomains": ["api.ip2location.io"],
@@ -76,7 +76,7 @@ my-plugin-1.2.3.zip
 ```json
 {
   "schemaVersion": 2,
-  "name": "DevToolBox Official",
+  "name": "DevDeck Official",
   "plugins": [
     {
       "manifest": { "…": "同上" },
@@ -132,7 +132,7 @@ Trust options 可以粘贴注册表的 Ed25519 公钥并强制要求签名；目
 - 签名：64 字节，标准 Base64
 - `keyId`：`sha256(公钥)` 前 16 位十六进制
 
-可签名对象：ZIP 包（注册表条目 `signature`）、注册表文档（同名 `.sig` 文件）。校验实现在 `crates/devtoolbox-market/src/signing.rs`，并有篡改测试。
+可签名对象：ZIP 包（注册表条目 `signature`）、注册表文档（同名 `.sig` 文件）。校验实现在 `crates/devdeck-market/src/signing.rs`，并有篡改测试。
 
 ## 安装生命周期
 
@@ -146,14 +146,14 @@ Trust options 可以粘贴注册表的 Ed25519 公钥并强制要求签名；目
 
 ```bash
 pnpm --filter ./marketplace/modules/market-ip-lookup build
-pnpm --filter @devtoolbox/marketplace pack market-ip-lookup
-pnpm --filter @devtoolbox/marketplace keygen --out .signing/key.txt
-DEVTOOLBOX_SIGNING_KEY=$(cat .signing/key.txt) \
-  pnpm --filter @devtoolbox/marketplace sign .local-dist/market-ip-lookup-1.0.0.zip
-pnpm --filter @devtoolbox/marketplace registry --all \
+pnpm --filter @devdeck/marketplace pack market-ip-lookup
+pnpm --filter @devdeck/marketplace keygen --out .signing/key.txt
+DEVDECK_SIGNING_KEY=$(cat .signing/key.txt) \
+  pnpm --filter @devdeck/marketplace sign .local-dist/market-ip-lookup-1.0.0.zip
+pnpm --filter @devdeck/marketplace registry --all \
   --base-url https://example.com/marketplace --out release-dist/registry.json
-DEVTOOLBOX_SIGNING_KEY=$(cat .signing/key.txt) \
-  pnpm --filter @devtoolbox/marketplace sign release-dist/registry.json
+DEVDECK_SIGNING_KEY=$(cat .signing/key.txt) \
+  pnpm --filter @devdeck/marketplace sign release-dist/registry.json
 ```
 
 ## 本地验收

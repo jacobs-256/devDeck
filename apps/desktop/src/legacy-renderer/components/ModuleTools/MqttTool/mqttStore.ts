@@ -1,8 +1,8 @@
 // @ts-nocheck
 import type { MqttConfig, MqttGroup } from './mqttTypes';
 
-const CONFIGS_KEY = 'devtoolbox.mqttTool.configs.v1';
-const GROUPS_KEY = 'devtoolbox.mqttTool.groups.v1';
+const CONFIGS_KEY = 'devdeck.mqttTool.configs.v1';
+const GROUPS_KEY = 'devdeck.mqttTool.groups.v1';
 
 function safeParse(json: string): unknown {
   try {
@@ -58,7 +58,7 @@ export function saveMqttGroups(groups: MqttGroup[]): Promise<void> {
 }
 
 export function loadSubs(connId: string): Promise<{ topic: string; qos: 0 | 1 | 2; enabled: boolean }[]> {
-  const raw = localStorage.getItem(`devtoolbox.mqttTool.subs.${connId}.v1`);
+  const raw = localStorage.getItem(`devdeck.mqttTool.subs.${connId}.v1`);
   const parsed = raw ? safeParse(raw) : undefined;
   const out = asArray(parsed)
     .map((v) => {
@@ -78,6 +78,6 @@ export function saveSubs(
   connId: string,
   subs: { topic: string; qos: 0 | 1 | 2; enabled: boolean }[],
 ): Promise<void> {
-  localStorage.setItem(`devtoolbox.mqttTool.subs.${connId}.v1`, JSON.stringify(subs));
+  localStorage.setItem(`devdeck.mqttTool.subs.${connId}.v1`, JSON.stringify(subs));
   return Promise.resolve();
 }

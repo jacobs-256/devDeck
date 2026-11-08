@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { useState } from 'react';
+import { useEscapeClose } from '../../../../ui/useEscapeClose';
 import type { MqttConfig, MqttGroup } from '../mqttTypes';
 import { getDefaultMqttConfig } from '../mqttTypes';
 import styles from './MqttConfigDialog.module.css';
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export default function MqttConfigDialog({ config, groups = [], onSave, onClose }: Props) {
+  useEscapeClose(onClose);
   const [form, setForm] = useState<MqttConfig>(config ?? getDefaultMqttConfig());
   const [error, setError] = useState('');
   const [openSections, setOpenSections] = useState({
@@ -41,7 +43,7 @@ export default function MqttConfigDialog({ config, groups = [], onSave, onClose 
     onSave(form);
   };
 
-  const regenClientId = () => set('clientId', `devtoolbox_${Math.random().toString(16).slice(2, 10)}`);
+  const regenClientId = () => set('clientId', `devdeck_${Math.random().toString(16).slice(2, 10)}`);
 
   const handleFileSelect = async (field: 'caFile' | 'clientCert' | 'clientKey') => {
     const it = await openFileBase64([
@@ -69,7 +71,13 @@ export default function MqttConfigDialog({ config, groups = [], onSave, onClose 
 
   return (
     <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+      <div
+        className={styles.modal}
+        role="dialog"
+        aria-modal="true"
+        aria-label="MQTT connection"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className={styles.header}>
           <span>{isEdit ? t('editClient') : t('addClient')}</span>
           <button className={styles.closeBtn} onClick={onClose} aria-label="Close">

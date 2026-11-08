@@ -3,7 +3,7 @@ import { useI18n } from '../../../i18n';
 import { SafeHtml } from '../../../components/SafeHtml';
 import { extractHeadings, markdownStats, renderMarkdown } from './markdown.model';
 
-const SAMPLE = `# DevToolBox
+const SAMPLE = `# DevDeck
 
 A **developer toolbox** with a plugin marketplace.
 

@@ -8,7 +8,7 @@ interface SafeHtmlProps {
 /**
  * Renders sanitized HTML.
  *
- * All generated HTML in DevToolBox must go through this component (or
+ * All generated HTML in DevDeck must go through this component (or
  * `DOMPurify.sanitize` directly for non-DOM previews). The host CSP already
  * blocks inline scripts, and DOMPurify removes anything else dangerous.
  */

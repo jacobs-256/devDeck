@@ -2,7 +2,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--bg-primary);
+  background: transparent;
   color: var(--text-primary);
   font-size: 13px;
   overflow: hidden;
@@ -34,14 +34,15 @@
 .modalClose,
 .groupActions button,
 .rowActions button {
-  border: 1px solid var(--border-subtle);
-  background: var(--bg-tertiary);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
   color: var(--text-secondary);
-  border-radius: 8px;
+  border-radius: var(--radius-small);
   transition:
-    background 0.12s ease,
-    color 0.12s ease,
-    border-color 0.12s ease;
+    background var(--motion-fast),
+    color var(--motion-fast),
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast);
 }
 
 .primaryButton {
@@ -51,13 +52,14 @@
   align-items: center;
   gap: 6px;
   color: #fff;
-  background: var(--accent-primary);
-  border-color: var(--accent-primary);
+  background: var(--aurora-grad);
+  border-color: transparent;
+  box-shadow: 0 8px 18px -12px var(--accent-primary);
   white-space: nowrap;
 }
 .primaryButton:hover {
-  background: var(--accent-primary-hover);
-  border-color: var(--accent-primary-hover);
+  background: var(--aurora-grad-hover);
+  border-color: transparent;
 }
 .secondaryButton,
 .dangerButton {
@@ -78,7 +80,8 @@
 }
 .dangerButton {
   color: var(--accent-error);
-  border-color: color-mix(in oklab, var(--accent-error) 25%, var(--border-subtle));
+  border-color: color-mix(in oklab, var(--accent-error) 28%, transparent);
+  background: var(--accent-error-bg);
 }
 .dangerButton:hover {
   background: color-mix(in oklab, var(--accent-error) 10%, transparent);
@@ -103,8 +106,10 @@
   flex-direction: column;
   gap: 9px;
   padding: 16px 12px;
-  border-right: 1px solid var(--border-default);
-  background: var(--bg-secondary);
+  border-right: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   overflow: auto;
 }
 .sidebarTop {
@@ -137,7 +142,7 @@
   position: relative;
   display: flex;
   align-items: center;
-  border-radius: 8px;
+  border-radius: var(--radius-small);
 }
 .groupRowActive {
   background: color-mix(in oklab, var(--accent-primary) 9%, transparent);
@@ -153,7 +158,7 @@
   color: var(--text-tertiary);
   text-align: left;
   padding: 8px 7px;
-  border-radius: 8px;
+  border-radius: var(--radius-small);
 }
 .groupItem:hover {
   background: var(--bg-hover);
@@ -208,9 +213,9 @@
   gap: 5px;
   margin: 2px 0;
   padding: 6px;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--glass-border);
   border-radius: 9px;
-  background: var(--bg-primary);
+  background: var(--glass-bg);
 }
 .groupEditorMain {
   display: flex;
@@ -221,10 +226,10 @@
   flex: 1;
   min-width: 0;
   height: 26px;
-  border: 1px solid var(--border-default);
-  border-radius: 7px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
   outline: 0;
-  background: var(--bg-secondary);
+  background: var(--glass-bg);
   color: var(--text-primary);
   font-size: 12px;
   padding: 0 8px;
@@ -258,8 +263,8 @@
   margin: 2px 4px 5px 24px;
   padding: 8px;
   border: 1px solid color-mix(in oklab, var(--accent-error) 34%, var(--border-default));
-  border-radius: 8px;
-  background: color-mix(in oklab, var(--accent-error) 10%, var(--bg-primary));
+  border-radius: var(--radius-small);
+  background: var(--accent-error-bg);
 }
 .groupDeleteText {
   color: var(--text-secondary);
@@ -291,10 +296,16 @@
   gap: 7px;
   padding: 0 9px;
   height: 30px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  background: var(--bg-primary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
+  background: var(--glass-bg);
   color: var(--text-disabled);
+}
+.searchBox:focus-within,
+.pathForm:focus-within,
+.folderPickerPathForm:focus-within {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-color-weak);
 }
 .searchBox input {
   flex: 1;
@@ -418,7 +429,7 @@
   min-width: 0;
   max-width: 100%;
   padding: 2px 5px;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--glass-border);
   border-radius: 999px;
   color: var(--text-quaternary);
   background: color-mix(in oklab, var(--bg-tertiary) 72%, transparent);
@@ -482,35 +493,41 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  background: var(--bg-content);
+  background: transparent;
 }
 .sessionBar {
-  min-height: 43px;
+  min-height: 48px;
   display: flex;
-  align-items: stretch;
+  align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--border-default);
-  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  padding: 6px 8px;
 }
 .sessionTabs {
   display: flex;
-  align-items: stretch;
+  align-items: center;
+  gap: 2px;
   min-width: 0;
   overflow: auto;
 }
 .sessionTab {
   max-width: 240px;
   min-width: 150px;
+  height: 32px;
   display: flex;
   align-items: center;
   gap: 7px;
-  border: 0;
-  border-right: 1px solid var(--border-default);
-  border-bottom: 2px solid transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-small);
   background: transparent;
   color: var(--text-tertiary);
   padding: 0 9px;
   text-align: left;
+  transition:
+    background var(--motion-fast),
+    border-color var(--motion-fast),
+    color var(--motion-fast);
 }
 .sessionTab:hover {
   background: var(--bg-hover);
@@ -518,8 +535,8 @@
 }
 .sessionTabActive {
   color: var(--text-primary);
-  border-bottom-color: var(--accent-primary);
-  background: color-mix(in oklab, var(--accent-primary) 5%, transparent);
+  border-color: var(--glass-border);
+  background: var(--accent-color-weak);
 }
 .tabStatus,
 .largeStatusDot {
@@ -620,7 +637,7 @@
   padding: 3px 7px;
   border-radius: 999px;
   color: var(--text-quaternary);
-  background: var(--bg-tertiary);
+  background: var(--glass-bg-strong);
   font-size: 10px;
   font-weight: 500;
 }
@@ -654,9 +671,9 @@
 .connectionLogPanel {
   flex: 0 0 auto;
   overflow: hidden;
-  border: 1px solid color-mix(in oklab, var(--border-default) 82%, #263241);
-  border-radius: 10px;
-  background: color-mix(in oklab, var(--bg-secondary) 70%, #0d1117);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  background: var(--glass-bg);
 }
 .connectionFlow {
   flex: 1;
@@ -672,12 +689,12 @@
   gap: 12px;
   padding: 14px;
   border: 1px solid color-mix(in oklab, var(--accent-warning) 24%, var(--border-default));
-  border-radius: 12px;
-  background: color-mix(in oklab, var(--accent-warning) 7%, var(--bg-secondary));
+  border-radius: var(--radius);
+  background: color-mix(in oklab, var(--accent-warning) 10%, var(--glass-bg));
 }
 .connectionStateCardError {
   border-color: color-mix(in oklab, var(--accent-error) 28%, var(--border-default));
-  background: color-mix(in oklab, var(--accent-error) 7%, var(--bg-secondary));
+  background: color-mix(in oklab, var(--accent-error) 10%, var(--glass-bg));
 }
 .connectionStateIcon {
   width: 30px;
@@ -734,9 +751,9 @@
   justify-content: space-between;
   gap: 10px;
   padding: 0 10px 0 12px;
-  border-bottom: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--glass-border);
   color: var(--text-tertiary);
-  background: color-mix(in oklab, var(--bg-tertiary) 72%, #111821);
+  background: var(--glass-bg-strong);
   font-size: 11px;
   font-weight: 650;
 }
@@ -821,8 +838,8 @@
   justify-content: space-between;
   gap: 12px;
   padding: 7px 10px 7px 12px;
-  border-top: 1px solid var(--border-default);
-  background: color-mix(in oklab, var(--bg-tertiary) 58%, #111821);
+  border-top: 1px solid var(--glass-border);
+  background: var(--glass-bg-strong);
 }
 .connectionLogFooterHint {
   min-width: 0;
@@ -866,10 +883,10 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid #263241;
-  border-radius: 10px;
-  background: #0d1117;
-  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--terminal-border);
+  border-radius: var(--radius);
+  background: var(--terminal-bg);
+  box-shadow: var(--shadow-card);
 }
 .terminalPaneHeader {
   flex: 0 0 28px;
@@ -877,9 +894,9 @@
   align-items: center;
   gap: 8px;
   padding: 0 9px;
-  border-bottom: 1px solid #263241;
-  color: rgba(215, 224, 234, 0.82);
-  background: #111821;
+  border-bottom: 1px solid var(--terminal-border);
+  color: var(--terminal-fg);
+  background: var(--terminal-panel);
   font-size: 10px;
 }
 .terminalPaneTitle {
@@ -890,7 +907,7 @@
 }
 .terminalPaneMeta {
   margin-left: auto;
-  color: rgba(190, 215, 240, 0.52);
+  color: color-mix(in oklab, var(--terminal-fg) 52%, transparent);
   font-family: var(--font-family-mono);
   font-size: 9px;
 }
@@ -899,8 +916,8 @@
   height: 20px;
   padding: 0;
   border: 0;
-  border-radius: 4px;
-  color: rgba(190, 215, 240, 0.56);
+  border-radius: var(--radius-small);
+  color: color-mix(in oklab, var(--terminal-fg) 56%, transparent);
   background: transparent;
   font-size: 16px;
   line-height: 1;
@@ -914,7 +931,7 @@
   flex: 1;
   min-height: 220px;
   overflow: hidden;
-  background: #0d1117;
+  background: var(--terminal-bg);
 }
 .terminalSplit .terminalShell {
   min-height: 0;
@@ -930,7 +947,7 @@
 .terminalHost :global(.xterm-viewport) {
   scrollbar-width: thin;
   scrollbar-color: rgba(139, 148, 158, 0.36) transparent;
-  background: #0d1117 !important;
+  background: var(--terminal-bg) !important;
 }
 .terminalHost :global(.xterm-viewport::-webkit-scrollbar) {
   width: 8px;
@@ -941,7 +958,7 @@
 }
 .terminalHost :global(.xterm-viewport::-webkit-scrollbar-thumb) {
   min-height: 32px;
-  border: 2px solid #0d1117;
+  border: 2px solid var(--terminal-bg);
   border-radius: 999px;
   background: rgba(139, 148, 158, 0.36);
 }
@@ -949,7 +966,7 @@
   background: rgba(139, 148, 158, 0.52);
 }
 .terminalHost :global(.xterm-viewport::-webkit-scrollbar-corner) {
-  background: #0d1117;
+  background: var(--terminal-bg);
 }
 
 .emptyWorkspace {
@@ -968,7 +985,7 @@
   align-items: center;
   justify-content: center;
   margin-bottom: 16px;
-  border-radius: 20px;
+  border-radius: 999px;
   color: var(--accent-secondary);
   background: color-mix(in oklab, var(--accent-primary) 10%, transparent);
   border: 1px solid color-mix(in oklab, var(--accent-primary) 26%, transparent);
@@ -1004,10 +1021,10 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--border-default);
-  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
   overflow: hidden;
-  background: var(--bg-secondary);
+  background: var(--glass-bg);
 }
 .sftpDropOverlay {
   position: absolute;
@@ -1017,8 +1034,9 @@
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  background: color-mix(in oklab, var(--bg-primary) 54%, rgba(0, 0, 0, 0.32));
-  backdrop-filter: blur(2px);
+  background: var(--scrim);
+  backdrop-filter: var(--scrim-blur);
+  -webkit-backdrop-filter: var(--scrim-blur);
 }
 .sftpDropCard {
   min-width: min(320px, 80%);
@@ -1030,8 +1048,8 @@
   border: 1px dashed color-mix(in oklab, var(--accent-primary) 65%, var(--border-subtle));
   border-radius: 16px;
   color: var(--text-primary);
-  background: color-mix(in oklab, var(--bg-panel) 90%, transparent);
-  box-shadow: 0 18px 54px rgba(0, 0, 0, 0.22);
+  background: var(--glass-bg-strong);
+  box-shadow: var(--shadow-float);
 }
 .sftpDropCard span {
   max-width: 100%;
@@ -1048,7 +1066,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 14px;
+  border-radius: var(--radius);
   color: #fff;
   background: var(--accent-primary);
   font-size: 22px;
@@ -1056,8 +1074,8 @@
 .sftpToolbar {
   gap: 10px;
   padding: 10px;
-  border-bottom: 1px solid var(--border-default);
-  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--glass-border);
+  background: var(--glass-bg-strong);
 }
 .pathForm {
   flex: 1;
@@ -1067,9 +1085,9 @@
   align-items: center;
   gap: 7px;
   padding-left: 9px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 7px;
-  background: var(--bg-primary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
+  background: var(--glass-bg);
 }
 .pathPrefix {
   color: var(--accent-secondary);
@@ -1119,8 +1137,15 @@
 }
 .primarySmallButton {
   color: #fff;
-  background: var(--accent-primary);
-  border-color: var(--accent-primary);
+  background: var(--aurora-grad);
+  border-color: transparent;
+  box-shadow: 0 6px 14px -10px var(--accent-primary);
+}
+
+.primarySmallButton:hover:not(:disabled) {
+  background: var(--aurora-grad-hover);
+  border-color: transparent;
+  color: #fff;
 }
 .sftpMeta {
   display: flex;
@@ -1152,7 +1177,7 @@
   max-width: 150px;
   overflow: hidden;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: var(--radius-small);
   background: transparent;
   color: var(--text-tertiary);
   padding: 2px 5px;
@@ -1218,9 +1243,9 @@
   z-index: 1;
   padding: 9px 12px;
   color: var(--text-quaternary);
-  background: var(--bg-tertiary);
-  border-top: 1px solid var(--border-default);
-  border-bottom: 1px solid var(--border-default);
+  background: var(--glass-bg-strong);
+  border-top: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--glass-border);
   text-align: left;
   font-size: 10px;
   font-weight: 600;
@@ -1230,7 +1255,7 @@
 .sftpTable td {
   padding: 10px 12px;
   color: var(--text-secondary);
-  border-bottom: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--glass-border);
   vertical-align: middle;
   transition: background 0.12s ease;
 }
@@ -1303,7 +1328,7 @@
   height: 24px;
   padding: 0 7px;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: var(--radius-small);
   background: color-mix(in oklab, var(--bg-tertiary) 72%, transparent);
   color: var(--text-quaternary);
   font-size: 10px;
@@ -1348,10 +1373,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--border-subtle);
-  border-radius: 14px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
   color: var(--accent-secondary);
-  background: var(--bg-tertiary);
+  background: var(--glass-bg-strong);
   font-size: 22px;
 }
 .sftpFooter {
@@ -1359,7 +1384,7 @@
   gap: 12px;
   min-height: 42px;
   padding: 0 10px 0 12px;
-  border-top: 1px solid var(--border-default);
+  border-top: 1px solid var(--glass-border);
   color: var(--text-quaternary);
   font-size: 11px;
 }
@@ -1394,13 +1419,15 @@
 
 .modalBackdrop {
   position: fixed;
-  z-index: 10;
+  z-index: 9998;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 18px;
-  background: rgba(0, 0, 0, 0.46);
+  background: var(--scrim);
+  backdrop-filter: var(--scrim-blur);
+  -webkit-backdrop-filter: var(--scrim-blur);
 }
 .modal {
   width: min(690px, 100%);
@@ -1408,10 +1435,10 @@
   display: flex;
   flex-direction: column;
   overflow: auto;
-  border: 1px solid var(--border-default);
-  border-radius: 13px;
-  background: var(--bg-panel);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-dialog);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-float);
 }
 .promptModal {
   width: min(500px, 100%);
@@ -1421,7 +1448,7 @@
   justify-content: space-between;
   gap: 18px;
   padding: 18px 20px 14px;
-  border-bottom: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--glass-border);
 }
 .modalTitle {
   font-size: 15px;
@@ -1433,17 +1460,30 @@
   font-size: 11px;
 }
 .modalClose {
-  width: 27px;
-  height: 27px;
+  width: 30px;
+  height: 30px;
   padding: 0;
-  border: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-small);
   background: transparent;
-  color: var(--text-quaternary);
+  color: var(--text-tertiary);
   font-size: 20px;
 }
 .modalClose:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
+}
+.promptBody {
+  padding: 18px 20px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.promptMessage {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  line-height: 1.65;
 }
 .formGrid {
   display: grid;
@@ -1481,18 +1521,22 @@
 .formField textarea {
   box-sizing: border-box;
   width: 100%;
-  border: 1px solid var(--border-subtle);
-  border-radius: 7px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
   outline: 0;
-  background: var(--bg-primary);
+  background: var(--glass-bg-strong);
   color: var(--text-primary);
-  padding: 8px 9px;
+  padding: 8px 10px;
   font-size: 12px;
+  transition:
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast);
 }
 .formField input:focus,
 .formField select:focus,
 .formField textarea:focus {
   border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-color-weak);
 }
 .fieldWithAction {
   display: flex;
@@ -1526,9 +1570,9 @@
 .folderPickerPanel {
   margin: 0 20px 16px;
   overflow: hidden;
-  border: 1px solid var(--border-default);
-  border-radius: 11px;
-  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  background: var(--glass-bg);
 }
 .folderPickerHeader,
 .folderPickerToolbar,
@@ -1540,8 +1584,8 @@
   justify-content: space-between;
   gap: 12px;
   padding: 12px 12px 10px;
-  border-bottom: 1px solid var(--border-default);
-  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--glass-border);
+  background: var(--glass-bg-strong);
 }
 .folderPickerTitle {
   color: var(--text-primary);
@@ -1561,7 +1605,7 @@
 .folderPickerToolbar {
   gap: 8px;
   padding: 10px 12px;
-  border-bottom: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--glass-border);
 }
 .folderPickerPathForm {
   flex: 1;
@@ -1571,9 +1615,9 @@
   align-items: center;
   gap: 6px;
   padding-left: 8px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 7px;
-  background: var(--bg-primary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
+  background: var(--glass-bg);
 }
 .folderPickerPathForm input {
   flex: 1;
@@ -1597,7 +1641,7 @@
   align-items: center;
   gap: 8px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-small);
   background: transparent;
   color: var(--text-secondary);
   padding: 8px 9px;
@@ -1636,7 +1680,7 @@
   justify-content: space-between;
   gap: 10px;
   padding: 10px 12px;
-  border-top: 1px solid var(--border-default);
+  border-top: 1px solid var(--glass-border);
   color: var(--text-quaternary);
   font-size: 11px;
 }
@@ -1650,7 +1694,8 @@
   justify-content: space-between;
   gap: 8px;
   padding: 12px 20px;
-  border-top: 1px solid var(--border-default);
+  border-top: 1px solid var(--glass-border);
+  background: var(--glass-bg);
 }
 .modalFooterLeft,
 .modalFooterActions {
@@ -1685,14 +1730,14 @@
   align-items: flex-start;
   gap: 10px;
   padding: 10px 12px;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--glass-border);
   border-radius: 9px;
-  background: color-mix(in oklab, var(--bg-primary) 72%, var(--bg-tertiary));
+  background: var(--glass-bg);
   color: var(--text-secondary);
 }
 .holdOption:hover {
   border-color: color-mix(in oklab, var(--accent-primary) 45%, var(--border-subtle));
-  background: color-mix(in oklab, var(--accent-primary) 7%, var(--bg-primary));
+  background: var(--glass-bg-strong);
 }
 .optionGrid {
   display: grid;
@@ -1733,9 +1778,9 @@
 .promptInstructions {
   margin: 16px 20px 0;
   padding: 9px 10px;
-  border-radius: 7px;
+  border-radius: var(--radius-small);
   color: var(--text-tertiary);
-  background: var(--bg-tertiary);
+  background: var(--glass-bg-strong);
   white-space: pre-wrap;
   font-size: 12px;
 }

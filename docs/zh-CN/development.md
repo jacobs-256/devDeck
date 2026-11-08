@@ -1,6 +1,6 @@
 # 二次开发指南
 
-本指南面向 DevToolBox 宿主的二次开发：环境搭建、架构、添加工具、宿主命令与插件能力、UI 约定、测试与发布。
+本指南面向 DevDeck 宿主的二次开发：环境搭建、架构、添加工具、宿主命令与插件能力、UI 约定、测试与发布。
 
 ## 1. 环境要求
 
@@ -19,10 +19,10 @@ pnpm dev            # tauri dev（Vite + Rust 宿主）
 | ------------------------------ | ---------------------------------------------------------- |
 | `apps/desktop/src`             | React 渲染层：legacy 外壳/页面、27 个工具、主题            |
 | `apps/desktop/src-tauri`       | Rust 宿主：命令、插件协议、socket、SSH、MQTT、证书、更新器 |
-| `crates/devtoolbox-contract`   | 清单、权限、注册表模型、错误                               |
-| `crates/devtoolbox-capability` | 能力代理、白名单、路径沙箱                                 |
-| `crates/devtoolbox-market`     | SHA-256/Ed25519、ZIP 安全、安装状态                        |
-| `packages/plugin-sdk`          | `@devtoolbox/plugin-sdk` 2.0（可发布）                     |
+| `crates/devdeck-contract`   | 清单、权限、注册表模型、错误                               |
+| `crates/devdeck-capability` | 能力代理、白名单、路径沙箱                                 |
+| `crates/devdeck-market`     | SHA-256/Ed25519、ZIP 安全、安装状态                        |
+| `packages/plugin-sdk`          | `@devdeck/plugin-sdk` 2.0（可发布）                     |
 | `marketplace/`                 | 插件工作区、脚手架、打包/签名/注册表脚本                   |
 | `scripts/`                     | 市场验收、更新演练、legacy 导入守卫                        |
 | `docs/`                        | 英文文档与 `zh-CN` 镜像                                    |
@@ -59,7 +59,7 @@ cargo test --workspace
 cargo clippy --workspace --all-targets
 ```
 
-- 数据目录：macOS `~/Library/Application Support/com.devtoolbox.app`，Windows `%APPDATA%\com.devtoolbox.app`。
+- 数据目录：macOS `~/Library/Application Support/com.devdeck.desktop`，Windows `%APPDATA%\com.devdeck.desktop`。
 - `settings.json` 保存主题/语言，`known-hosts.json` 保存 SSH TOFU，`logs/plugins.log` 保存插件日志。
 - `./scripts/marketplace-acceptance.sh market-emoji-search` 走完整签名安装流程。
 - `./scripts/updater-rehearsal.sh` 构建更新产物并对照固定公钥验签。
@@ -85,7 +85,7 @@ cargo clippy --workspace --all-targets
    ```rust
    #[tauri::command]
    pub fn my_command(state: State<'_, AppState>, value: String)
-       -> Result<MyResult, DevToolboxError> { ... }
+       -> Result<MyResult, DevDeckError> { ... }
    ```
 2. 在 `lib.rs` 的 `invoke_handler` 注册。
 3. 在 `apps/desktop/src/api.ts` 添类型化包装，在 `types.ts` 添类型。
@@ -96,8 +96,8 @@ cargo clippy --workspace --all-targets
 
 ## 7. 添加插件能力
 
-1. 在 `crates/devtoolbox-contract/src/permission.rs` 增加 `Permission` 变体（字符串、摘要、敏感性、`is_implemented`）。
-2. 在 `crates/devtoolbox-capability/src/broker.rs` 校验授权白名单（域名、环境变量、保留权限）。
+1. 在 `crates/devdeck-contract/src/permission.rs` 增加 `Permission` 变体（字符串、摘要、敏感性、`is_implemented`）。
+2. 在 `crates/devdeck-capability/src/broker.rs` 校验授权白名单（域名、环境变量、保留权限）。
 3. 在 `apps/desktop/src-tauri/src/sdk.rs` 实现并在 `plugin_sdk_call` 分发。
 4. 在 `packages/plugin-sdk/src/index.ts` 的 `sdk.*` 暴露类型化方法。
 5. 更新文档：`docs/plugin-dev/sdk.md`、`docs/architecture/security-model.md`、`docs/architecture/marketplace.md`。
@@ -116,10 +116,10 @@ cargo clippy --workspace --all-targets
 ## 9. 市场开发
 
 ```bash
-pnpm --filter @devtoolbox/marketplace pack market-my-plugin
-DEVTOOLBOX_SIGNING_KEY=$(cat .signing/my-key.txt) \
-  pnpm --filter @devtoolbox/marketplace sign .local-dist/market-my-plugin-0.1.0.zip
-pnpm --filter @devtoolbox/marketplace registry market-my-plugin \
+pnpm --filter @devdeck/marketplace pack market-my-plugin
+DEVDECK_SIGNING_KEY=$(cat .signing/my-key.txt) \
+  pnpm --filter @devdeck/marketplace sign .local-dist/market-my-plugin-0.1.0.zip
+pnpm --filter @devdeck/marketplace registry market-my-plugin \
   --base-url http://127.0.0.1:8765 --out .local-dist/registry.json
 python3 -m http.server 8765 --directory marketplace/.local-dist
 ```

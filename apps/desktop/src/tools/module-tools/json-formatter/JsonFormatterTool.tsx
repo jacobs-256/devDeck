@@ -12,7 +12,7 @@ const MODE_KEYS: Record<Mode, MessageKey> = {
   summary: 'tool.json-formatter.summary',
 };
 
-const SAMPLE = '{"name":"DevToolBox","version":"2.1.0","plugins":[{"id":"market-demo"}]}';
+const SAMPLE = '{"name":"DevDeck","version":"2.1.0","plugins":[{"id":"market-demo"}]}';
 
 export default function JsonFormatterTool() {
   const { t } = useI18n();

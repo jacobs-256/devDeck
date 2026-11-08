@@ -6,7 +6,7 @@ Marketplace artifacts are built from `marketplace/` and published as a signed
 ## 1. Naming
 
 - `manifest.id` must be kebab-case and start with `market-`.
-- Workspace package: `@devtoolbox/plugin-<manifest.id>`.
+- Workspace package: `@devdeck/plugin-<manifest.id>`.
 - Package file: `<manifest.id>-<version>.zip`.
 
 ## 2. Build
@@ -16,7 +16,7 @@ Marketplace artifacts are built from `marketplace/` and published as a signed
 node marketplace/scripts/create.mjs --id market-my-tool --name "My Tool"
 
 # Build the plugin web app (outputs package/)
-pnpm --filter @devtoolbox/plugin-market-my-tool build
+pnpm --filter @devdeck/plugin-market-my-tool build
 ```
 
 The build output directory is the first segment of `manifest.entry`
@@ -25,7 +25,7 @@ The build output directory is the first segment of `manifest.entry`
 ## 3. Pack
 
 ```bash
-pnpm --filter @devtoolbox/marketplace pack market-my-tool
+pnpm --filter @devdeck/marketplace pack market-my-tool
 ```
 
 `pack-local.mjs` validates the manifest and entry, stages `manifest.json` +
@@ -39,30 +39,30 @@ pnpm --filter @devtoolbox/marketplace pack market-my-tool
 Generate a signing key once per marketplace:
 
 ```bash
-pnpm --filter @devtoolbox/marketplace keygen --out .signing/marketplace-key.txt
+pnpm --filter @devdeck/marketplace keygen --out .signing/marketplace-key.txt
 ```
 
 Sign each package and the registry:
 
 ```bash
-export DEVTOOLBOX_SIGNING_KEY="$(cat .signing/marketplace-key.txt)"
+export DEVDECK_SIGNING_KEY="$(cat .signing/marketplace-key.txt)"
 
-pnpm --filter @devtoolbox/marketplace sign \
+pnpm --filter @devdeck/marketplace sign \
   marketplace/.local-dist/market-my-tool-1.0.0.zip
 
-pnpm --filter @devtoolbox/marketplace registry --all \
+pnpm --filter @devdeck/marketplace registry --all \
   --base-url https://example.com/marketplace \
   --out release-dist/registry.json
 
-pnpm --filter @devtoolbox/marketplace sign release-dist/registry.json
+pnpm --filter @devdeck/marketplace sign release-dist/registry.json
 
 # Verify locally (authoritative verification still happens in Rust)
 PNPM_PUB=$(node marketplace/scripts/sign.mjs public-key)
-pnpm --filter @devtoolbox/marketplace verify \
+pnpm --filter @devdeck/marketplace verify \
   release-dist/registry.json release-dist/registry.json.sig --pubkey "$PNPM_PUB"
 ```
 
-Signature format matches `crates/devtoolbox-market/src/signing.rs`:
+Signature format matches `crates/devdeck-market/src/signing.rs`:
 
 - Ed25519, 32-byte public key, standard Base64;
 - key id = first 16 hex characters of `sha256(public_key)`;
@@ -98,9 +98,11 @@ Use a throwaway key and serve the artifacts over loopback:
 # python3 -m http.server 8765 --directory marketplace/.local-dist
 ```
 
-Then add `http://127.0.0.1:8765/registry.json` in **Marketplace**. For signature
-enforcement, open **Settings → Registries → Trust options** and paste the public
-key.
+Then add `http://127.0.0.1:8765/registry.json` in **Marketplace**. For a local
+build you can also add the generated file directly, for example
+`file:///Users/me/devDeck/marketplace/registry.local.json`; local file packages
+must be `.zip`. For signature enforcement, open
+**Settings → Registries → Trust options** and paste the public key.
 
 ## 7. Registry schema
 

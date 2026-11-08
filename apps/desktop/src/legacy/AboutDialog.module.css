@@ -2,8 +2,9 @@
   position: fixed;
   inset: 0;
   z-index: 9998;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(4px);
+  background: rgba(4, 6, 16, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .dialog {
@@ -14,9 +15,9 @@
   transform: translate(-50%, -50%);
   width: 480px;
   background: var(--bg-elevated);
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-float);
   overflow: hidden;
 }
 
@@ -26,7 +27,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  border-bottom: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--glass-border);
+  background: var(--glass-bg);
 }
 
 .headerLeft {
@@ -43,13 +45,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(
-    135deg,
-    color-mix(in oklab, var(--accent-primary) 35%, transparent),
-    color-mix(in oklab, var(--cat-security) 35%, transparent)
-  );
-  border: 1px solid color-mix(in oklab, var(--accent-primary) 50%, transparent);
-  color: var(--accent-secondary);
+  background: var(--aurora-grad);
+  border: 1px solid transparent;
+  color: #fff;
 }
 
 .appIconSmall {
@@ -72,7 +70,7 @@
 .closeBtn {
   width: 28px;
   height: 28px;
-  border-radius: 8px;
+  border-radius: 9px;
   border: 1px solid transparent;
   background: transparent;
   color: var(--text-tertiary);
@@ -105,17 +103,13 @@
 .heroIcon {
   width: 80px;
   height: 80px;
-  border-radius: 18px;
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 14px;
-  background: linear-gradient(
-    135deg,
-    color-mix(in oklab, var(--accent-primary) 25%, transparent),
-    color-mix(in oklab, var(--cat-security) 25%, transparent)
-  );
-  border: 2px solid color-mix(in oklab, var(--accent-primary) 40%, transparent);
+  background: var(--aurora-grad-soft);
+  border: 1px solid var(--glass-border);
   color: var(--accent-secondary);
 }
 
@@ -127,7 +121,8 @@
 }
 
 .heroTitle {
-  font-size: 20px;
+  font-size: 22px;
+  letter-spacing: -0.02em;
   color: var(--text-primary);
   font-weight: 600;
   margin-bottom: 4px;
@@ -234,17 +229,18 @@
 }
 
 .footerBtn {
-  height: 28px;
+  height: 30px;
   padding: 0 14px;
-  border-radius: 8px;
-  background: var(--accent-primary);
-  border: 1px solid var(--accent-primary);
+  border-radius: 9px;
+  background: var(--aurora-grad);
+  border: 1px solid transparent;
   color: #ffffff;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 500;
-  transition: background 0.12s ease;
+  box-shadow: 0 8px 18px -12px var(--accent-primary);
+  transition: background var(--motion-fast);
 }
 
 .footerBtn:hover {
-  background: var(--accent-primary-hover);
+  background: var(--aurora-grad-hover);
 }

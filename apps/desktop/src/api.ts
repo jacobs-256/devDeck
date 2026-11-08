@@ -1,14 +1,20 @@
 /** Thin typed wrappers around the Tauri command surface. */
 
 import { invoke } from '@tauri-apps/api/core';
-import type { Language } from './i18n';
 import type {
   AppInfo,
   Catalog,
+  DesktopSettings,
   InstalledPlugin,
+  LanguageSetting,
   RegistrySource,
-  Theme,
+  ServiceStatus,
+  TextSize,
+  ThemeSetting,
 } from './types';
+
+export const DEFAULT_REGISTRY_URL =
+  'https://github.com/XthingsJacobs/devToolBox/releases/download/marketplace/registry.json';
 
 export function appInfo(): Promise<AppInfo> {
   return invoke<AppInfo>('app_info');
@@ -26,12 +32,32 @@ export function setPluginEnabled(pluginId: string, enabled: boolean): Promise<In
   return invoke<InstalledPlugin>('plugin_set_enabled', { pluginId, enabled });
 }
 
-export function setTheme(theme: Theme): Promise<void> {
+export function setTheme(theme: ThemeSetting): Promise<void> {
   return invoke<void>('theme_set', { theme });
 }
 
-export function setLanguage(language: Language): Promise<void> {
+export function setLanguage(language: LanguageSetting): Promise<void> {
   return invoke<void>('language_set', { language });
+}
+
+export function setTextSize(size: TextSize): Promise<void> {
+  return invoke<void>('text_size_set', { size });
+}
+
+export function desktopSettings(): Promise<DesktopSettings> {
+  return invoke<DesktopSettings>('desktop_settings_get');
+}
+
+export function saveDesktopSettings(settings: DesktopSettings): Promise<DesktopSettings> {
+  return invoke<DesktopSettings>('desktop_settings_set', { settings });
+}
+
+export function checkServicePort(port: number): Promise<boolean> {
+  return invoke<boolean>('service_check', { port });
+}
+
+export function serviceStatus(): Promise<ServiceStatus> {
+  return invoke<ServiceStatus>('service_status');
 }
 
 /**
@@ -40,7 +66,7 @@ export function setLanguage(language: Language): Promise<void> {
  * macOS/Linux use `plugin://localhost/…`; WebView2 on Windows maps custom
  * schemes to `http://plugin.localhost/…`.
  */
-export function pluginEntryUrl(plugin: InstalledPlugin, theme: Theme): string {
+export function pluginEntryUrl(plugin: InstalledPlugin, theme: ThemeSetting): string {
   const { id, entry } = plugin.manifest;
   const origin = /Windows/i.test(navigator.userAgent) ? 'http://plugin.localhost' : 'plugin://localhost';
   return `${origin}/${id}/${entry}?theme=${theme}`;
@@ -82,3 +108,22 @@ export function installFromRegistry(
   });
 }
 
+/** Normalize Tauri's `{ code, message }` rejections and JS errors for display. */
+export function formatError(reason: unknown): string {
+  if (typeof reason === 'string') return reason;
+  if (reason instanceof Error) return reason.message;
+  if (reason && typeof reason === 'object') {
+    const value = reason as { code?: unknown; message?: unknown };
+    if (typeof value.message === 'string') {
+      return typeof value.code === 'string' && value.code
+        ? `${value.message} (${value.code})`
+        : value.message;
+    }
+    try {
+      return JSON.stringify(reason);
+    } catch {
+      return String(reason);
+    }
+  }
+  return String(reason);
+}

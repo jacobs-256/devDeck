@@ -3,13 +3,13 @@
   display: flex;
   width: 100%;
   height: 100%;
-  background-color: var(--bg-sidebar);
+  background-color: transparent;
 }
 
 .pane {
   display: flex;
   flex-direction: column;
-  background-color: var(--bg-primary);
+  background-color: transparent;
   min-width: 0;
   overflow: hidden;
 }
@@ -32,10 +32,10 @@
   height: 4px;
   transform: translate(-50%, -50%);
   border-radius: 2px;
-  background-color: rgba(255, 255, 255, 0.18);
+  background-color: var(--border-subtle);
   box-shadow:
-    0 -8px 0 rgba(255, 255, 255, 0.18),
-    0 8px 0 rgba(255, 255, 255, 0.18);
+    0 -8px 0 var(--border-subtle),
+    0 8px 0 var(--border-subtle);
   transition:
     background-color 0.15s ease,
     box-shadow 0.15s ease,
@@ -44,31 +44,31 @@
 }
 
 .divider:hover::before {
-  background-color: rgba(97, 175, 239, 0.9);
+  background-color: var(--accent-secondary);
   box-shadow:
-    0 -8px 0 rgba(97, 175, 239, 0.9),
-    0 8px 0 rgba(97, 175, 239, 0.9);
+    0 -8px 0 var(--accent-secondary),
+    0 8px 0 var(--accent-secondary);
   opacity: 1;
 }
 
 .divider:active::before {
-  background-color: rgba(97, 175, 239, 0.95);
+  background-color: var(--accent-secondary);
   box-shadow:
-    0 -8px 0 rgba(97, 175, 239, 0.95),
-    0 8px 0 rgba(97, 175, 239, 0.95);
+    0 -8px 0 var(--accent-secondary),
+    0 8px 0 var(--accent-secondary);
 }
 
 .paneHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: 8px 13px;
   min-height: 36px;
   box-sizing: border-box;
   font-size: var(--font-size-small);
   color: var(--text-secondary);
-  background-color: var(--bg-panel);
-  border-bottom: 1px solid var(--border-color);
+  background-color: var(--glass-bg-strong);
+  border-bottom: 1px solid var(--glass-border);
   flex-shrink: 0;
   gap: 8px;
 }
@@ -82,11 +82,11 @@
   resize: none;
   border: none;
   outline: none;
-  padding: 10px 12px;
+  padding: 11px 13px;
   font-family: var(--font-family-mono);
   font-size: var(--font-size-base);
   line-height: var(--line-height-base);
-  background-color: var(--bg-primary);
+  background-color: transparent;
   color: var(--text-primary);
   box-sizing: border-box;
   white-space: pre;
@@ -120,16 +120,16 @@
 }
 
 .error {
-  color: #f48771;
+  color: var(--accent-error);
 }
 
 .statusBar {
   display: flex;
   gap: 16px;
-  padding: 4px 12px;
+  padding: 4px 13px;
   font-size: var(--font-size-small);
-  color: var(--text-secondary);
-  background-color: var(--bg-panel);
-  border-top: 1px solid var(--border-color);
+  color: var(--text-tertiary);
+  background-color: var(--glass-bg-strong);
+  border-top: 1px solid var(--glass-border);
   flex-shrink: 0;
 }

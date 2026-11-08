@@ -11,7 +11,7 @@
   align-items: center;
   gap: 10px;
   padding: 8px 16px;
-  border-bottom: 1px solid var(--bg-active);
+  border-bottom: 1px solid var(--glass-border);
   flex-shrink: 0;
 }
 
@@ -30,24 +30,24 @@
   height: 8px;
   border-radius: 50%;
   margin-right: 8px;
-  background: #95a5a6;
+  background: var(--text-quaternary);
 }
 
 .connected {
-  background: #27ae60;
+  background: var(--accent-success);
 }
 
 .connecting {
-  background: #f39c12;
+  background: var(--accent-warning);
   animation: blink 1s infinite;
 }
 
 .disconnected {
-  background: #95a5a6;
+  background: var(--text-quaternary);
 }
 
 .error {
-  background: #e74c3c;
+  background: var(--accent-error);
 }
 
 @keyframes blink {
@@ -57,33 +57,43 @@
 }
 
 .connBtn {
-  padding: 5px 14px;
-  border: none;
-  border-radius: 5px;
+  padding: 5px 12px;
+  border: 1px solid transparent;
+  border-radius: 9px;
   font-size: var(--font-size-small);
+  font-weight: 500;
   cursor: pointer;
-  color: #fff;
   flex-shrink: 0;
 }
 
 .connect {
-  background: #27ae60;
+  background: var(--accent-success-bg);
+  border-color: color-mix(in oklab, var(--accent-success) 28%, transparent);
+  color: var(--accent-success);
 }
 
 .disconnect {
-  background: #e74c3c;
+  background: var(--accent-error-bg);
+  border-color: color-mix(in oklab, var(--accent-error) 28%, transparent);
+  color: var(--accent-error);
 }
 
 .editBtn {
-  background: #f39c12;
+  background: color-mix(in oklab, var(--accent-warning) 12%, transparent);
+  border-color: color-mix(in oklab, var(--accent-warning) 28%, transparent);
+  color: var(--accent-warning);
 }
 
 .copyBtn {
-  background: #3498db;
+  background: var(--accent-color-weak);
+  border-color: var(--glass-border);
+  color: var(--accent-secondary);
 }
 
 .deleteBtn {
-  background: #e74c3c;
+  background: var(--accent-error-bg);
+  border-color: color-mix(in oklab, var(--accent-error) 28%, transparent);
+  color: var(--accent-error);
 }
 
 .connBtn:hover {
@@ -115,7 +125,7 @@
   background: transparent;
   flex-shrink: 0;
   position: relative;
-  border-left: 1px solid var(--bg-active);
+  border-left: 1px solid var(--glass-border);
 }
 
 .hResizeHandle::after {
@@ -127,7 +137,7 @@
   width: 3px;
   height: 40px;
   border-radius: 2px;
-  background: var(--bg-active);
+  background: var(--bg-hover);
   transition: background 0.15s;
 }
 
@@ -138,7 +148,7 @@
 .panelSection {
   display: flex;
   flex-direction: column;
-  border-bottom: 1px solid var(--bg-active);
+  border-bottom: 1px solid var(--glass-border);
 }
 
 .panelHeader {
@@ -152,7 +162,7 @@
   color: var(--accent-color);
   background: var(--bg-panel);
   user-select: none;
-  border-bottom: 1px solid var(--bg-active);
+  border-bottom: 1px solid var(--glass-border);
   flex-shrink: 0;
   box-sizing: border-box;
 }
@@ -202,7 +212,7 @@
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
-  border-radius: 5px;
+  border-radius: var(--radius-small);
   font-size: var(--font-size-small);
   position: relative;
   transition: background 0.1s;
@@ -217,15 +227,16 @@
   position: fixed;
   z-index: 200;
   padding: 8px 12px;
-  background: #0d47a1;
-  color: #fff;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
   font-size: var(--font-size-small);
   font-family: var(--font-family-mono);
-  border-radius: 6px;
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-float);
   white-space: pre-wrap;
   word-break: break-all;
   max-width: 460px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
   pointer-events: none;
 }
 
@@ -269,7 +280,7 @@
   height: 16px;
   border: none;
   border-radius: 50%;
-  background: #e74c3c;
+  background: var(--accent-error);
   color: #fff;
   cursor: pointer;
   font-size: 10px;
@@ -288,7 +299,7 @@
 }
 
 .unsubBtn:hover {
-  background: #c0392b;
+  background: var(--accent-error);
 }
 
 .rightPanel {
@@ -304,7 +315,7 @@
   gap: 8px;
   padding: 0 12px;
   height: 34px;
-  border-bottom: 1px solid var(--bg-active);
+  border-bottom: 1px solid var(--glass-border);
   background: var(--bg-panel);
   flex-shrink: 0;
   box-sizing: border-box;
@@ -318,13 +329,14 @@
 
 .smallBtn {
   padding: 5px 10px;
-  border: none;
-  border-radius: 4px;
+  border: 1px solid transparent;
+  border-radius: 9px;
   font-size: var(--font-size-small);
   cursor: pointer;
-  background: var(--accent-color);
+  background: var(--aurora-grad);
   color: #fff;
   flex-shrink: 0;
+  box-shadow: 0 8px 18px -12px var(--accent-primary);
 }
 
 .smallBtn:hover {
@@ -341,7 +353,7 @@
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
-  border-bottom: 1px solid var(--bg-active);
+  border-bottom: 1px solid var(--glass-border);
   background: var(--bg-panel);
   flex-shrink: 0;
 }
@@ -349,8 +361,8 @@
 .msgSearchInput {
   flex: 1;
   padding: 5px 8px;
-  border: 1px solid var(--bg-active);
-  border-radius: 4px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
   background: var(--bg-primary);
   color: var(--text-primary);
   font-size: 12px;
@@ -442,7 +454,7 @@
   width: 70%;
   padding: 8px 12px;
   padding-bottom: 24px;
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 12px;
   position: relative;
   -webkit-user-select: text;
@@ -451,12 +463,12 @@
 
 .msgBubbleRecv {
   background: var(--bg-panel);
-  border: 1px solid var(--bg-active);
+  border: 1px solid var(--glass-border);
   border-top-left-radius: 2px;
 }
 
 .msgBubbleSent {
-  background: #2a9d8f;
+  background: var(--accent-success);
   color: #fff;
   border-top-right-radius: 2px;
 }
@@ -470,7 +482,7 @@
 }
 
 .msgBubbleSent .msgFormat {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--glass-bg);
   color: rgba(255, 255, 255, 0.9);
 }
 
@@ -507,7 +519,7 @@
   font-size: 10px;
   padding: 1px 5px;
   border-radius: 3px;
-  background: var(--bg-active);
+  background: var(--bg-hover);
   color: var(--text-secondary);
   flex-shrink: 0;
 }
@@ -518,9 +530,9 @@
   color: var(--text-primary);
   white-space: pre-wrap;
   word-break: break-all;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass-bg);
   padding: 8px 10px;
-  border-radius: 6px;
+  border-radius: var(--radius-small);
   margin-top: 4px;
   position: relative;
   cursor: text;
@@ -534,7 +546,7 @@
 }
 
 .msgPayloadHex {
-  color: #d19a66;
+  color: var(--syntax-number);
   letter-spacing: 0.5px;
 }
 
@@ -580,23 +592,23 @@
 }
 
 .msgPayloadJson .json-key {
-  color: #e06c75;
+  color: var(--syntax-boolean);
 }
 
 .msgPayloadJson .json-str {
-  color: #98c379;
+  color: var(--syntax-string);
 }
 
 .msgPayloadJson .json-num {
-  color: #d19a66;
+  color: var(--syntax-number);
 }
 
 .msgPayloadJson .json-bool {
-  color: #56b6c2;
+  color: var(--syntax-key);
 }
 
 .msgPayloadJson .json-null {
-  color: #7c8495;
+  color: var(--syntax-null);
 }
 
 .msgTime {
@@ -605,9 +617,9 @@
   bottom: 4px;
   font-size: 10px;
   color: var(--text-secondary);
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--scrim);
   padding: 1px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-small);
 }
 
 .msgBubbleSent .msgTime {
@@ -616,12 +628,12 @@
 }
 
 .msgItemMatch {
-  background: rgba(241, 196, 15, 0.08);
+  background: color-mix(in oklab, var(--accent-warning) 10%, transparent);
 }
 
 .msgItemCurrent {
   background: rgba(241, 196, 15, 0.2);
-  box-shadow: inset 3px 0 0 #f1c40f;
+  box-shadow: inset 3px 0 0 var(--accent-warning);
 }
 
 .resizeHandle {
@@ -641,7 +653,7 @@
   width: 40px;
   height: 3px;
   border-radius: 2px;
-  background: var(--bg-active);
+  background: var(--bg-hover);
   transition: background 0.15s;
 }
 
@@ -651,7 +663,7 @@
 
 .publishBar {
   flex-shrink: 0;
-  border-top: 1px solid var(--bg-active);
+  border-top: 1px solid var(--glass-border);
   padding: 10px 12px;
   display: flex;
   flex-direction: column;
@@ -670,8 +682,8 @@
 .topicInput {
   flex: 1;
   padding: 6px 8px;
-  border: 1px solid var(--bg-active);
-  border-radius: 4px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
   background: var(--bg-primary);
   color: var(--text-primary);
   font-size: var(--font-size-small);
@@ -685,8 +697,8 @@
 .qosSelect {
   width: 96px;
   padding: 6px 4px;
-  border: 1px solid var(--bg-active);
-  border-radius: 4px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
   background: var(--bg-primary);
   color: var(--text-primary);
   font-size: var(--font-size-small);
@@ -722,7 +734,7 @@
   padding: 8px;
   padding-bottom: 32px;
   border: 1px solid transparent;
-  border-radius: 4px;
+  border-radius: var(--radius-small);
   font: 12px/1.4 var(--font-family-mono);
   tab-size: 2;
   -webkit-text-size-adjust: none;
@@ -736,23 +748,23 @@
 }
 
 .pubHighlight .json-key {
-  color: #e06c75;
+  color: var(--syntax-boolean);
 }
 
 .pubHighlight .json-str {
-  color: #98c379;
+  color: var(--syntax-string);
 }
 
 .pubHighlight .json-num {
-  color: #d19a66;
+  color: var(--syntax-number);
 }
 
 .pubHighlight .json-bool {
-  color: #56b6c2;
+  color: var(--syntax-key);
 }
 
 .pubHighlight .json-null {
-  color: #7c8495;
+  color: var(--syntax-null);
 }
 
 .pubTextarea {
@@ -760,8 +772,8 @@
   flex: 1;
   padding: 8px;
   padding-bottom: 32px;
-  border: 1px solid var(--bg-active);
-  border-radius: 4px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
   background: var(--bg-primary);
   color: var(--text-primary);
   font: 12px/1.4 var(--font-family-mono);
@@ -786,7 +798,7 @@
 }
 
 .pubTextareaWarn {
-  border-color: #e74c3c;
+  border-color: var(--accent-error);
 }
 
 .pubWarn {
@@ -794,7 +806,7 @@
   right: 60px;
   bottom: 10px;
   font-size: 11px;
-  color: #e74c3c;
+  color: var(--accent-error);
   pointer-events: none;
 }
 
@@ -807,20 +819,23 @@
 .subDialogOverlay {
   position: fixed;
   inset: 0;
-  z-index: 1000;
-  background: rgba(0, 0, 0, 0.45);
+  z-index: 9998;
+  background: var(--scrim);
+  backdrop-filter: var(--scrim-blur);
+  -webkit-backdrop-filter: var(--scrim-blur);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .subDialog {
-  background: var(--bg-panel);
-  border-radius: var(--radius);
-  padding: 20px 24px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-dialog);
+  padding: 20px 22px;
   min-width: 520px;
   max-width: 92%;
-  border: 1px solid var(--bg-active);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-float);
 }
 
 .subDialogTitle {
@@ -844,23 +859,24 @@
 .subDialogInput {
   width: 100%;
   padding: 8px 10px;
-  border: 1px solid var(--bg-active);
-  border-radius: 6px;
-  background: var(--bg-primary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
+  background: var(--glass-bg-strong);
   color: var(--text-primary);
   outline: none;
 }
 
 .subDialogInput:focus {
-  border-color: var(--accent-color);
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-color-weak);
 }
 
 .subDialogSelect {
   width: 100%;
   padding: 8px 10px;
-  border: 1px solid var(--bg-active);
-  border-radius: 6px;
-  background: var(--bg-primary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
+  background: var(--glass-bg-strong);
   color: var(--text-primary);
   outline: none;
 }
@@ -873,24 +889,25 @@
 }
 
 .subDialogBtn {
-  border: 1px solid var(--bg-active);
-  background: transparent;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
   color: var(--text-secondary);
-  padding: 7px 14px;
-  border-radius: 6px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: var(--radius-small);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .subDialogBtn:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
-  border-color: rgba(74, 163, 255, 0.35);
+  border-color: var(--accent-secondary);
 }
 
 .subDialogBtnPrimary {
-  background: var(--accent-color);
-  border-color: var(--accent-color);
+  background: var(--aurora-grad);
+  border-color: transparent;
   color: #fff;
 }
 
@@ -912,11 +929,11 @@
   color: var(--text-secondary);
   cursor: pointer;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-small);
 }
 
 .comboboxToggle:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--glass-bg-strong);
   color: var(--text-primary);
 }
 
@@ -927,8 +944,8 @@
   top: calc(100% + 6px);
   z-index: 50;
   background: var(--bg-panel);
-  border: 1px solid var(--bg-active);
-  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
   max-height: 260px;
@@ -939,7 +956,7 @@
   padding: 8px 10px;
   font-size: 12px;
   color: var(--text-secondary);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--glass-border);
 }
 
 .comboboxOption {
@@ -951,7 +968,7 @@
 }
 
 .comboboxOption:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--glass-bg-strong);
 }
 
 .deleteConfirmMsg {
@@ -962,9 +979,9 @@
 }
 
 .deleteConfirmBtn {
-  background: #e74c3c;
-  border-color: #e74c3c;
-  color: #fff;
+  background: var(--accent-error-bg);
+  border-color: color-mix(in oklab, var(--accent-error) 30%, transparent);
+  color: var(--accent-error);
 }
 
 .deleteConfirmBtn:hover {

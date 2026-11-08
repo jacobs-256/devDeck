@@ -7,7 +7,7 @@
 use std::collections::BTreeMap;
 use std::time::Duration;
 
-use devtoolbox_contract::{DevToolboxError, PluginId};
+use devdeck_contract::{DevDeckError, PluginId};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -62,7 +62,7 @@ pub async fn execute(
     state: &AppState,
     plugin_id: &PluginId,
     params: HttpRequestParams,
-) -> Result<HttpResponse, DevToolboxError> {
+) -> Result<HttpResponse, DevDeckError> {
     let method = params
         .method
         .as_deref()
@@ -70,7 +70,7 @@ pub async fn execute(
         .trim()
         .to_ascii_uppercase();
     if !ALLOWED_METHODS.contains(&method.as_str()) {
-        return Err(DevToolboxError::InvalidArgument(format!(
+        return Err(DevDeckError::InvalidArgument(format!(
             "HTTP method '{method}' is not allowed"
         )));
     }
@@ -84,13 +84,13 @@ pub async fn execute(
     let response_type = match params.response_type.as_deref() {
         None | Some("text") | Some("json") => params.response_type.clone(),
         Some("arrayBuffer") => {
-            return Err(DevToolboxError::Unsupported(
+            return Err(DevDeckError::Unsupported(
                 "responseType 'arrayBuffer' is not supported over the JSON bridge; use http:external from the webview instead"
                     .to_string(),
             ))
         }
         Some(other) => {
-            return Err(DevToolboxError::InvalidArgument(format!(
+            return Err(DevDeckError::InvalidArgument(format!(
                 "unknown responseType '{other}'"
             )))
         }
@@ -100,7 +100,7 @@ pub async fn execute(
         .timeout(timeout)
         .redirect(reqwest::redirect::Policy::none())
         .build()
-        .map_err(|err| DevToolboxError::Internal(format!("failed to build HTTP client: {err}")))?;
+        .map_err(|err| DevDeckError::Internal(format!("failed to build HTTP client: {err}")))?;
 
     let mut current = params.url.clone();
 
@@ -112,9 +112,8 @@ pub async fn execute(
             broker.authorize_http(plugin_id, &current)?
         };
 
-        let method = reqwest::Method::from_bytes(method.as_bytes()).map_err(|err| {
-            DevToolboxError::InvalidArgument(format!("invalid HTTP method: {err}"))
-        })?;
+        let method = reqwest::Method::from_bytes(method.as_bytes())
+            .map_err(|err| DevDeckError::InvalidArgument(format!("invalid HTTP method: {err}")))?;
 
         let mut builder = client.request(method, url.clone());
         for (name, value) in &params.headers {
@@ -129,7 +128,7 @@ pub async fn execute(
         }
 
         let response = builder.send().await.map_err(|err| {
-            DevToolboxError::Internal(format!(
+            DevDeckError::Internal(format!(
                 "HTTP request to {} failed: {err}",
                 url.host_str().unwrap_or("host")
             ))
@@ -138,21 +137,19 @@ pub async fn execute(
         let status = response.status();
         if status.is_redirection() {
             if hop == MAX_REDIRECTS {
-                return Err(DevToolboxError::denied(
-                    "too many HTTP redirects (limit is 3)",
-                ));
+                return Err(DevDeckError::denied("too many HTTP redirects (limit is 3)"));
             }
             let location = response
                 .headers()
                 .get(reqwest::header::LOCATION)
                 .and_then(|value| value.to_str().ok())
                 .ok_or_else(|| {
-                    DevToolboxError::InvalidArgument(
+                    DevDeckError::InvalidArgument(
                         "redirect response is missing a Location header".to_string(),
                     )
                 })?;
             let next = url.join(location).map_err(|err| {
-                DevToolboxError::InvalidArgument(format!("invalid redirect target: {err}"))
+                DevDeckError::InvalidArgument(format!("invalid redirect target: {err}"))
             })?;
             current = next.to_string();
             continue;
@@ -182,18 +179,18 @@ pub async fn execute(
         });
     }
 
-    Err(DevToolboxError::Internal(
+    Err(DevDeckError::Internal(
         "redirect loop without a response".to_string(),
     ))
 }
 
-async fn read_capped(mut response: reqwest::Response) -> Result<(Vec<u8>, bool), DevToolboxError> {
+async fn read_capped(mut response: reqwest::Response) -> Result<(Vec<u8>, bool), DevDeckError> {
     let mut buffer: Vec<u8> = Vec::new();
     let mut truncated = false;
     while let Some(chunk) = response
         .chunk()
         .await
-        .map_err(|err| DevToolboxError::Internal(format!("failed to read response body: {err}")))?
+        .map_err(|err| DevDeckError::Internal(format!("failed to read response body: {err}")))?
     {
         if buffer.len() + chunk.len() > MAX_RESPONSE_BYTES {
             let remaining = MAX_RESPONSE_BYTES.saturating_sub(buffer.len());

@@ -82,7 +82,7 @@ export default function CaGenerator() {
         <div className={styles.form}>
           <div className={styles.field}>
             <label className={styles.label}>
-              Common Name (CN) <span className={styles.optional}>{mt('optional')}</span>
+              {mt('commonName')} <span className={styles.optional}>{mt('optional')}</span>
             </label>
             <input
               className={styles.input}
@@ -94,7 +94,7 @@ export default function CaGenerator() {
           </div>
           <div className={styles.field}>
             <label className={styles.label}>
-              Organization (O) <span className={styles.optional}>{mt('optional')}</span>
+              {mt('organization')} <span className={styles.optional}>{mt('optional')}</span>
             </label>
             <input
               className={styles.input}
@@ -106,7 +106,7 @@ export default function CaGenerator() {
           </div>
           <div className={styles.field}>
             <label className={styles.label}>
-              Organizational Unit (OU) <span className={styles.optional}>{mt('optional')}</span>
+              {mt('organizationalUnit')} <span className={styles.optional}>{mt('optional')}</span>
             </label>
             <input
               className={styles.input}
@@ -118,7 +118,7 @@ export default function CaGenerator() {
           </div>
           <div className={styles.field}>
             <label className={styles.label}>
-              Country (C) <span className={styles.optional}>{mt('optionalCountry')}</span>
+              {mt('country')} <span className={styles.optional}>{mt('optionalCountry')}</span>
             </label>
             <input
               className={styles.input}
@@ -131,7 +131,7 @@ export default function CaGenerator() {
           </div>
           <div className={styles.field}>
             <label className={styles.label}>
-              State (ST) <span className={styles.optional}>{mt('optional')}</span>
+              {mt('state')} <span className={styles.optional}>{mt('optional')}</span>
             </label>
             <input
               className={styles.input}
@@ -143,7 +143,7 @@ export default function CaGenerator() {
           </div>
           <div className={styles.field}>
             <label className={styles.label}>
-              Locality (L) <span className={styles.optional}>{mt('optional')}</span>
+              {mt('locality')} <span className={styles.optional}>{mt('optional')}</span>
             </label>
             <input
               className={styles.input}

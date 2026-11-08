@@ -116,22 +116,30 @@ function ensureMqttBridge() {
   return mqttBridge;
 }
 
+let pingBridge: Promise<void> | null = null;
+let pingLineCount = 0;
+
+function ensurePingBridge() {
+  if (pingBridge) return pingBridge;
+  pingBridge = listen<{ line: string }>('tool-ping', (event) => {
+    pingLineCount += 1;
+    emit('ping:data', `${event.payload.line ?? ''}\n`);
+  }).then(() => undefined);
+  return pingBridge;
+}
+
 async function pingStart(target: string, count = 4) {
-  const { host, port } = parseHostPort(target);
-  emit('ping:data', `Pinging ${host}:${port} with TCP connect...\n`);
+  pingLineCount = 0;
+  emit('ping:data', `Pinging ${target.trim()}...\n`);
   try {
-    const report = await invoke<any>('tcp_ping', { host, port, count });
-    for (const sample of report.samples ?? []) {
-      if (sample.latencyMs != null) {
-        emit(
-          'ping:data',
-          `Reply from ${report.resolved || host}: seq=${sample.seq} time=${sample.latencyMs.toFixed(1)} ms\n`,
-        );
-      } else {
-        emit('ping:data', `Request for seq=${sample.seq} failed: ${sample.error ?? 'timeout'}\n`);
-      }
+    await ensurePingBridge();
+    const report = await invoke<any>('system_ping', { host: target.trim(), count });
+    if (pingLineCount === 0 && report.output) {
+      emit('ping:data', `${report.output}\n`);
     }
-    emit('ping:data', `\n${report.received}/${report.sent} probes succeeded.\n`);
+    if (report.exitCode !== 0 && pingLineCount === 0) {
+      emit('ping:error', `ping exited with code ${report.exitCode}`);
+    }
     emit('ping:done');
   } catch (error) {
     emit('ping:error', error instanceof Error ? error.message : String(error));
@@ -139,16 +147,40 @@ async function pingStart(target: string, count = 4) {
   }
 }
 
+let tracertBridge: Promise<void> | null = null;
+let tracertLineCount = 0;
+
+function ensureTracertBridge() {
+  if (tracertBridge) return tracertBridge;
+  tracertBridge = listen<{ line: string }>('tool-traceroute', (event) => {
+    tracertLineCount += 1;
+    emit('tracert:data', `${event.payload.line ?? ''}\n`);
+  }).then(() => undefined);
+  return tracertBridge;
+}
+
 async function tracertStart(target: string, maxHops = 30) {
-  emit('tracert:data', `Tracing route to ${target}...\n`);
+  tracertLineCount = 0;
+  emit('tracert:data', `Tracing route to ${target.trim()}...\n`);
   try {
-    const report = await invoke<any>('traceroute', { host: target, maxHops });
-    emit('tracert:data', `${report.output ?? ''}\n`);
+    await ensureTracertBridge();
+    const report = await invoke<any>('traceroute', { host: target.trim(), maxHops });
+    if (tracertLineCount === 0 && report.output) {
+      emit('tracert:data', `${report.output}\n`);
+    }
     emit('tracert:done');
   } catch (error) {
     emit('tracert:error', error instanceof Error ? error.message : String(error));
     emit('tracert:done');
   }
+}
+
+let wsBridge: Promise<void> | null = null;
+
+function ensureWsBridge() {
+  if (wsBridge) return wsBridge;
+  wsBridge = listen<unknown>('ws-server', (event) => emit('ws-server', event.payload)).then(() => undefined);
+  return wsBridge;
 }
 
 const api = {
@@ -173,7 +205,7 @@ const api = {
 
   generateRSAKeyPair: async (params: any) => {
     try {
-      const algorithm = params?.keySize === 4096 ? 'rsa-4096' : 'rsa-2048';
+      const algorithm = params?.keySize === 4096 ? 'rsa4096' : 'rsa2048';
       const material = await invoke<any>('cert_generate_key', { algorithm });
       return {
         success: true,
@@ -191,7 +223,7 @@ const api = {
       const material = await invoke<any>('cert_generate_ca', {
         subject: subjectFrom(params),
         days: params.validityDays ?? 365,
-        algorithm: params.keySize === 4096 ? 'rsa-4096' : 'rsa-2048',
+        algorithm: params.keySize === 4096 ? 'rsa4096' : 'rsa2048',
       });
       return { success: true, privateKey: material.privateKeyPem, certificate: material.certificatePem };
     } catch (error) {
@@ -202,7 +234,7 @@ const api = {
     try {
       const material = await invoke<any>('cert_generate_csr', {
         subject: subjectFrom(params),
-        algorithm: params.keySize === 4096 ? 'rsa-4096' : 'rsa-2048',
+        algorithm: params.keySize === 4096 ? 'rsa4096' : 'rsa2048',
       });
       return { success: true, csr: material.csrPem, privateKey: material.privateKeyPem };
     } catch (error) {
@@ -216,7 +248,7 @@ const api = {
       if (!csr) {
         const material = await invoke<any>('cert_generate_csr', {
           subject: subjectFrom(params),
-          algorithm: params.keySize === 4096 ? 'rsa-4096' : 'rsa-2048',
+          algorithm: params.keySize === 4096 ? 'rsa4096' : 'rsa2048',
         });
         csr = material.csrPem;
         privateKey = material.privateKeyPem;
@@ -343,16 +375,28 @@ const api = {
     }
   },
 
-  wsServerStatus: async () => ({ running: false, clients: [], stats: { totalRecv: 0, totalSent: 0 } }),
-  wsServerStart: async () => {
-    throw new Error('WebSocket server mode is not available in this build');
+  wsServerStatus: () => invoke<any>('ws_server_status'),
+  wsServerStart: (options: any) =>
+    invoke('ws_server_start', {
+      host: options.host,
+      port: Number(options.port),
+      path: options.path || '/',
+      tls: Boolean(options.tls),
+    }),
+  wsServerStop: () => invoke('ws_server_stop'),
+  wsServerSend: (options: any) =>
+    invoke('ws_server_send', {
+      clientId: options.clientId ?? null,
+      broadcast: Boolean(options.broadcast),
+      data: String(options.data ?? ''),
+    }),
+  wsServerKick: (options: any) => invoke('ws_server_kick', { clientId: options.clientId }),
+  wsServerStressStart: () => invoke('ws_server_stress_start'),
+  wsServerStressStop: () => invoke('ws_server_stress_stop'),
+  onWsServerEvent: (cb: Listener) => {
+    void ensureWsBridge();
+    return on('ws-server', cb);
   },
-  wsServerStop: async () => undefined,
-  wsServerSend: async () => undefined,
-  wsServerKick: async () => undefined,
-  wsServerStressStart: async () => undefined,
-  wsServerStressStop: async () => undefined,
-  onWsServerEvent: (cb: Listener) => on('ws-server', cb),
   offWsServerEvent: (cb?: Listener) => off('ws-server', cb),
 };
 

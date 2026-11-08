@@ -1,6 +1,6 @@
 # Roadmap
 
-DevToolBox is a Rust + Tauri 2 desktop toolbox with 27 built-in tools and an open
+DevDeck is a Rust + Tauri 2 desktop toolbox with 27 built-in tools and an open
 plugin marketplace.
 
 ## Now (3.x stabilization)

@@ -12,6 +12,12 @@ export default {
   caKeyLabel: 'CA Private Key (PEM)',
   caCertPlaceholder: 'Paste CA certificate PEM content...',
   caKeyPlaceholder: 'Paste CA private key PEM content...',
+  commonName: 'Common Name (CN)',
+  organization: 'Organization (O)',
+  organizationalUnit: 'Organizational Unit (OU)',
+  country: 'Country (C)',
+  state: 'State (ST)',
+  locality: 'Locality (L)',
   csrPlaceholder: 'Paste CSR PEM content (optional)...',
   // form
   optional: 'Optional',

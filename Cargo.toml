@@ -2,9 +2,9 @@
 resolver = "2"
 members = [
   "apps/desktop/src-tauri",
-  "crates/devtoolbox-contract",
-  "crates/devtoolbox-capability",
-  "crates/devtoolbox-market",
+  "crates/devdeck-contract",
+  "crates/devdeck-capability",
+  "crates/devdeck-market",
 ]
 
 [workspace.package]
@@ -12,8 +12,8 @@ version = "3.0.0"
 edition = "2021"
 rust-version = "1.90"
 license = "Apache-2.0"
-repository = "https://github.com/XthingsJacobs/devToolBox"
-authors = ["DevToolBox contributors"]
+repository = "https://github.com/XthingsJacobs/devDeck"
+authors = ["DevDeck contributors"]
 
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }
@@ -28,9 +28,9 @@ url = "2"
 tempfile = "3"
 serde_repr = "0.1"
 
-devtoolbox-contract = { path = "crates/devtoolbox-contract" }
-devtoolbox-capability = { path = "crates/devtoolbox-capability" }
-devtoolbox-market = { path = "crates/devtoolbox-market" }
+devdeck-contract = { path = "crates/devdeck-contract" }
+devdeck-capability = { path = "crates/devdeck-capability" }
+devdeck-market = { path = "crates/devdeck-market" }
 
 [profile.release]
 codegen-units = 1
@@ -38,3 +38,12 @@ lto = true
 opt-level = "s"
 panic = "abort"
 strip = true
+
+
+# RSA key generation is CPU-bound; keep the dependency optimized in dev builds
+# so "Generate" remains responsive while the UI shows a loading state.
+[profile.dev.package.rsa]
+opt-level = 3
+
+[profile.dev.package.num-bigint-dig]
+opt-level = 3

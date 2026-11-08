@@ -1,6 +1,6 @@
 # Development Guide
 
-This is the secondary-development guide for the DevToolBox host: setup,
+This is the secondary-development guide for the DevDeck host: setup,
 architecture, adding tools, adding host commands and plugin capabilities, UI
 conventions, testing, and release.
 
@@ -24,10 +24,10 @@ The first Rust build compiles the Tauri host and the three policy crates.
 | ------------------------------ | ------------------------------------------------------------------------ |
 | `apps/desktop/src`             | React renderer: legacy shell/pages, 27 tools, theme                      |
 | `apps/desktop/src-tauri`       | Rust host: commands, plugin protocol, sockets, SSH, MQTT, certs, updater |
-| `crates/devtoolbox-contract`   | Manifest, permissions, registry model, errors                            |
-| `crates/devtoolbox-capability` | Capability broker, allowlists, path sandbox                              |
-| `crates/devtoolbox-market`     | SHA-256/Ed25519, ZIP safety, install state                               |
-| `packages/plugin-sdk`          | `@devtoolbox/plugin-sdk` 2.0 (published)                                 |
+| `crates/devdeck-contract`   | Manifest, permissions, registry model, errors                            |
+| `crates/devdeck-capability` | Capability broker, allowlists, path sandbox                              |
+| `crates/devdeck-market`     | SHA-256/Ed25519, ZIP safety, install state                               |
+| `packages/plugin-sdk`          | `@devdeck/plugin-sdk` 2.0 (published)                                 |
 | `marketplace/`                 | Plugin workspace, scaffold, pack/sign/registry scripts                   |
 | `scripts/`                     | Acceptance, updater rehearsal, legacy-import guard                       |
 | `docs/`                        | English docs and `zh-CN` mirrors                                         |
@@ -70,8 +70,8 @@ cargo clippy --workspace --all-targets
 
 Debugging tips:
 
-- Data directory: `~/Library/Application Support/com.devtoolbox.app` (macOS),
-  `%APPDATA%\com.devtoolbox.app` (Windows).
+- Data directory: `~/Library/Application Support/com.devdeck.desktop` (macOS),
+  `%APPDATA%\com.devdeck.desktop` (Windows).
 - `settings.json` holds theme and language; `known-hosts.json` holds SSH TOFU
   pins; `logs/plugins.log` contains plugin diagnostics.
 - Tauri dev exposes WebView devtools; production builds keep plugin CSP strict.
@@ -112,7 +112,7 @@ Tools are lazy-loaded chunks and stay mounted while switching tabs.
    ```rust
    #[tauri::command]
    pub fn my_command(state: State<'_, AppState>, value: String)
-       -> Result<MyResult, DevToolboxError> { ... }
+       -> Result<MyResult, DevDeckError> { ... }
    ```
 2. Register it in the `invoke_handler` list in `lib.rs`.
 3. Add a typed wrapper in `apps/desktop/src/api.ts` and a type in `types.ts`.
@@ -125,9 +125,9 @@ Commands are the only renderer→host surface; keep them coarse and typed.
 
 ## 7. Add a plugin capability
 
-1. Add a `Permission` variant in `crates/devtoolbox-contract/src/permission.rs`
+1. Add a `Permission` variant in `crates/devdeck-contract/src/permission.rs`
    (string form, summary, sensitivity, `is_implemented`).
-2. Enforce allowlists in `crates/devtoolbox-capability/src/broker.rs` for the
+2. Enforce allowlists in `crates/devdeck-capability/src/broker.rs` for the
    grant (`httpDomains`, env allowlist, reserved permissions).
 3. Implement the operation in `apps/desktop/src-tauri/src/sdk.rs` and route it in
    the `plugin_sdk_call` dispatcher. This is the single gated entry for plugins.
@@ -160,12 +160,12 @@ Reserved permissions (`bluetooth`, `serial`, `usb`) parse but report
 
 ```bash
 # Pack + sign one plugin
-pnpm --filter @devtoolbox/marketplace pack market-my-plugin
-DEVTOOLBOX_SIGNING_KEY=$(cat .signing/my-key.txt) \
-  pnpm --filter @devtoolbox/marketplace sign .local-dist/market-my-plugin-0.1.0.zip
+pnpm --filter @devdeck/marketplace pack market-my-plugin
+DEVDECK_SIGNING_KEY=$(cat .signing/my-key.txt) \
+  pnpm --filter @devdeck/marketplace sign .local-dist/market-my-plugin-0.1.0.zip
 
 # Local registry
-pnpm --filter @devtoolbox/marketplace registry market-my-plugin \
+pnpm --filter @devdeck/marketplace registry market-my-plugin \
   --base-url http://127.0.0.1:8765 --out .local-dist/registry.json
 python3 -m http.server 8765 --directory marketplace/.local-dist
 ```

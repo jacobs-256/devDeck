@@ -18,14 +18,14 @@ my-plugin/
     └── index.html
 ```
 
-宿主从 `plugin://localhost/<id>/` 提供 `package/`，运行在沙箱 iframe 中，不会向你的页面注入任何内容。与宿主通信只能通过 `@devtoolbox/plugin-sdk`。
+宿主从 `plugin://localhost/<id>/` 提供 `package/`，运行在沙箱 iframe 中，不会向你的页面注入任何内容。与宿主通信只能通过 `@devdeck/plugin-sdk`。
 
 ## 脚手架
 
-在 DevToolBox 仓库内：
+在 DevDeck 仓库内：
 
 ```bash
-pnpm --filter @devtoolbox/marketplace create \
+pnpm --filter @devdeck/marketplace create \
   --id market-my-tool --name "My Tool" --permissions storage:kv
 ```
 
@@ -36,7 +36,7 @@ pnpm --filter @devtoolbox/marketplace create \
 ```bash
 mkdir my-plugin && cd my-plugin
 pnpm init
-pnpm add @devtoolbox/plugin-sdk
+pnpm add @devdeck/plugin-sdk
 pnpm add -D vite typescript @vitejs/plugin-react @types/react @types/react-dom
 ```
 
@@ -65,7 +65,7 @@ pnpm add -D vite typescript @vitejs/plugin-react @types/react @types/react-dom
 ## 使用 SDK
 
 ```ts
-import { sdk, followHostTheme } from '@devtoolbox/plugin-sdk';
+import { sdk, followHostTheme } from '@devdeck/plugin-sdk';
 
 followHostTheme();
 
@@ -110,7 +110,7 @@ if (picked.ok && picked.data.items.length > 0) {
 ### SSH 与 SFTP
 
 ```ts
-import { onSshEvent, sdk } from '@devtoolbox/plugin-sdk';
+import { onSshEvent, sdk } from '@devdeck/plugin-sdk';
 
 onSshEvent((event) => {
   if (event.event === 'data') appendTerminal(event.text ?? '');
@@ -143,8 +143,8 @@ TCP 服务端用 `tcpListen({ port: 0 })` 获取随机端口；UDP 用 `udpBind`
 ## 本地开发
 
 ```bash
-# DevToolBox 仓库内
-pnpm --filter @devtoolbox/desktop tauri dev
+# DevDeck 仓库内
+pnpm --filter @devdeck/desktop tauri dev
 # 插件
 pnpm dev
 pnpm build
@@ -153,10 +153,10 @@ pnpm build
 本地迭代通过本地签名注册表加载：
 
 ```bash
-pnpm --filter @devtoolbox/marketplace pack market-my-plugin
-DEVTOOLBOX_SIGNING_KEY=$(cat .signing/my-key.txt) \
-  pnpm --filter @devtoolbox/marketplace sign .local-dist/market-my-plugin-0.1.0.zip
-pnpm --filter @devtoolbox/marketplace registry market-my-plugin \
+pnpm --filter @devdeck/marketplace pack market-my-plugin
+DEVDECK_SIGNING_KEY=$(cat .signing/my-key.txt) \
+  pnpm --filter @devdeck/marketplace sign .local-dist/market-my-plugin-0.1.0.zip
+pnpm --filter @devdeck/marketplace registry market-my-plugin \
   --base-url http://127.0.0.1:8765 --out .local-dist/registry.json
 
 # 托管 .local-dist，然后在应用市场添加 http://127.0.0.1:8765/registry.json
@@ -169,11 +169,11 @@ python3 -m http.server 8765 --directory marketplace/.local-dist
 
 ```bash
 pnpm --filter ./marketplace/modules/market-my-plugin build
-pnpm --filter @devtoolbox/marketplace pack market-my-plugin
-pnpm --filter @devtoolbox/marketplace keygen --out .signing/my-key.txt
-DEVTOOLBOX_SIGNING_KEY=$(cat .signing/my-key.txt) \
-  pnpm --filter @devtoolbox/marketplace sign .local-dist/market-my-plugin-0.1.0.zip
-pnpm --filter @devtoolbox/marketplace registry market-my-plugin \
+pnpm --filter @devdeck/marketplace pack market-my-plugin
+pnpm --filter @devdeck/marketplace keygen --out .signing/my-key.txt
+DEVDECK_SIGNING_KEY=$(cat .signing/my-key.txt) \
+  pnpm --filter @devdeck/marketplace sign .local-dist/market-my-plugin-0.1.0.zip
+pnpm --filter @devdeck/marketplace registry market-my-plugin \
   --base-url https://example.com/marketplace --out release-dist/registry.json
 ```
 

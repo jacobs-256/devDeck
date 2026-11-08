@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styles from './RsaKeyPairGenerator.module.css';
 import { ToolButton, ToolSection, ToolTextarea } from '@@components';
 import { VscCopy, VscRefresh } from 'react-icons/vsc';
@@ -29,8 +29,11 @@ export default function RsaKeyPairGenerator() {
   const [privateKey, setPrivateKey] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const inFlightBits = useRef<number | null>(null);
 
   const refresh = useCallback(async () => {
+    if (inFlightBits.current === bits) return;
+    inFlightBits.current = bits;
     setError('');
     setLoading(true);
     try {
@@ -43,6 +46,7 @@ export default function RsaKeyPairGenerator() {
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
+      inFlightBits.current = null;
       setLoading(false);
     }
   }, [bits, t]);
@@ -84,23 +88,29 @@ export default function RsaKeyPairGenerator() {
         <div className={styles.bitsBox}>
           <input className={styles.bitsValue} value={bits} readOnly />
           <div className={styles.stepper}>
-            <button type="button" className={styles.stepBtn} disabled={!canDec} onClick={dec}>
+            <button type="button" className={styles.stepBtn} disabled={!canDec || loading} onClick={dec}>
               −
             </button>
-            <button type="button" className={styles.stepBtn} disabled={!canInc} onClick={inc}>
+            <button type="button" className={styles.stepBtn} disabled={!canInc || loading} onClick={inc}>
               +
             </button>
           </div>
         </div>
-        <ToolButton onClick={() => void refresh()} disabled={loading}>
-          <VscRefresh />
-          {t('refresh')}
+        <ToolButton onClick={() => void refresh()} disabled={loading} aria-busy={loading}>
+          <VscRefresh className={loading ? 'animate-spin' : ''} />
+          {loading ? t('generating') : t('refresh')}
         </ToolButton>
       </div>
 
       {error ? <div className={styles.error}>{error}</div> : null}
 
-      <div className={styles.grid}>
+      <div className={styles.grid} data-loading={loading ? '1' : '0'}>
+        {loading ? (
+          <div className={styles.loadingOverlay} role="status" aria-live="polite">
+            <span className="spinner" aria-hidden="true" />
+            {t('generating')}
+          </div>
+        ) : null}
         <ToolSection
           fill
           title={t('publicKey')}

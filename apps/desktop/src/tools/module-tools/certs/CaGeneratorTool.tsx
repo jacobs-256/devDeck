@@ -15,8 +15,8 @@ export default function CaGeneratorTool() {
   const { t } = useI18n();
   const [subject, setSubject] = useState<SubjectInput>({
     ...emptySubject(),
-    commonName: 'DevToolBox Root CA',
-    organization: 'DevToolBox',
+    commonName: 'DevDeck Root CA',
+    organization: 'DevDeck',
   });
   const [days, setDays] = useState(3650);
   const [algorithm, setAlgorithm] = useState<KeyAlgorithm>('ecdsa-p256');

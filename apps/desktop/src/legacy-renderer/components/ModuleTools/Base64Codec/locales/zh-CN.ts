@@ -1,0 +1,20 @@
+// @ts-nocheck
+export default {
+  name: 'Base64 编解码',
+  description: 'Base64 编码与解码，自动识别 JSON',
+  input: '输入',
+  encode: '编码',
+  decode: '解码',
+  swap: '交换',
+  clear: '清空',
+  help: '帮助',
+  encodePlaceholder: '输入要编码的文本…',
+  decodePlaceholder: '输入要解码的 Base64 字符串…',
+  scrollTop: '回到顶部',
+  chars: '字符',
+  lines: '行数',
+  encodeResult: 'Base64 编码结果',
+  decodeResult: '解码结果',
+  copied: '已复制',
+  copy: '复制',
+};

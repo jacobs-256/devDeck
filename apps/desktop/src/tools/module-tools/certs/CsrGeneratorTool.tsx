@@ -16,7 +16,7 @@ export default function CsrGeneratorTool() {
   const [subject, setSubject] = useState<SubjectInput>({
     ...emptySubject(),
     commonName: 'server.example.com',
-    organization: 'DevToolBox',
+    organization: 'DevDeck',
   });
   const [algorithm, setAlgorithm] = useState<KeyAlgorithm>('ecdsa-p256');
   const [material, setMaterial] = useState<CsrMaterial | null>(null);

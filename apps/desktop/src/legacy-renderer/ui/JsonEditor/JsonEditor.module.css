@@ -1,0 +1,89 @@
+.editor {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small, 9px);
+  background: var(--glass-bg);
+  transition: box-shadow var(--motion-fast);
+}
+
+.editor:focus-within {
+  border-color: var(--accent-secondary);
+  box-shadow: 0 0 0 3px var(--accent-color-weak);
+}
+
+.highlight,
+.input {
+  margin: 0;
+  padding: 10px 12px;
+  border: 0;
+  font-family: var(--font-family-mono);
+  font-size: 12px;
+  line-height: 1.5;
+  letter-spacing: 0;
+  tab-size: 2;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  box-sizing: border-box;
+}
+
+.highlight {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  pointer-events: none;
+}
+
+.highlight code {
+  font: inherit;
+  color: inherit;
+  white-space: inherit;
+  overflow-wrap: inherit;
+}
+
+.input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  resize: none;
+  overflow: auto;
+  outline: none;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--text-primary);
+  -webkit-text-fill-color: transparent;
+}
+
+.input::placeholder {
+  color: var(--text-disabled);
+  -webkit-text-fill-color: var(--text-disabled);
+}
+
+.input::selection {
+  background: color-mix(in oklab, var(--accent-primary) 30%, transparent);
+}
+
+.input:focus {
+  border: 0;
+}
+
+.highlight :global(.json-key) {
+  color: var(--syntax-key);
+}
+
+.highlight :global(.json-string) {
+  color: var(--syntax-string);
+}
+
+.highlight :global(.json-number) {
+  color: var(--syntax-number);
+}
+
+.highlight :global(.json-boolean),
+.highlight :global(.json-null) {
+  color: var(--syntax-boolean);
+}

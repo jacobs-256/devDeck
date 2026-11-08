@@ -1,23 +1,23 @@
 [package]
-name = "devtoolbox-desktop"
-description = "DevToolBox desktop host (Tauri 2)"
+name = "devdeck-desktop"
+description = "DevDeck desktop host (Tauri 2)"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 authors.workspace = true
-default-run = "devtoolbox-desktop"
+default-run = "devdeck-desktop"
 
 [lib]
-name = "devtoolbox_desktop_lib"
+name = "devdeck_desktop_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [] }
+tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-opener = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-updater = "2"
@@ -29,10 +29,13 @@ sha2 = { workspace = true }
 url = { workspace = true }
 semver = { workspace = true }
 tokio = { version = "1", features = ["net", "io-util", "sync", "time", "macros", "rt-multi-thread", "process"] }
+tokio-tungstenite = "0.26"
+futures-util = "0.3"
 uuid = { version = "1", features = ["v4"] }
 russh = "0.65"
 russh-sftp = "3"
 rcgen = { version = "0.14", features = ["x509-parser"] }
+tiny_http = "0.12"
 rsa = { version = "0.9", features = ["pem"] }
 rand = "0.8"
 x509-parser = "0.18"
@@ -41,9 +44,9 @@ rumqttc = "0.25"
 base64 = { workspace = true }
 mime_guess = "2"
 reqwest = { version = "0.12", default-features = false, features = ["default-tls", "gzip"] }
-devtoolbox-contract = { workspace = true }
-devtoolbox-capability = { workspace = true }
-devtoolbox-market = { workspace = true }
+devdeck-contract = { workspace = true }
+devdeck-capability = { workspace = true }
+devdeck-market = { workspace = true }
 
 [dev-dependencies]
 tempfile = { workspace = true }

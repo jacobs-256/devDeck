@@ -6,9 +6,9 @@
   "sdkVersion": "1.0",
   "entry": "package/index.html",
   "categoryId": "network-tools",
-  "author": "DevToolBox",
+  "author": "DevDeck",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/XthingsJacobs/devToolBox",
-  "repository": "https://github.com/XthingsJacobs/devToolBox",
+  "homepage": "https://github.com/XthingsJacobs/devDeck",
+  "repository": "https://github.com/XthingsJacobs/devDeck",
   "permissions": ["storage:kv", "net:socket"]
 }

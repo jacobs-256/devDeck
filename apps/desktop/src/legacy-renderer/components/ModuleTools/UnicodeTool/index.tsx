@@ -6,7 +6,6 @@ import { HelpModal } from '@@components';
 import styles from './UnicodeTool.module.css';
 
 import helpEn from './locales/help-en.md?raw';
-const HELP_TITLE = 'Unicode Help';
 
 type Format = 'uEscape' | 'uPlus' | 'htmlDec' | 'htmlHex' | 'utf8Hex' | 'codePoints';
 
@@ -135,7 +134,11 @@ export default function UnicodeTool() {
         >
           {(Object.keys(FORMAT_LABELS) as Format[]).map((f) => (
             <option key={f} value={f}>
-              {FORMAT_LABELS[f]}
+              {f === 'utf8Hex' && locale === 'zh-CN'
+                ? 'UTF-8 十六进制'
+                : f === 'codePoints' && locale === 'zh-CN'
+                  ? '码点'
+                  : FORMAT_LABELS[f]}
             </option>
           ))}
         </select>
@@ -160,7 +163,7 @@ export default function UnicodeTool() {
         </button>
         <div style={{ flex: 1 }} />
         <button className={styles.btnSec} onClick={() => setShowHelp(true)}>
-          ❓ Help
+          ❓ {mt('help')}
         </button>
       </div>
       {error && <div className={styles.err}>{error}</div>}
@@ -201,7 +204,7 @@ export default function UnicodeTool() {
         </div>
       </div>
       {showHelp && (
-        <HelpModal title={HELP_TITLE} onClose={() => setShowHelp(false)}>
+        <HelpModal title={mt('helpTitle')} onClose={() => setShowHelp(false)}>
           <div dangerouslySetInnerHTML={{ __html: helpHtml }} />
         </HelpModal>
       )}

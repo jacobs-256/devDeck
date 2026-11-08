@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for contributing to DevToolBox. The app is a Rust + Tauri 2 host with a
+Thanks for contributing to DevDeck. The app is a Rust + Tauri 2 host with a
 React renderer and an open plugin marketplace.
 
 ## Development environment

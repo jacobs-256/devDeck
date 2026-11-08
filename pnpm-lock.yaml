@@ -167,7 +167,7 @@ importers:
 
   marketplace/modules/market-emoji-search:
     dependencies:
-      '@devtoolbox/plugin-sdk':
+      '@devdeck/plugin-sdk':
         specifier: workspace:*
         version: link:../../../packages/plugin-sdk
       emojibase-data:
@@ -223,7 +223,7 @@ importers:
 
   marketplace/modules/market-ip-lookup:
     dependencies:
-      '@devtoolbox/plugin-sdk':
+      '@devdeck/plugin-sdk':
         specifier: workspace:*
         version: link:../../../packages/plugin-sdk
       react:

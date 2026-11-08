@@ -5,7 +5,7 @@ import { qrSvg, svgDataUrl, type QrLevel } from './qr.model';
 
 export default function QrCodeTool() {
   const { t } = useI18n();
-  const [text, setText] = useState('https://github.com/XthingsJacobs/devToolBox');
+  const [text, setText] = useState('https://github.com/XthingsJacobs/devDeck');
   const [level, setLevel] = useState<QrLevel>('M');
   const [svg, setSvg] = useState('');
   const [error, setError] = useState('');

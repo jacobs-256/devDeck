@@ -46,7 +46,7 @@ need curl
 need zip
 
 echo "==> Building ${PLUGIN}"
-pnpm --dir "${ROOT}" --filter "@devtoolbox/plugin-${PLUGIN}" build >/dev/null
+pnpm --dir "${ROOT}" --filter "@devdeck/plugin-${PLUGIN}" build >/dev/null
 
 echo "==> Generating throwaway signing key"
 PUBLIC_KEY="$(node "${ROOT}/marketplace/scripts/sign.mjs" keygen --out "${WORK}/key.txt" \
@@ -58,11 +58,11 @@ fi
 SIGNING_KEY="$(cat "${WORK}/key.txt")"
 
 echo "==> Packing and signing through the release pipeline"
-DEVTOOLBOX_SIGNING_KEY="${SIGNING_KEY}" \
+DEVDECK_SIGNING_KEY="${SIGNING_KEY}" \
 MARKETPLACE_DOWNLOAD_BASE_URL="http://127.0.0.1:${PORT}" \
 MARKETPLACE_TAG=acceptance \
   node "${ROOT}/marketplace/scripts/pack-release.mjs" "${PLUGIN}" >/dev/null
-DEVTOOLBOX_SIGNING_KEY="${SIGNING_KEY}" \
+DEVDECK_SIGNING_KEY="${SIGNING_KEY}" \
   node "${ROOT}/marketplace/scripts/sign.mjs" sign "${ROOT}/marketplace/release-dist/registry.json" >/dev/null
 
 echo "==> Verifying signatures"
@@ -95,10 +95,10 @@ if ! cmp -s "${ROOT}/marketplace/release-dist/registry.json" "${WORK}/served.jso
 fi
 
 echo "==> Installing through the host"
-DEVTOOLBOX_ACCEPT_REGISTRY="http://127.0.0.1:${PORT}/registry.json" \
-DEVTOOLBOX_ACCEPT_PUBKEY="${PUBLIC_KEY}" \
-DEVTOOLBOX_ACCEPT_PLUGIN="${PLUGIN}" \
-  cargo test --manifest-path "${ROOT}/Cargo.toml" -p devtoolbox-desktop \
+DEVDECK_ACCEPT_REGISTRY="http://127.0.0.1:${PORT}/registry.json" \
+DEVDECK_ACCEPT_PUBKEY="${PUBLIC_KEY}" \
+DEVDECK_ACCEPT_PLUGIN="${PLUGIN}" \
+  cargo test --manifest-path "${ROOT}/Cargo.toml" -p devdeck-desktop \
   manual_signed_registry_acceptance -- --ignored --nocapture
 
 echo "==> Acceptance run passed for ${PLUGIN}"

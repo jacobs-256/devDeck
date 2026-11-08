@@ -1,4 +1,4 @@
-@import '../../../shared/devtoolbox-embed.css';
+@import '../../../shared/devdeck-embed.css';
 
 html,
 body,
@@ -9,4 +9,3 @@ body,
 body {
   margin: 0;
 }
-

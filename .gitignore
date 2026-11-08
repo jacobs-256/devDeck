@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+.pnpm-store/
 
 # Renderer build output
 apps/desktop/dist/
@@ -36,7 +37,7 @@ Thumbs.db
 .env.*
 
 # Local diagnostics output
-.devtoolbox-diagnostics/
+.devdeck-diagnostics/
 
 # Docs site build output
 docs-site/site/

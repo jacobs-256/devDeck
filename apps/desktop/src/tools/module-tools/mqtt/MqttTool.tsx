@@ -28,7 +28,7 @@ export default function MqttTool() {
   const [password, setPassword] = useState('');
   const [sessionId, setSessionId] = useState('');
   const [status, setStatus] = useState('idle');
-  const [topic, setTopic] = useState('devtoolbox/test');
+  const [topic, setTopic] = useState('devdeck/test');
   const [qos, setQos] = useState(0);
   const [retain, setRetain] = useState(false);
   const [payload, setPayload] = useState('{"hello":"mqtt"}');

@@ -1,4 +1,4 @@
-@import '../../../shared/devtoolbox-embed.css';
+@import '../../../shared/devdeck-embed.css';
 
 .app {
   padding: 16px;
@@ -12,8 +12,9 @@
 }
 
 .title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 650;
+  letter-spacing: -0.02em;
 }
 
 .sub {
@@ -31,9 +32,9 @@
 button,
 .btnLink {
   padding: 8px 10px;
-  border-radius: 10px;
-  border: 1px solid var(--border-subtle);
-  background: color-mix(in oklab, var(--bg-secondary) 85%, transparent);
+  border-radius: var(--radius-small);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
   color: var(--text-primary);
   cursor: pointer;
   white-space: nowrap;
@@ -57,9 +58,9 @@ select,
 input {
   width: 100%;
   padding: 8px 10px;
-  border-radius: 10px;
-  border: 1px solid var(--border-subtle);
-  background: color-mix(in oklab, var(--bg-tertiary) 88%, transparent);
+  border-radius: var(--radius-small);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg-strong);
   color: var(--text-primary);
   outline: none;
 }
@@ -67,12 +68,13 @@ input {
 select:focus,
 input:focus {
   border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-color-weak);
 }
 
 .error {
   margin-top: 12px;
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: var(--radius-small);
   border: 1px solid color-mix(in oklab, var(--accent-error) 35%, transparent);
   background: color-mix(in oklab, var(--accent-error-bg) 65%, transparent);
   color: var(--text-primary);
@@ -88,9 +90,9 @@ input:focus {
 }
 
 .card {
-  border: 1px solid var(--border-default);
-  border-radius: 12px;
-  background: color-mix(in oklab, var(--bg-secondary) 70%, transparent);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  background: var(--glass-bg);
   padding: 12px;
 }
 
@@ -165,9 +167,9 @@ thead th {
   text-align: left;
   padding: 10px 12px;
   color: var(--text-tertiary);
-  border-top: 1px solid var(--border-default);
-  border-bottom: 1px solid var(--border-default);
-  background: color-mix(in oklab, var(--bg-secondary) 75%, transparent);
+  border-top: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--glass-border);
+  background: var(--glass-bg);
   position: sticky;
   top: 0;
   z-index: 1;
@@ -175,7 +177,7 @@ thead th {
 
 tbody td {
   padding: 10px 12px;
-  border-bottom: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--glass-border);
   vertical-align: top;
 }
 
@@ -188,7 +190,7 @@ tbody td {
   padding: 10px 12px 12px 12px;
   color: var(--text-disabled);
   font-size: 12px;
-  border-top: 1px solid var(--border-default);
+  border-top: 1px solid var(--glass-border);
 }
 
 @media (max-width: 1100px) {

@@ -13,7 +13,7 @@
         if (q) apply(q);
         window.addEventListener('message', (e) => {
           const d = e.data;
-          if (!d || d.type !== 'devtoolbox:theme') return;
+          if (!d || d.type !== 'devdeck:theme') return;
           if (d.theme === 'dark' || d.theme === 'light') apply(d.theme);
         });
       })();

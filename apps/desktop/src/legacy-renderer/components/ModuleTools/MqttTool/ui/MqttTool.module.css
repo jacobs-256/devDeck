@@ -11,7 +11,7 @@
   max-width: 420px;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid var(--border-default);
+  border-right: 1px solid var(--glass-border);
   background: var(--bg-secondary);
 }
 
@@ -20,7 +20,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  border-bottom: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--glass-border);
 }
 
 .sideTitle {
@@ -35,10 +35,10 @@
 }
 
 .sideBtn {
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--glass-border);
   background: var(--bg-secondary);
   color: var(--text-secondary);
-  border-radius: 6px;
+  border-radius: var(--radius-small);
   padding: 6px 8px;
   font-size: 12px;
   cursor: pointer;
@@ -64,8 +64,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 10px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
   background: var(--bg-elevated);
   width: 100%;
   cursor: pointer;
@@ -75,7 +75,7 @@
 }
 
 .groupHeader:hover {
-  border-color: rgba(74, 163, 255, 0.35);
+  border-color: var(--accent-secondary);
 }
 
 .groupLeft {
@@ -117,14 +117,14 @@
   gap: 8px;
   padding: 8px 10px;
   margin-top: 6px;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   background: var(--bg-elevated);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--glass-border);
 }
 
 .connRow:hover {
-  border-color: rgba(74, 163, 255, 0.35);
+  border-color: var(--accent-secondary);
 }
 
 .connRowActive {
@@ -140,20 +140,20 @@
 }
 
 .dot_connected {
-  background: #27ae60;
+  background: var(--accent-success);
 }
 
 .dot_connecting {
-  background: #f39c12;
+  background: var(--accent-warning);
   animation: blink 1s infinite;
 }
 
 .dot_disconnected {
-  background: #95a5a6;
+  background: var(--text-quaternary);
 }
 
 .dot_error {
-  background: #e74c3c;
+  background: var(--accent-error);
 }
 
 @keyframes blink {
@@ -197,49 +197,57 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--scrim);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 400;
+  z-index: 9998;
+  backdrop-filter: var(--scrim-blur);
+  -webkit-backdrop-filter: var(--scrim-blur);
 }
 
 .dialog {
-  background: var(--bg-panel);
-  border-radius: var(--radius);
-  padding: 20px 24px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-dialog);
+  padding: 20px 22px;
   min-width: 520px;
   max-width: 92%;
-  border: 1px solid var(--bg-active);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-float);
 }
 
 .dialogTitle {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
   margin-bottom: 14px;
   color: var(--text-primary);
 }
 
 .dialogLabel {
   display: block;
-  font-size: 12px;
-  color: var(--text-secondary);
+  font-size: 11px;
+  color: var(--text-tertiary);
   margin-bottom: 6px;
 }
 
 .dialogInput {
   width: 100%;
-  padding: 8px 10px;
-  border: 1px solid var(--bg-active);
-  border-radius: 6px;
-  background: var(--bg-primary);
+  padding: 8px 11px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
+  background: var(--bg-tertiary);
   color: var(--text-primary);
   outline: none;
   box-sizing: border-box;
+  transition:
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast);
 }
 
 .dialogInput:focus {
-  border-color: var(--accent-color);
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-color-weak);
 }
 
 .dialogBtns {
@@ -250,27 +258,29 @@
 }
 
 .dialogBtn {
-  border: 1px solid var(--bg-active);
-  background: transparent;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
   color: var(--text-secondary);
-  padding: 7px 14px;
-  border-radius: 6px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: var(--radius-small);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .dialogBtn:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
-  border-color: rgba(74, 163, 255, 0.35);
+  border-color: var(--accent-secondary);
 }
 
 .dialogBtnPrimary {
-  background: var(--accent-color);
-  border-color: var(--accent-color);
+  background: var(--aurora-grad);
+  border-color: transparent;
   color: #fff;
+  box-shadow: 0 8px 18px -12px var(--accent-primary);
 }
 
 .dialogBtnPrimary:hover {
-  opacity: 0.9;
+  background: var(--aurora-grad-hover);
 }

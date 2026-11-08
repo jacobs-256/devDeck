@@ -1,5 +1,5 @@
 /**
- * `@devtoolbox/plugin-sdk` — the official DevToolBox Marketplace plugin SDK.
+ * `@devdeck/plugin-sdk` — the official DevDeck Marketplace plugin SDK.
  *
  * A plugin is a plain web app (`index.html` + JS/TS) that the host serves from
  * `plugin://localhost/<plugin-id>/`. It runs sandboxed in an iframe and talks to
@@ -10,7 +10,7 @@
  * ## Quick start
  *
  * ```ts
- * import { sdk } from '@devtoolbox/plugin-sdk';
+ * import { sdk } from '@devdeck/plugin-sdk';
  *
  * const saved = await sdk.storage.get<string>('apiKey');
  * const response = await sdk.http.request<{ ip: string }>({ url: 'https://api.example.com/ip' });
@@ -32,14 +32,14 @@ export interface SdkError {
 export type SdkResult<T> = { ok: true; data?: T } | { ok: false; error: SdkError };
 
 type ResponseMessage =
-  | { type: 'devtoolbox:sdk:response'; requestId: string; ok: true; data?: unknown }
-  | { type: 'devtoolbox:sdk:response'; requestId: string; ok: false; error: SdkError };
+  | { type: 'devdeck:sdk:response'; requestId: string; ok: true; data?: unknown }
+  | { type: 'devdeck:sdk:response'; requestId: string; ok: false; error: SdkError };
 
-type ThemeMessage = { type: 'devtoolbox:theme'; theme: 'light' | 'dark' };
+type ThemeMessage = { type: 'devdeck:theme'; theme: 'light' | 'dark' };
 
-const RESPONSE_TYPE = 'devtoolbox:sdk:response';
-const REQUEST_TYPE = 'devtoolbox:sdk:request';
-const THEME_TYPE = 'devtoolbox:theme';
+const RESPONSE_TYPE = 'devdeck:sdk:response';
+const REQUEST_TYPE = 'devdeck:sdk:request';
+const THEME_TYPE = 'devdeck:theme';
 
 const pending = new Map<string, (result: SdkResult<unknown>) => void>();
 let listenerInstalled = false;
@@ -83,7 +83,7 @@ export function callSdk<T = unknown>(
       ok: false,
       error: {
         code: 'not_embedded',
-        message: 'DevToolBox plugins must run inside the DevToolBox host',
+        message: 'DevDeck plugins must run inside the DevDeck host',
       },
     });
   }
@@ -266,7 +266,7 @@ export interface CapabilityGrant {
   grantedAtMs: number;
 }
 
-/** Typed namespaces for every capability in the DevToolBox permission model. */
+/** Typed namespaces for every capability in the DevDeck permission model. */
 export const sdk = {
   /** `storage:kv` — host-owned key/value storage scoped to this plugin. */
   storage: {
@@ -427,7 +427,7 @@ export function followHostTheme(onChange?: (theme: 'light' | 'dark') => void): (
 export function onSocketEvent(handler: (event: SocketEventPayload) => void): () => void {
   const listener = (message: MessageEvent) => {
     const data = message.data as { type?: string; event?: string; payload?: SocketEventPayload } | null;
-    if (!data || data.type !== 'devtoolbox:event' || data.event !== 'socket') return;
+    if (!data || data.type !== 'devdeck:event' || data.event !== 'socket') return;
     if (!data.payload) return;
     handler(data.payload);
   };
@@ -446,7 +446,7 @@ export function socketEventBytes(payload: SocketEventPayload): Uint8Array {
 export function onSshEvent(handler: (event: SshEventPayload) => void): () => void {
   const listener = (message: MessageEvent) => {
     const data = message.data as { type?: string; event?: string; payload?: SshEventPayload } | null;
-    if (!data || data.type !== 'devtoolbox:event' || data.event !== 'ssh') return;
+    if (!data || data.type !== 'devdeck:event' || data.event !== 'ssh') return;
     if (!data.payload) return;
     handler(data.payload);
   };

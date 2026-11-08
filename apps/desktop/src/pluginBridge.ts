@@ -13,11 +13,11 @@
 import { invoke } from '@tauri-apps/api/core';
 import type { SdkError } from './types';
 
-export const SDK_REQUEST = 'devtoolbox:sdk:request';
-export const SDK_RESPONSE = 'devtoolbox:sdk:response';
-export const THEME_MESSAGE = 'devtoolbox:theme';
+export const SDK_REQUEST = 'devdeck:sdk:request';
+export const SDK_RESPONSE = 'devdeck:sdk:response';
+export const THEME_MESSAGE = 'devdeck:theme';
 /** Host-pushed events (e.g. socket data) forwarded to the plugin iframe. */
-export const EVENT_MESSAGE = 'devtoolbox:event';
+export const EVENT_MESSAGE = 'devdeck:event';
 
 interface SdkRequestEnvelope {
   type?: string;

@@ -16,7 +16,7 @@
   min-width: 380px;
   padding: 16px 20px;
   overflow-y: auto;
-  border-right: 1px solid var(--bg-active);
+  border-right: 1px solid var(--glass-border);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -27,7 +27,7 @@
   font-weight: 600;
   color: var(--text-primary);
   padding-bottom: 4px;
-  border-bottom: 1px solid var(--bg-active);
+  border-bottom: 1px solid var(--glass-border);
   margin-top: 4px;
 }
 
@@ -50,8 +50,8 @@
 
 .input {
   padding: 7px 10px;
-  border: 1px solid var(--bg-active);
-  border-radius: 5px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
   background-color: var(--bg-panel);
   color: var(--text-primary);
   font-size: 13px;
@@ -65,8 +65,8 @@
 
 .textarea {
   padding: 7px 10px;
-  border: 1px solid var(--bg-active);
-  border-radius: 5px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
   background-color: var(--bg-panel);
   color: var(--text-primary);
   font-size: 12px;
@@ -81,38 +81,69 @@
   border-color: var(--accent-color);
 }
 
-.fileRow {
+.labelRow {
   display: flex;
-  gap: 6px;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
 }
 
-.fileRow .textarea {
+.labelRow .label {
+  min-width: 0;
   flex: 1;
 }
 
+.sectionRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding-bottom: 4px;
+  margin-top: 4px;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.sectionRow .section {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 0;
+  margin-top: 0;
+  border-bottom: 0;
+}
+
 .loadBtn {
-  padding: 7px 10px;
-  border: 1px solid var(--bg-active);
-  border-radius: 5px;
-  background: none;
-  color: var(--text-secondary);
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 8px;
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  color: var(--text-tertiary);
+  font-size: 11px;
   font-family: inherit;
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
+.loadBtn svg {
+  width: 12px;
+  height: 12px;
+}
+
 .loadBtn:hover {
-  background-color: var(--bg-active);
-  color: var(--text-primary);
+  border-color: color-mix(in oklab, var(--accent-primary) 45%, var(--glass-border));
+  background: color-mix(in oklab, var(--accent-primary) 8%, var(--bg-secondary));
+  color: var(--accent-primary);
 }
 
 .select {
   padding: 7px 10px;
-  border: 1px solid var(--bg-active);
-  border-radius: 5px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
   background-color: var(--bg-panel);
   color: var(--text-primary);
   font-size: 13px;
@@ -128,7 +159,7 @@
   margin-top: 4px;
   padding: 8px 16px;
   border: none;
-  border-radius: 5px;
+  border-radius: var(--radius-small);
   background-color: var(--accent-color);
   color: #fff;
   font-size: 13px;
@@ -154,42 +185,53 @@
 
 .tabs {
   display: flex;
-  border-bottom: 1px solid var(--bg-active);
+  align-items: center;
+  gap: 3px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--glass-border);
+  background: var(--glass-bg);
   flex-shrink: 0;
 }
 
 .tab {
-  padding: 8px 16px;
-  border: none;
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 9px;
   background: none;
-  color: var(--text-secondary);
-  font-size: 13px;
+  color: var(--text-tertiary);
+  font-size: 12px;
   font-family: inherit;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
+  transition:
+    color var(--motion-fast),
+    background var(--motion-fast),
+    border-color var(--motion-fast);
 }
 
 .tab:hover {
   color: var(--text-primary);
+  background: var(--bg-hover);
 }
 
 .tabActive {
-  color: var(--text-active);
-  border-bottom-color: var(--accent-color);
+  color: var(--text-primary);
+  background: var(--accent-color-weak);
+  border-color: var(--glass-border);
 }
 
 .outputActions {
   display: flex;
   gap: 6px;
   padding: 6px 12px;
-  border-bottom: 1px solid var(--bg-active);
+  border-bottom: 1px solid var(--glass-border);
   flex-shrink: 0;
 }
 
 .actionBtn {
   padding: 4px 10px;
-  border: 1px solid var(--bg-active);
-  border-radius: 4px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
   background: none;
   color: var(--text-secondary);
   font-size: 12px;
@@ -198,7 +240,7 @@
 }
 
 .actionBtn:hover {
-  background-color: var(--bg-active);
+  background-color: var(--bg-hover);
   color: var(--text-primary);
 }
 
@@ -226,7 +268,7 @@
 }
 
 .error {
-  color: #f44336;
+  color: var(--accent-error);
   font-size: 12px;
   margin-top: 4px;
 }

@@ -9,10 +9,10 @@
 | 模块                    | Electron（2.0.x）                              | Rust + Tauri（3.0.0）                             | 状态          |
 | ----------------------- | ---------------------------------------------- | ------------------------------------------------- | ------------- |
 | 外壳与打包              | electron-builder，239 MB `.app` / 95 MB `.dmg` | Tauri 2，8.35 MB `.app` / 5.46 MB `.dmg`（arm64） | ✅ 已完成     |
-| 清单契约                | TS 类型                                        | `devtoolbox-contract`，schema 2 + v1 兼容         | ✅ 实现并测试 |
-| 权限模型                | `marketplace.ts` 内联判断                      | `devtoolbox-capability` 代理 + 白名单             | ✅ 实现并测试 |
+| 清单契约                | TS 类型                                        | `devdeck-contract`，schema 2 + v1 兼容         | ✅ 实现并测试 |
+| 权限模型                | `marketplace.ts` 内联判断                      | `devdeck-capability` 代理 + 白名单             | ✅ 实现并测试 |
 | 包校验                  | Node 脚本 sha256                               | SHA-256 + Ed25519                                 | ✅ 实现并测试 |
-| 安装/卸载/启用          | 3020 行 `marketplace.ts`                       | `devtoolbox-market::store`                        | ✅ 实现并测试 |
+| 安装/卸载/启用          | 3020 行 `marketplace.ts`                       | `devdeck-market::store`                        | ✅ 实现并测试 |
 | 插件资源服务            | Electron 窗口                                  | `plugin://` 协议                                  | ✅ 实现       |
 | 插件桥                  | `postMessage` + 115 IPC                        | `postMessage` + 单一 `plugin_sdk_call`            | ✅ 实现       |
 | SDK 1.x 兼容            | 不适用                                         | 旧方法别名 + 旧响应形状                           | ✅ 实现并测试 |

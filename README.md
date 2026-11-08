@@ -1,8 +1,12 @@
-# DevToolBox
+# DevDeck
 
 A plugin-first desktop toolbox for developers: 27 built-in utilities, a signed
 plugin marketplace, and a Rust host packaged with **Tauri 2** for macOS and
 Windows.
+
+> **Renamed:** the project was previously published as DevToolBox. The app id is
+> now `com.devdeck.desktop`; existing settings and installed plugins are migrated
+> automatically on first launch from `com.devtoolbox.app`.
 
 - **Small footprint** — ~5.5 MB DMG instead of ~95 MB with the old Electron shell.
 - **Secure by design** — plugins run in a sandboxed iframe with a strict CSP and
@@ -16,9 +20,9 @@ Windows.
 ## Install
 
 Download the latest release from
-[GitHub Releases](https://github.com/XthingsJacobs/devToolBox/releases):
+[GitHub Releases](https://github.com/XthingsJacobs/devDeck/releases):
 
-- **macOS** — open the DMG and drag DevToolBox into Applications.
+- **macOS** — open the DMG and drag DevDeck into Applications.
 - **Windows** — run the NSIS installer.
 
 Updates are verified with the updater signing key and can be checked from
@@ -55,13 +59,13 @@ Quick flow:
 node marketplace/scripts/create.mjs --id market-my-tool --name "My Tool"
 
 # Build, pack, sign
-pnpm --filter @devtoolbox/plugin-market-my-tool build
-pnpm --filter @devtoolbox/marketplace pack market-my-tool
-DEVTOOLBOX_SIGNING_KEY=$(cat .signing/my-key.txt) \
-  pnpm --filter @devtoolbox/marketplace sign .local-dist/market-my-tool-0.1.0.zip
+pnpm --filter @devdeck/plugin-market-my-tool build
+pnpm --filter @devdeck/marketplace pack market-my-tool
+DEVDECK_SIGNING_KEY=$(cat .signing/my-key.txt) \
+  pnpm --filter @devdeck/marketplace sign .local-dist/market-my-tool-0.1.0.zip
 
 # Local registry + serve
-pnpm --filter @devtoolbox/marketplace registry market-my-tool \
+pnpm --filter @devdeck/marketplace registry market-my-tool \
   --base-url http://127.0.0.1:8765 --out .local-dist/registry.json
 python3 -m http.server 8765 --directory marketplace/.local-dist
 ```
@@ -123,17 +127,17 @@ The native menu also exposes Settings, theme, language, and About. See
 ## Repository layout
 
 ```text
-devtoolbox/
+devdeck/
 ├── apps/desktop/                 Tauri app (React renderer + src-tauri host)
 │   ├── src/legacy/               Restored main-branch shell and pages
 │   ├── src/tools/               27 built-in tools + registry/tests
 │   ├── src/theme/               Legacy color/type tokens and globals
 │   └── src-tauri/               Rust host, plugin protocol, commands
 ├── crates/                      Rust workspace
-│   ├── devtoolbox-contract/     Manifest, permissions, registry, errors
-│   ├── devtoolbox-capability/   Broker, allowlists, path sandbox
-│   └── devtoolbox-market/       SHA-256/Ed25519, ZIP safety, install state
-├── packages/plugin-sdk/         Published @devtoolbox/plugin-sdk (2.0)
+│   ├── devdeck-contract/     Manifest, permissions, registry, errors
+│   ├── devdeck-capability/   Broker, allowlists, path sandbox
+│   └── devdeck-market/       SHA-256/Ed25519, ZIP safety, install state
+├── packages/plugin-sdk/         Published @devdeck/plugin-sdk (2.0)
 ├── marketplace/                 Plugin workspace + pack/sign/registry tooling
 ├── scripts/                     Acceptance, updater rehearsal, guards
 ├── docs/                        Documentation (English + 中文)
@@ -150,7 +154,8 @@ devtoolbox/
 - [Architecture](docs/architecture/overview.md)
 - [Development guide](docs/development.md) — secondary development, adding tools,
   commands, capabilities, and tests
-- [Design system](docs/design-system.md)
+- [Design system](docs/design-system.md) — Aurora tokens, layout and components
+- [AGENTS.txt](AGENTS.txt) — mandatory UI rules for new modules and agents
 - [Marketplace protocol](docs/architecture/marketplace.md)
 - [Security model](docs/architecture/security-model.md)
 - [Migration record](docs/architecture/migration.md)

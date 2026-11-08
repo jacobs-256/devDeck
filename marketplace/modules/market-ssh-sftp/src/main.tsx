@@ -14,7 +14,7 @@ function applyTheme(v: unknown) {
 applyTheme(new URLSearchParams(window.location.search).get('theme'));
 window.addEventListener('message', (e) => {
   if (!isRecord(e.data)) return;
-  if (e.data.type === 'devtoolbox:theme') applyTheme(e.data.theme);
+  if (e.data.type === 'devdeck:theme') applyTheme(e.data.theme);
 });
 
 initSdkEvents();

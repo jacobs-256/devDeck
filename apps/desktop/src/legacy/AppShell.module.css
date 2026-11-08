@@ -1,10 +1,12 @@
 .shell {
+  position: relative;
+  z-index: 1;
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: var(--bg-primary);
+  background: transparent;
   color: var(--text-primary);
 }
 
@@ -17,12 +19,15 @@
 
 .sidebar {
   min-width: 52px;
-  background: var(--bg-secondary);
-  border-right: 1px solid var(--border-default);
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--glass-border);
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.02);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   display: flex;
   flex-direction: column;
   min-height: 0;
-  transition: width 0.2s ease;
+  transition: width var(--motion-base);
 }
 
 .scrollArea {
@@ -35,64 +40,76 @@
 }
 
 .navSection {
-  padding: 12px 8px 8px;
+  padding: 14px 10px 10px;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
 .navItem {
-  border: none;
+  border: 1px solid transparent;
   background: transparent;
   color: var(--text-tertiary);
-  height: 34px;
+  height: 36px;
   border-radius: 10px;
-  padding: 0 10px 0 10px;
+  padding: 0 10px;
   display: flex;
   align-items: center;
   gap: 10px;
   cursor: pointer;
   text-align: left;
   position: relative;
+  transition:
+    background var(--motion-fast),
+    color var(--motion-fast),
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast);
 }
 
 .navItem[data-tip]:hover::after {
   content: attr(data-tip);
   position: absolute;
   left: calc(100% + 10px);
+  right: auto;
   top: 50%;
+  bottom: auto;
   transform: translateY(-50%);
   background: var(--bg-elevated);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--glass-border);
   color: var(--text-primary);
-  padding: 6px 8px;
+  padding: 7px 10px;
   border-radius: 10px;
-  font-size: 12px;
+  font-size: 11px;
   white-space: nowrap;
-  box-shadow: 0 10px 28px #00000055;
+  box-shadow: var(--shadow-float);
   z-index: 1000;
   pointer-events: none;
 }
 
 .navItem:hover {
-  background: var(--border-default);
+  background: var(--bg-hover);
+  border-color: var(--glass-border);
   color: var(--text-primary);
 }
 
 .navItemActive {
-  background: var(--bg-active);
-  color: var(--accent-secondary);
+  background: var(--aurora-grad);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 10px 24px -14px var(--accent-primary);
+}
+
+.navItemActive:hover {
+  background: var(--aurora-grad-hover);
+  color: #fff;
+}
+
+.navItemActive .navIcon {
+  color: #fff;
 }
 
 .navIndicator {
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 3px;
-  height: 16px;
-  transform: translateY(-50%);
-  border-radius: 999px;
-  background: var(--accent-secondary);
+  display: none;
 }
 
 .navIcon {
@@ -106,7 +123,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-weight: 400;
+  font-weight: 500;
   font-size: 12.5px;
 }
 
@@ -115,7 +132,7 @@
   min-width: 16px;
   padding: 0 6px;
   border-radius: 999px;
-  background: var(--cat-network);
+  background: var(--aurora-grad);
   color: #fff;
   font-size: 9px;
   font-weight: 700;
@@ -128,30 +145,30 @@
 .divider {
   height: 1px;
   background: var(--border-default);
-  margin: 6px 8px;
+  margin: 8px 10px;
 }
 
 .sectionTitle {
-  padding: 0 12px 6px;
-  font-size: 10px;
-  color: var(--border-subtle);
+  padding: 0 10px 8px;
+  font-size: 8.5px;
+  color: var(--text-quaternary);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: 600;
+  letter-spacing: 0.16em;
+  font-weight: 500;
 }
 
 .categorySection {
-  padding: 0 8px;
+  padding: 0 10px;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
 .categoryItem {
-  border: none;
+  border: 1px solid transparent;
   background: transparent;
   height: 30px;
-  border-radius: 8px;
+  border-radius: 9px;
   padding: 0 8px;
   display: flex;
   align-items: center;
@@ -171,22 +188,26 @@
   content: attr(data-tip);
   position: absolute;
   left: calc(100% + 10px);
+  right: auto;
   top: 50%;
+  bottom: auto;
   transform: translateY(-50%);
   background: var(--bg-elevated);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--glass-border);
   color: var(--text-primary);
-  padding: 6px 8px;
+  padding: 7px 10px;
   border-radius: 10px;
-  font-size: 12px;
+  font-size: 11px;
   white-space: nowrap;
-  box-shadow: 0 10px 28px #00000055;
+  box-shadow: var(--shadow-float);
   z-index: 1000;
   pointer-events: none;
 }
 
 .categoryItemActive {
-  color: var(--accent-secondary);
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  color: var(--text-primary);
 }
 
 .categoryIcon {
@@ -209,13 +230,14 @@
 
 .categoryCount {
   font-size: 9px;
-  color: var(--border-subtle);
-  background: var(--border-default);
-  border-radius: 8px;
-  padding: 1px 5px;
+  color: var(--text-quaternary);
+  background: var(--badge-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  padding: 1px 6px;
   min-width: 18px;
   text-align: center;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .spacer {
@@ -223,24 +245,24 @@
 }
 
 .footer {
-  border-top: 1px solid var(--border-default);
-  padding: 8px;
+  border-top: 1px solid var(--glass-border);
+  padding: 10px;
 }
 
 .collapseBtn {
   width: 100%;
-  height: 30px;
-  border-radius: 10px;
+  height: 32px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  color: var(--border-subtle);
+  color: var(--text-tertiary);
 }
 
 .collapseBtn:hover {
-  background: var(--border-default);
-  color: var(--text-tertiary);
+  background: var(--bg-hover);
+  color: var(--text-secondary);
 }
 
 .collapseIcon {
@@ -258,5 +280,5 @@
   min-width: 0;
   min-height: 0;
   overflow: hidden;
-  background: var(--bg-content);
+  background: transparent;
 }

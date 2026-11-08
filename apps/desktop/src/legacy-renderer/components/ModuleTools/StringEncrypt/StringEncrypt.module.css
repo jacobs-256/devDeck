@@ -11,8 +11,8 @@
 .inputArea {
   width: 100%;
   padding: 10px;
-  border: 1px solid var(--bg-active);
-  border-radius: 6px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
   background: var(--bg-panel);
   color: var(--text-primary);
   font-family: 'SF Mono', 'Menlo', monospace;
@@ -30,15 +30,20 @@
 
 .results {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
+.results > * {
+  flex-shrink: 0;
+}
+
 .section {
-  border: 1px solid var(--bg-active);
-  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
   overflow: hidden;
 }
 
@@ -48,7 +53,7 @@
   gap: 6px;
   padding: 6px 12px;
   background: var(--bg-hover);
-  border-bottom: 1px solid var(--bg-active);
+  border-bottom: 1px solid var(--glass-border);
   font-size: 12px;
   font-weight: 600;
   color: var(--accent-color);
@@ -77,7 +82,7 @@
   gap: 8px;
   align-items: center;
   padding-bottom: 6px;
-  border-bottom: 1px solid var(--bg-active);
+  border-bottom: 1px solid var(--glass-border);
   margin-bottom: 2px;
 }
 
@@ -91,8 +96,8 @@
 .paramInput {
   flex: 1;
   padding: 4px 8px;
-  border: 1px solid var(--bg-active);
-  border-radius: 4px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
   background: var(--bg-panel);
   color: var(--text-primary);
   font-size: 12px;
@@ -107,8 +112,8 @@
 
 .paramSelect {
   padding: 4px 8px;
-  border: 1px solid var(--bg-active);
-  border-radius: 4px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
   background: var(--bg-panel);
   color: var(--text-primary);
   font-size: 12px;
@@ -168,6 +173,6 @@
 }
 
 .err {
-  color: #e74c3c;
+  color: var(--accent-error);
   font-size: 11px;
 }

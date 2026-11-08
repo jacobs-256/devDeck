@@ -40,8 +40,8 @@
 }
 
 .btnActive {
-  background: rgba(97, 175, 239, 0.22) !important;
-  border-color: rgba(97, 175, 239, 0.22) !important;
+  background: color-mix(in oklab, var(--accent-secondary) 22%, transparent) !important;
+  border-color: color-mix(in oklab, var(--accent-secondary) 22%, transparent) !important;
   color: var(--text-active) !important;
 }
 
@@ -137,7 +137,7 @@
 }
 
 .dropdownItemActive {
-  background-color: var(--bg-active);
+  background-color: var(--bg-hover);
   color: var(--accent-color);
 }
 

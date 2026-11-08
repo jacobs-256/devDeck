@@ -5,8 +5,8 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  max-width: 1100px;
-  padding: 20px 24px;
+  max-width: 1180px;
+  padding: 22px 26px 26px;
   color: var(--text-primary);
   font-size: 13px;
 }
@@ -42,8 +42,8 @@
 }
 
 .tool-body .field-label {
-  color: var(--text-quaternary);
-  font-size: 12px;
+  color: var(--text-tertiary);
+  font-size: 11px;
   font-weight: 500;
 }
 
@@ -53,13 +53,16 @@
   width: 100%;
   min-height: 32px;
   padding: 6px 10px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  background: var(--bg-tertiary);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  background: var(--glass-bg-strong);
   color: var(--text-primary);
   font: inherit;
   font-size: 13px;
   outline: none;
+  transition:
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast);
 }
 
 .tool-body textarea {
@@ -71,15 +74,15 @@
 
 .tool-body input::placeholder,
 .tool-body textarea::placeholder {
-  color: var(--text-disabled);
+  color: var(--text-quaternary);
 }
 
 .tool-body input:focus,
 .tool-body select:focus,
 .tool-body textarea:focus {
   border-color: var(--border-focus);
-  outline: 1px solid var(--border-focus);
-  outline-offset: 0;
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-color-weak);
 }
 
 .tool-body input[type='checkbox'],
@@ -106,30 +109,32 @@
   gap: 6px;
   height: 32px;
   padding: 0 12px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: 9px;
+  background: var(--glass-bg);
   color: var(--text-primary);
   font: inherit;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 1;
   white-space: nowrap;
   cursor: pointer;
   transition:
-    background 0.12s ease,
-    border-color 0.12s ease,
-    color 0.12s ease;
+    background var(--motion-fast),
+    border-color var(--motion-fast),
+    color var(--motion-fast),
+    box-shadow var(--motion-fast);
 }
 
 .tool-body button:hover:not(:disabled) {
-  border-color: var(--border-emphasis);
+  border-color: var(--accent-secondary);
   background: var(--bg-hover);
 }
 
 .tool-body button:focus-visible {
   outline: 2px solid var(--border-focus);
-  outline-offset: 1px;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--accent-color-weak);
 }
 
 .tool-body button:disabled {
@@ -138,14 +143,15 @@
 }
 
 .tool-body button.primary {
-  border-color: var(--accent-primary);
-  background: var(--accent-primary);
+  border-color: transparent;
+  background: var(--aurora-grad);
   color: #fff;
+  box-shadow: 0 8px 18px -12px var(--accent-primary);
 }
 
 .tool-body button.primary:hover:not(:disabled) {
-  border-color: var(--accent-primary-hover);
-  background: var(--accent-primary-hover);
+  border-color: transparent;
+  background: var(--aurora-grad-hover);
 }
 
 .tool-body button.ghost {
@@ -170,9 +176,9 @@
   display: inline-flex;
   gap: 2px;
   padding: 3px;
-  border: 1px solid var(--border-default);
-  border-radius: 8px;
-  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  background: var(--glass-bg);
 }
 
 .tool-body .segmented button {
@@ -185,9 +191,10 @@
 }
 
 .tool-body .segmented button.active {
-  border-color: var(--border-subtle);
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
+  border-color: transparent;
+  background: var(--aurora-grad);
+  color: #fff;
+  box-shadow: 0 6px 14px -10px var(--accent-primary);
 }
 
 .tool-body .muted {
@@ -229,9 +236,9 @@
   align-items: center;
   height: 20px;
   padding: 0 8px;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--glass-border);
   border-radius: 999px;
-  background: var(--bg-tertiary);
+  background: var(--badge-bg);
   color: var(--text-tertiary);
   font-size: 11px;
   white-space: nowrap;
@@ -262,10 +269,10 @@
 }
 
 .tool-body .tag {
-  padding: 2px 6px;
-  border: 1px solid var(--border-default);
-  border-radius: 6px;
-  background: var(--bg-tertiary);
+  padding: 2px 7px;
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  background: var(--badge-bg);
   color: var(--text-tertiary);
   font-family: var(--font-family-mono);
   font-size: 11px;
@@ -275,11 +282,11 @@
 .tool-body textarea.result {
   max-height: 420px;
   margin: 0;
-  padding: 10px;
+  padding: 12px;
   overflow: auto;
-  border: 1px solid var(--border-default);
-  border-radius: 8px;
-  background: var(--bg-tertiary);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: var(--glass-bg);
   color: var(--text-primary);
   font-family: var(--font-family-mono);
   font-size: 12px;
@@ -337,16 +344,16 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 8px 10px;
-  border: 1px solid var(--border-default);
-  border-radius: 8px;
-  background: var(--bg-secondary);
+  padding: 10px 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: var(--glass-bg);
 }
 
 .tool-body .empty {
   padding: 28px;
   border: 1px dashed var(--border-emphasis);
-  border-radius: 10px;
+  border-radius: 14px;
   color: var(--text-quaternary);
   text-align: center;
 }
@@ -362,16 +369,16 @@
   max-height: 460px;
   padding: 14px;
   overflow: auto;
-  border: 1px solid var(--border-default);
-  border-radius: 8px;
-  background: var(--bg-tertiary);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: var(--glass-bg);
 }
 
 .tool-body .preview-frame {
   width: 100%;
   height: 380px;
-  border: 1px solid var(--border-default);
-  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
   background: #fff;
 }
 
@@ -399,9 +406,9 @@
 .tool-body .markdown-body pre {
   padding: 10px;
   overflow: auto;
-  border: 1px solid var(--border-default);
-  border-radius: 8px;
-  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: var(--glass-bg);
 }
 
 .tool-body .markdown-body pre code {
@@ -436,9 +443,9 @@
 .tool-body .match-list {
   margin: 0;
   padding: 8px 12px;
-  border: 1px solid var(--border-default);
-  border-radius: 8px;
-  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: var(--glass-bg);
   font-size: 12px;
 }
 
@@ -454,9 +461,9 @@
 .tool-body .diff-view {
   max-height: 420px;
   overflow: auto;
-  border: 1px solid var(--border-default);
-  border-radius: 8px;
-  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: var(--glass-bg);
   font-family: var(--font-family-mono);
   font-size: 12px;
 }
@@ -487,16 +494,16 @@
   place-items: center;
   min-height: 240px;
   padding: 16px;
-  border: 1px solid var(--border-default);
-  border-radius: 8px;
-  background: var(--bg-tertiary);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  background: var(--glass-bg);
 }
 
 .tool-body .qr-image {
   width: 256px;
   height: 256px;
   padding: 8px;
-  border-radius: 8px;
+  border-radius: 10px;
   background: #fff;
   image-rendering: pixelated;
 }
@@ -525,7 +532,7 @@
 
 .tool-body .progress > div {
   height: 100%;
-  background: var(--accent-primary);
+  background: var(--aurora-grad);
 }
 
 @media (max-width: 860px) {

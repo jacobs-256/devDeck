@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useMemo } from 'react';
 import { VscScreenFull, VscScreenNormal } from 'react-icons/vsc';
 import styles from './ToolsPage.module.css';
+import { useI18n } from '../legacy-renderer/i18n';
 import { categoryColor, type Category, type LegacyModule } from './data';
 import { TOOLS } from '../tools/registry';
 import { PluginView } from '../components/PluginView';
@@ -41,6 +42,7 @@ export default function ToolsPage({
   onSetFullscreen: (v: boolean) => void;
   onRequestCollapseSidebar?: () => void;
 }) {
+  const { t } = useI18n();
   const pluginById = useMemo(() => new Map(plugins.map((p) => [p.manifest.id, p])), [plugins]);
 
   const selectedModule: LegacyModule | null = useMemo(() => {
@@ -156,7 +158,7 @@ export default function ToolsPage({
                 className={styles.toolHeaderBtn}
                 data-active={isFullscreen ? '1' : '0'}
                 onClick={() => onSetFullscreen(!isFullscreen)}
-                title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+                title={isFullscreen ? t('tools.exitFullscreen') : t('tools.enterFullscreen')}
               >
                 {isFullscreen ? <VscScreenNormal /> : <VscScreenFull />}
               </button>
@@ -166,8 +168,8 @@ export default function ToolsPage({
           <div className={styles.content}>
             {openedTools.length === 0 && (
               <div className={styles.empty}>
-                <div className={styles.emptyTitle}>Select a tool from the panel</div>
-                <div className={styles.emptySubtitle}>Choose from available developer utilities</div>
+                <div className={styles.emptyTitle}>{t('tools.selectTool')}</div>
+                <div className={styles.emptySubtitle}>{t('tools.selectToolHint')}</div>
               </div>
             )}
 

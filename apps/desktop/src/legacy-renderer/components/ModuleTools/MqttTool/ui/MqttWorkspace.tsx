@@ -910,7 +910,12 @@ export default function MqttWorkspace({ config, status: externalStatus, onEdit, 
 
       {showSubDialog && (
         <div className={styles.subDialogOverlay} onClick={() => setShowSubDialog(false)}>
-          <div className={styles.subDialog} onClick={(e) => e.stopPropagation()}>
+          <div
+            className={styles.subDialog}
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className={styles.subDialogTitle}>{t('addSubscription')}</div>
             <div className={styles.subDialogField}>
               <label className={styles.subDialogLabel}>{t('subTopic')}</label>
@@ -999,7 +1004,12 @@ export default function MqttWorkspace({ config, status: externalStatus, onEdit, 
 
       {showDeleteConfirm && (
         <div className={styles.subDialogOverlay} onClick={() => setShowDeleteConfirm(false)}>
-          <div className={styles.subDialog} onClick={(e) => e.stopPropagation()}>
+          <div
+            className={styles.subDialog}
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className={styles.subDialogTitle}>{t('deleteConfirmTitle')}</div>
             <div className={styles.deleteConfirmMsg}>{t('deleteConfirmMsg', { name: config.name })}</div>
             <div className={styles.subDialogBtns}>

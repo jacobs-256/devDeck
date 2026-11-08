@@ -8,7 +8,7 @@
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-use devtoolbox_contract::DevToolboxError;
+use devdeck_contract::DevDeckError;
 use rumqttc::{AsyncClient, Event, Incoming, MqttOptions, QoS, Transport};
 use serde::Serialize;
 use url::Url;
@@ -69,11 +69,11 @@ impl std::fmt::Debug for MqttManager {
     }
 }
 
-fn parse_broker(raw: &str) -> Result<(String, u16, bool), DevToolboxError> {
+fn parse_broker(raw: &str) -> Result<(String, u16, bool), DevDeckError> {
     let url = Url::parse(raw.trim())
-        .map_err(|err| DevToolboxError::InvalidArgument(format!("invalid broker URL: {err}")))?;
+        .map_err(|err| DevDeckError::InvalidArgument(format!("invalid broker URL: {err}")))?;
     if !url.username().is_empty() || url.password().is_some() {
-        return Err(DevToolboxError::InvalidArgument(
+        return Err(DevDeckError::InvalidArgument(
             "put credentials in the username/password fields, not the URL".to_string(),
         ));
     }
@@ -81,31 +81,27 @@ fn parse_broker(raw: &str) -> Result<(String, u16, bool), DevToolboxError> {
     let (host, port, tls) = match url.scheme() {
         "mqtt" => (
             url.host_str()
-                .ok_or_else(|| {
-                    DevToolboxError::InvalidArgument("broker URL has no host".to_string())
-                })?
+                .ok_or_else(|| DevDeckError::InvalidArgument("broker URL has no host".to_string()))?
                 .to_string(),
             url.port().unwrap_or(1883),
             false,
         ),
         "mqtts" => (
             url.host_str()
-                .ok_or_else(|| {
-                    DevToolboxError::InvalidArgument("broker URL has no host".to_string())
-                })?
+                .ok_or_else(|| DevDeckError::InvalidArgument("broker URL has no host".to_string()))?
                 .to_string(),
             url.port().unwrap_or(8883),
             true,
         ),
         other => {
-            return Err(DevToolboxError::InvalidArgument(format!(
+            return Err(DevDeckError::InvalidArgument(format!(
                 "broker URL must use mqtt:// or mqtts://, got '{other}'"
             )))
         }
     };
 
     if url.path() != "/" && !url.path().is_empty() {
-        return Err(DevToolboxError::InvalidArgument(
+        return Err(DevDeckError::InvalidArgument(
             "broker URL must not contain a path".to_string(),
         ));
     }
@@ -113,21 +109,21 @@ fn parse_broker(raw: &str) -> Result<(String, u16, bool), DevToolboxError> {
     Ok((host, port, tls))
 }
 
-fn parse_qos(value: Option<u8>) -> Result<QoS, DevToolboxError> {
+fn parse_qos(value: Option<u8>) -> Result<QoS, DevDeckError> {
     match value.unwrap_or(0) {
         0 => Ok(QoS::AtMostOnce),
         1 => Ok(QoS::AtLeastOnce),
         2 => Ok(QoS::ExactlyOnce),
-        other => Err(DevToolboxError::InvalidArgument(format!(
+        other => Err(DevDeckError::InvalidArgument(format!(
             "QoS must be 0, 1, or 2 (got {other})"
         ))),
     }
 }
 
-fn validate_topic(topic: &str) -> Result<&str, DevToolboxError> {
+fn validate_topic(topic: &str) -> Result<&str, DevDeckError> {
     let trimmed = topic.trim();
     if trimmed.is_empty() || trimmed.len() > MAX_TOPIC_LEN || trimmed.contains('\0') {
-        return Err(DevToolboxError::InvalidArgument(
+        return Err(DevDeckError::InvalidArgument(
             "topic must be 1-512 characters and contain no NUL bytes".to_string(),
         ));
     }
@@ -142,17 +138,15 @@ impl MqttManager {
         }
     }
 
-    fn session(&self, session_id: &str) -> Result<AsyncClient, DevToolboxError> {
+    fn session(&self, session_id: &str) -> Result<AsyncClient, DevDeckError> {
         let sessions = self
             .sessions
             .lock()
-            .map_err(|_| DevToolboxError::Internal("MQTT session lock poisoned".to_string()))?;
+            .map_err(|_| DevDeckError::Internal("MQTT session lock poisoned".to_string()))?;
         sessions
             .get(session_id)
             .map(|session| session.client.clone())
-            .ok_or_else(|| {
-                DevToolboxError::NotFound(format!("unknown MQTT session '{session_id}'"))
-            })
+            .ok_or_else(|| DevDeckError::NotFound(format!("unknown MQTT session '{session_id}'")))
     }
 
     pub async fn connect(
@@ -162,14 +156,14 @@ impl MqttManager {
         username: Option<&str>,
         password: Option<&str>,
         keep_alive_secs: u16,
-    ) -> Result<String, DevToolboxError> {
+    ) -> Result<String, DevDeckError> {
         {
             let sessions = self
                 .sessions
                 .lock()
-                .map_err(|_| DevToolboxError::Internal("MQTT session lock poisoned".to_string()))?;
+                .map_err(|_| DevDeckError::Internal("MQTT session lock poisoned".to_string()))?;
             if sessions.len() >= MAX_SESSIONS {
-                return Err(DevToolboxError::denied(format!(
+                return Err(DevDeckError::denied(format!(
                     "at most {MAX_SESSIONS} MQTT sessions can be open at once"
                 )));
             }
@@ -177,12 +171,12 @@ impl MqttManager {
 
         let (host, port, tls) = parse_broker(broker)?;
         let client_id = if client_id.trim().is_empty() {
-            format!("devtoolbox-{}", uuid::Uuid::new_v4().simple())
+            format!("devdeck-{}", uuid::Uuid::new_v4().simple())
         } else {
             client_id.trim().to_string()
         };
         if client_id.len() > 128 {
-            return Err(DevToolboxError::InvalidArgument(
+            return Err(DevDeckError::InvalidArgument(
                 "client id must be at most 128 characters".to_string(),
             ));
         }
@@ -246,7 +240,7 @@ impl MqttManager {
 
         self.sessions
             .lock()
-            .map_err(|_| DevToolboxError::Internal("MQTT session lock poisoned".to_string()))?
+            .map_err(|_| DevDeckError::Internal("MQTT session lock poisoned".to_string()))?
             .insert(session_id.clone(), Session { client, task });
 
         Ok(session_id)
@@ -257,13 +251,13 @@ impl MqttManager {
         session_id: &str,
         topic: &str,
         qos: Option<u8>,
-    ) -> Result<(), DevToolboxError> {
+    ) -> Result<(), DevDeckError> {
         let topic = validate_topic(topic)?;
         let qos = parse_qos(qos)?;
         self.session(session_id)?
             .subscribe(topic, qos)
             .await
-            .map_err(|err| DevToolboxError::Internal(format!("subscribe failed: {err}")))
+            .map_err(|err| DevDeckError::Internal(format!("subscribe failed: {err}")))
     }
 
     pub async fn publish(
@@ -273,27 +267,27 @@ impl MqttManager {
         payload: &str,
         qos: Option<u8>,
         retain: bool,
-    ) -> Result<(), DevToolboxError> {
+    ) -> Result<(), DevDeckError> {
         let topic = validate_topic(topic)?;
         if payload.len() > MAX_PAYLOAD_BYTES {
-            return Err(DevToolboxError::InvalidArgument(
+            return Err(DevDeckError::InvalidArgument(
                 "payload is larger than 256 KiB".to_string(),
             ));
         }
         self.session(session_id)?
             .publish(topic, parse_qos(qos)?, retain, payload.as_bytes())
             .await
-            .map_err(|err| DevToolboxError::Internal(format!("publish failed: {err}")))
+            .map_err(|err| DevDeckError::Internal(format!("publish failed: {err}")))
     }
 
-    pub async fn disconnect(&self, session_id: &str) -> Result<(), DevToolboxError> {
+    pub async fn disconnect(&self, session_id: &str) -> Result<(), DevDeckError> {
         let session = self
             .sessions
             .lock()
-            .map_err(|_| DevToolboxError::Internal("MQTT session lock poisoned".to_string()))?
+            .map_err(|_| DevDeckError::Internal("MQTT session lock poisoned".to_string()))?
             .remove(session_id)
             .ok_or_else(|| {
-                DevToolboxError::NotFound(format!("unknown MQTT session '{session_id}'"))
+                DevDeckError::NotFound(format!("unknown MQTT session '{session_id}'"))
             })?;
 
         let _ = session.client.disconnect().await;
@@ -309,7 +303,7 @@ fn emit_event(emit: &EventSink, event: MqttEvent) {
 }
 
 /// Exposed for tests: validate a broker URL without connecting.
-pub fn validate_broker(raw: &str) -> Result<String, DevToolboxError> {
+pub fn validate_broker(raw: &str) -> Result<String, DevDeckError> {
     let (host, port, tls) = parse_broker(raw)?;
     Ok(format!(
         "{}://{host}:{port}",

@@ -1,0 +1,23 @@
+// @ts-nocheck
+export default {
+  name: 'JSON ⇄ XML',
+  description: '在 JSON 与 XML 之间转换，支持语法高亮',
+  mode: '模式',
+  modeJsonToXml: 'JSON → XML',
+  modeXmlToJson: 'XML → JSON',
+  inputJson: '输入 JSON',
+  inputXml: '输入 XML',
+  outputJson: 'JSON 输出',
+  outputXml: 'XML 输出',
+  placeholderJson: '在此粘贴 JSON…',
+  placeholderXml: '在此粘贴 XML…',
+  importJson: '导入 JSON',
+  importXml: '导入 XML',
+  formatJson: '格式化',
+  copy: '复制',
+  copied: '已复制',
+  save: '保存',
+  clear: '清空',
+  errorInvalidJson: 'JSON 无效',
+  errorInvalidXml: 'XML 无效',
+};

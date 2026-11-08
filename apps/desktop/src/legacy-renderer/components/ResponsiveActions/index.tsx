@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { useState, useRef, useEffect, useLayoutEffect, type ReactNode } from 'react';
 import styles from './ResponsiveActions.module.css';
+import { useI18n } from '../../i18n';
 import { ToolButton } from '@@components';
 import { VscChevronDown, VscEllipsis } from 'react-icons/vsc';
 
@@ -20,6 +21,7 @@ interface ResponsiveActionsProps {
 }
 
 export default function ResponsiveActions({ actions, compactWidth = 420 }: ResponsiveActionsProps) {
+  const { t } = useI18n();
   const wrapRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
   const [subMenuIndex, setSubMenuIndex] = useState<number | null>(null);
@@ -166,7 +168,7 @@ export default function ResponsiveActions({ actions, compactWidth = 420 }: Respo
           disabled
         >
           <VscEllipsis />
-          <span className={styles.moreText}>More</span>
+          <span className={styles.moreText}>{t('actions.more')}</span>
         </ToolButton>
       </div>
 
@@ -195,11 +197,11 @@ export default function ResponsiveActions({ actions, compactWidth = 420 }: Respo
             <ToolButton
               className={`${styles.btn} ${styles.moreBtn}`}
               onClick={() => setOverflowMenuOpen(!overflowMenuOpen)}
-              aria-label="More actions"
-              title="More"
+              aria-label={t('actions.moreActions')}
+              title={t('actions.more')}
             >
               <VscEllipsis />
-              <span className={styles.moreText}>More</span>
+              <span className={styles.moreText}>{t('actions.more')}</span>
             </ToolButton>
             {overflowMenuOpen && (
               <div className={styles.dropdown}>

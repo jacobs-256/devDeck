@@ -2,7 +2,7 @@
 
 This guide is for **third-party plugin authors**. You only need HTML, CSS, and
 JavaScript/TypeScript — Rust is only required for host capabilities, which are
-maintained by the DevToolBox project.
+maintained by the DevDeck project.
 
 - Protocol specification: [Marketplace protocol](../architecture/marketplace.md)
 - Security model: [Security model](../architecture/security-model.md)
@@ -23,16 +23,16 @@ my-plugin/
 
 The host serves `package/` from `plugin://localhost/<your-id>/` inside a
 sandboxed iframe and injects nothing into your page. You reach the host only
-through `@devtoolbox/plugin-sdk`.
+through `@devdeck/plugin-sdk`.
 
 ## 2. Scaffold
 
 There are two supported starting points.
 
-### Inside the DevToolBox repository (recommended for examples)
+### Inside the DevDeck repository (recommended for examples)
 
 ```bash
-pnpm --filter @devtoolbox/marketplace create \
+pnpm --filter @devdeck/marketplace create \
   --id market-my-tool --name "My Tool" --permissions storage:kv
 ```
 
@@ -41,7 +41,7 @@ Generated layout:
 ```
 marketplace/modules/market-my-tool/
 ├── manifest.json        schema 2, sdkVersion 2.0
-├── package.json         includes @devtoolbox/plugin-sdk
+├── package.json         includes @devdeck/plugin-sdk
 ├── vite.config.ts       base './', outDir 'package'
 ├── tsconfig.json
 ├── index.html
@@ -60,7 +60,7 @@ Useful flags: `--description`, `--category`, `--author`, `--license`,
 ```bash
 mkdir my-plugin && cd my-plugin
 pnpm init
-pnpm add @devtoolbox/plugin-sdk
+pnpm add @devdeck/plugin-sdk
 pnpm add -D vite typescript @vitejs/plugin-react @types/react @types/react-dom
 ```
 
@@ -115,7 +115,7 @@ The full field table is in the [protocol spec](../architecture/marketplace.md#3-
 ## 4. Using the SDK
 
 ```ts
-import { sdk, followHostTheme } from '@devtoolbox/plugin-sdk';
+import { sdk, followHostTheme } from '@devdeck/plugin-sdk';
 
 followHostTheme(); // keeps data-theme in sync with the host
 
@@ -179,7 +179,7 @@ host can enforce permissions and allowlists.
 ### SSH and SFTP
 
 ```ts
-import { onSshEvent, sdk } from '@devtoolbox/plugin-sdk';
+import { onSshEvent, sdk } from '@devdeck/plugin-sdk';
 
 const stop = onSshEvent((event) => {
   if (event.event === 'data') process.stdout(event.text ?? '');
@@ -211,7 +211,7 @@ Plugins never receive filesystem paths. The user picks a file, the host returns
 an opaque token bound to your plugin, and reads/writes go through that token:
 
 ```ts
-import { sdk } from '@devtoolbox/plugin-sdk';
+import { sdk } from '@devdeck/plugin-sdk';
 
 const picked = await sdk.fs.pickFile({
   title: 'Open configuration',
@@ -248,7 +248,7 @@ Rules:
 socket, enforces direction and size limits, and pushes data back as events:
 
 ```ts
-import { onSocketEvent, sdk } from '@devtoolbox/plugin-sdk';
+import { onSocketEvent, sdk } from '@devdeck/plugin-sdk';
 
 const stop = onSocketEvent((event) => {
   if (event.event === 'data') console.log(event.text ?? event.data);
@@ -299,8 +299,8 @@ single session.
 ## 5. Local development
 
 ```bash
-# In the DevToolBox repository
-pnpm --filter @devtoolbox/desktop tauri dev
+# In the DevDeck repository
+pnpm --filter @devdeck/desktop tauri dev
 
 # In your plugin
 pnpm dev                      # Vite preview; SDK calls fail outside the host
@@ -310,10 +310,10 @@ pnpm build
 Load your plugin while iterating through a local signed registry:
 
 ```bash
-pnpm --filter @devtoolbox/marketplace pack market-my-plugin
-DEVTOOLBOX_SIGNING_KEY=$(cat .signing/my-key.txt) \
-  pnpm --filter @devtoolbox/marketplace sign .local-dist/market-my-plugin-0.1.0.zip
-pnpm --filter @devtoolbox/marketplace registry market-my-plugin \
+pnpm --filter @devdeck/marketplace pack market-my-plugin
+DEVDECK_SIGNING_KEY=$(cat .signing/my-key.txt) \
+  pnpm --filter @devdeck/marketplace sign .local-dist/market-my-plugin-0.1.0.zip
+pnpm --filter @devdeck/marketplace registry market-my-plugin \
   --base-url http://127.0.0.1:8765 --out .local-dist/registry.json
 
 # serve .local-dist, then add http://127.0.0.1:8765/registry.json
@@ -327,22 +327,22 @@ The host logs every permission failure with a code, so check
 
 ## 6. Packaging, signing, publishing
 
-From the DevToolBox repository:
+From the DevDeck repository:
 
 ```bash
 # 0. Scaffold if you have not already
-#    pnpm --filter @devtoolbox/marketplace create --id market-my-tool --name "My Tool"
+#    pnpm --filter @devdeck/marketplace create --id market-my-tool --name "My Tool"
 
 # Build and pack into marketplace/.local-dist
-pnpm --filter @devtoolbox/marketplace pack market-my-plugin
+pnpm --filter @devdeck/marketplace pack market-my-plugin
 
 # Sign (recommended; required by the official registry)
-pnpm --filter @devtoolbox/marketplace keygen --out .signing/my-key.txt
-DEVTOOLBOX_SIGNING_KEY=$(cat .signing/my-key.txt) \
-  pnpm --filter @devtoolbox/marketplace sign .local-dist/market-my-plugin-0.1.0.zip
+pnpm --filter @devdeck/marketplace keygen --out .signing/my-key.txt
+DEVDECK_SIGNING_KEY=$(cat .signing/my-key.txt) \
+  pnpm --filter @devdeck/marketplace sign .local-dist/market-my-plugin-0.1.0.zip
 
 # Generate a registry entry for your own registry
-pnpm --filter @devtoolbox/marketplace registry market-my-plugin \
+pnpm --filter @devdeck/marketplace registry market-my-plugin \
   --base-url https://example.com/marketplace --out release-dist/registry.json
 ```
 
@@ -358,7 +358,7 @@ registry URL to their sources.
 
 Before publishing, confirm:
 
-- [ ] `manifest.json` validates (`pnpm --filter @devtoolbox/marketplace registry`)
+- [ ] `manifest.json` validates (`pnpm --filter @devdeck/marketplace registry`)
 - [ ] The entry HTML loads with no network access beyond `httpDomains`
 - [ ] Every host call is wrapped in error handling
 - [ ] No `eval`, remote scripts, or inline event handlers
@@ -377,7 +377,7 @@ Before publishing, confirm:
 
 ## 9. Getting help
 
-- Open a discussion in the DevToolBox repository.
+- Open a discussion in the DevDeck repository.
 - Security issues: follow [the security policy](../governance/security.md).
 
 > 中文镜像：[docs/zh-CN/plugin-dev/marketplace-v2.md](../zh-CN/plugin-dev/marketplace-v2.md)

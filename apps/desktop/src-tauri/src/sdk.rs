@@ -5,7 +5,7 @@
 //! and a permission to the contract — never a new Tauri command per feature.
 //! That keeps the host surface small and the permission model auditable.
 
-use devtoolbox_contract::{DevToolboxError, Permission, PluginId};
+use devdeck_contract::{DevDeckError, Permission, PluginId};
 use serde_json::{json, Value};
 use tauri::AppHandle;
 use tauri_plugin_opener::OpenerExt;
@@ -23,7 +23,7 @@ pub async fn dispatch(
     plugin_id: &PluginId,
     method: &str,
     params: Value,
-) -> Result<Value, DevToolboxError> {
+) -> Result<Value, DevDeckError> {
     // A disabled or uninstalled plugin cannot call anything.
     let plugin = state.require_active(plugin_id)?;
     // SDK 1.x plugins expect the legacy response shapes (`storage.get` returned
@@ -41,40 +41,51 @@ pub async fn dispatch(
 
         "storage.get" => {
             require(state, plugin_id, Permission::StorageKv)?;
-            let key = string_param(&params, "key")?;
-            let value = state.storage().get(plugin_id, key)?;
+            let key = string_param(&params, "key")?.to_string();
+            let storage = state.storage_handle();
+            let plugin_id = plugin_id.clone();
+            let value = run_blocking(move || storage.get(&plugin_id, &key)).await?;
             Ok(storage_get_response(value, legacy))
         }
         "storage.set" => {
             require(state, plugin_id, Permission::StorageKv)?;
-            let key = string_param(&params, "key")?;
+            let key = string_param(&params, "key")?.to_string();
             let value = params
                 .get("value")
                 .cloned()
-                .ok_or_else(|| DevToolboxError::InvalidArgument("missing 'value'".to_string()))?;
-            state.storage().set(plugin_id, key, value)?;
+                .ok_or_else(|| DevDeckError::InvalidArgument("missing 'value'".to_string()))?;
+            let storage = state.storage_handle();
+            let plugin_id = plugin_id.clone();
+            run_blocking(move || storage.set(&plugin_id, &key, value)).await?;
             Ok(json!({ "saved": true }))
         }
         "storage.delete" => {
             require(state, plugin_id, Permission::StorageKv)?;
-            let key = string_param(&params, "key")?;
-            let deleted = state.storage().delete(plugin_id, key)?;
+            let key = string_param(&params, "key")?.to_string();
+            let storage = state.storage_handle();
+            let plugin_id = plugin_id.clone();
+            let deleted = run_blocking(move || storage.delete(&plugin_id, &key)).await?;
             Ok(json!({ "deleted": deleted }))
         }
         "storage.keys" | "storage.list" => {
             require(state, plugin_id, Permission::StorageKv)?;
             let prefix = params.get("prefix").and_then(Value::as_str).unwrap_or("");
-            let keys: Vec<String> = state
-                .storage()
-                .keys(plugin_id)?
-                .into_iter()
-                .filter(|key| key.starts_with(prefix))
-                .collect();
+            let prefix = prefix.to_string();
+            let storage = state.storage_handle();
+            let plugin_id = plugin_id.clone();
+            let keys = run_blocking(move || {
+                let mut keys = storage.keys(&plugin_id)?;
+                keys.retain(|key| key.starts_with(&prefix));
+                Ok(keys)
+            })
+            .await?;
             Ok(storage_keys_response(keys, legacy))
         }
         "storage.clear" => {
             require(state, plugin_id, Permission::StorageKv)?;
-            state.storage().clear(plugin_id)?;
+            let storage = state.storage_handle();
+            let plugin_id = plugin_id.clone();
+            run_blocking(move || storage.clear(&plugin_id)).await?;
             Ok(json!({ "cleared": true }))
         }
 
@@ -90,10 +101,10 @@ pub async fn dispatch(
         "http.request" => {
             let request: http::HttpRequestParams =
                 serde_json::from_value(params).map_err(|err| {
-                    DevToolboxError::InvalidArgument(format!("invalid http.request params: {err}"))
+                    DevDeckError::InvalidArgument(format!("invalid http.request params: {err}"))
                 })?;
             let response = http::execute(state, plugin_id, request).await?;
-            serde_json::to_value(response).map_err(DevToolboxError::from)
+            serde_json::to_value(response).map_err(DevDeckError::from)
         }
 
         // ---- SSH / SFTP (`net:ssh`) ----
@@ -101,7 +112,7 @@ pub async fn dispatch(
             require(state, plugin_id, Permission::NetSsh)?;
             let params: crate::ssh::ConnectParams = serde_json::from_value(params.clone())
                 .map_err(|err| {
-                    DevToolboxError::InvalidArgument(format!("invalid ssh.connect params: {err}"))
+                    DevDeckError::InvalidArgument(format!("invalid ssh.connect params: {err}"))
                 })?;
             let terminal_id = params.terminal_id.clone();
             let cols = params.cols.unwrap_or(120);
@@ -207,7 +218,7 @@ pub async fn dispatch(
             let removed = state.ssh().forget_host(host, port)?;
             Ok(json!({ "removed": removed }))
         }
-        "ssh.respondKeyboard" => Err(DevToolboxError::Unsupported(
+        "ssh.respondKeyboard" => Err(DevDeckError::Unsupported(
             "keyboard-interactive authentication is not supported; use a password or key"
                 .to_string(),
         )),
@@ -278,10 +289,10 @@ pub async fn dispatch(
             let session_id = string_param(&params, "sessionId")?;
             let from = optional_string(&params, "from")
                 .or_else(|| optional_string(&params, "oldPath"))
-                .ok_or_else(|| DevToolboxError::InvalidArgument("missing 'from'".to_string()))?;
+                .ok_or_else(|| DevDeckError::InvalidArgument("missing 'from'".to_string()))?;
             let to = optional_string(&params, "to")
                 .or_else(|| optional_string(&params, "newPath"))
-                .ok_or_else(|| DevToolboxError::InvalidArgument("missing 'to'".to_string()))?;
+                .ok_or_else(|| DevDeckError::InvalidArgument("missing 'to'".to_string()))?;
             state
                 .ssh()
                 .sftp_rename(plugin_id, session_id, from, to)
@@ -329,7 +340,7 @@ pub async fn dispatch(
                 file_token,
                 optional_string(&params, "encoding"),
             )?;
-            serde_json::to_value(contents).map_err(DevToolboxError::from)
+            serde_json::to_value(contents).map_err(DevDeckError::from)
         }
         "fs.writeFile" => {
             require(state, plugin_id, Permission::FsWrite)?;
@@ -350,7 +361,7 @@ pub async fn dispatch(
                 state
                     .files()
                     .read_data(plugin_id, path, optional_string(&params, "encoding"))?;
-            serde_json::to_value(contents).map_err(DevToolboxError::from)
+            serde_json::to_value(contents).map_err(DevDeckError::from)
         }
         "fs.writePluginData" => {
             require(state, plugin_id, Permission::FsPluginData)?;
@@ -460,20 +471,20 @@ pub async fn dispatch(
             require(state, plugin_id, Permission::SystemOpenExternal)?;
             let raw = string_param(&params, "url")?;
             let url = url::Url::parse(raw)
-                .map_err(|err| DevToolboxError::InvalidArgument(format!("invalid URL: {err}")))?;
+                .map_err(|err| DevDeckError::InvalidArgument(format!("invalid URL: {err}")))?;
             if !matches!(url.scheme(), "http" | "https") {
-                return Err(DevToolboxError::denied(
+                return Err(DevDeckError::denied(
                     "only http(s) URLs may be opened externally",
                 ));
             }
             if !url.username().is_empty() || url.password().is_some() {
-                return Err(DevToolboxError::denied(
+                return Err(DevDeckError::denied(
                     "URLs with embedded credentials are not allowed",
                 ));
             }
             app.opener()
                 .open_url(url.to_string(), None::<&str>)
-                .map_err(|err| DevToolboxError::Internal(format!("failed to open URL: {err}")))?;
+                .map_err(|err| DevDeckError::Internal(format!("failed to open URL: {err}")))?;
             Ok(json!({ "opened": true }))
         }
 
@@ -490,7 +501,7 @@ pub async fn dispatch(
                 })
                 .unwrap_or_default();
             if names.is_empty() {
-                return Err(DevToolboxError::InvalidArgument(
+                return Err(DevDeckError::InvalidArgument(
                     "keys must be a non-empty array of environment variable names".to_string(),
                 ));
             }
@@ -519,7 +530,7 @@ pub async fn dispatch(
             Ok(json!({ "theme": state.theme() }))
         }
 
-        other => Err(DevToolboxError::Unsupported(format!(
+        other => Err(DevDeckError::Unsupported(format!(
             "unknown SDK method '{other}'"
         ))),
     }
@@ -529,19 +540,32 @@ fn require(
     state: &AppState,
     plugin_id: &PluginId,
     permission: Permission,
-) -> Result<(), DevToolboxError> {
+) -> Result<(), DevDeckError> {
     state.broker()?.require(plugin_id, permission)?;
     Ok(())
 }
 
-fn string_param<'a>(params: &'a Value, key: &str) -> Result<&'a str, DevToolboxError> {
+/// Run a blocking storage operation on the blocking pool.
+///
+/// Storage documents are small, but a large cached value still means disk I/O
+/// and serialization; keeping that off the async IPC worker stops one plugin
+/// from delaying every other plugin call.
+async fn run_blocking<T, F>(work: F) -> Result<T, DevDeckError>
+where
+    T: Send + 'static,
+    F: FnOnce() -> Result<T, DevDeckError> + Send + 'static,
+{
+    tokio::task::spawn_blocking(work)
+        .await
+        .map_err(|err| DevDeckError::Internal(format!("storage task failed: {err}")))?
+}
+
+fn string_param<'a>(params: &'a Value, key: &str) -> Result<&'a str, DevDeckError> {
     params
         .get(key)
         .and_then(Value::as_str)
         .filter(|value| !value.is_empty())
-        .ok_or_else(|| {
-            DevToolboxError::InvalidArgument(format!("missing string parameter '{key}'"))
-        })
+        .ok_or_else(|| DevDeckError::InvalidArgument(format!("missing string parameter '{key}'")))
 }
 
 /// SDK 1.x plugins keep working: unknown/failed versions are treated as legacy
@@ -590,16 +614,16 @@ fn optional_string<'a>(params: &'a Value, key: &str) -> Option<&'a str> {
         .filter(|value| !value.is_empty())
 }
 
-fn port_param(params: &Value, key: &str) -> Result<u16, DevToolboxError> {
+fn port_param(params: &Value, key: &str) -> Result<u16, DevDeckError> {
     let raw = params
         .get(key)
         .and_then(Value::as_u64)
-        .ok_or_else(|| DevToolboxError::InvalidArgument(format!("missing numeric '{key}'")))?;
+        .ok_or_else(|| DevDeckError::InvalidArgument(format!("missing numeric '{key}'")))?;
     u16::try_from(raw)
-        .map_err(|_| DevToolboxError::InvalidArgument(format!("'{key}' must be 0-65535")))
+        .map_err(|_| DevDeckError::InvalidArgument(format!("'{key}' must be 0-65535")))
 }
 
-fn data_param(params: &Value) -> Result<Vec<u8>, DevToolboxError> {
+fn data_param(params: &Value) -> Result<Vec<u8>, DevDeckError> {
     let data = string_param(params, "data")?;
     socket::decode_payload(data, optional_string(params, "encoding"))
 }
@@ -608,28 +632,29 @@ fn session_param(
     state: &AppState,
     plugin_id: &PluginId,
     params: &Value,
-) -> Result<String, DevToolboxError> {
+) -> Result<String, DevDeckError> {
     if let Some(session_id) = optional_string(params, "sessionId") {
         return Ok(session_id.to_string());
     }
     state.sockets().only_session(plugin_id).ok_or_else(|| {
-        DevToolboxError::InvalidArgument(
+        DevDeckError::InvalidArgument(
             "sessionId is required when the plugin has zero or multiple sessions".to_string(),
         )
     })
 }
 
-fn text_param<'a>(params: &'a Value, key: &str) -> Result<&'a str, DevToolboxError> {
-    params.get(key).and_then(Value::as_str).ok_or_else(|| {
-        DevToolboxError::InvalidArgument(format!("missing string parameter '{key}'"))
-    })
+fn text_param<'a>(params: &'a Value, key: &str) -> Result<&'a str, DevDeckError> {
+    params
+        .get(key)
+        .and_then(Value::as_str)
+        .ok_or_else(|| DevDeckError::InvalidArgument(format!("missing string parameter '{key}'")))
 }
 
 /// Accept both the v2 `token` and the SDK 1.x `fileToken` parameter names.
-fn token_param(params: &Value) -> Result<&str, DevToolboxError> {
+fn token_param(params: &Value) -> Result<&str, DevDeckError> {
     optional_string(params, "fileToken")
         .or_else(|| optional_string(params, "token"))
-        .ok_or_else(|| DevToolboxError::InvalidArgument("missing 'fileToken'".to_string()))
+        .ok_or_else(|| DevDeckError::InvalidArgument("missing 'fileToken'".to_string()))
 }
 
 struct DialogFilter {
@@ -670,7 +695,7 @@ async fn pick_paths(
     app: &AppHandle,
     params: &Value,
     save: bool,
-) -> Result<Vec<std::path::PathBuf>, DevToolboxError> {
+) -> Result<Vec<std::path::PathBuf>, DevDeckError> {
     let title = optional_string(params, "title")
         .unwrap_or(if save { "Save File" } else { "Open File" })
         .to_string();
@@ -714,28 +739,28 @@ async fn pick_paths(
         }
     })
     .await
-    .map_err(|err| DevToolboxError::Internal(format!("file dialog failed: {err}")))
+    .map_err(|err| DevDeckError::Internal(format!("file dialog failed: {err}")))
 }
 
-fn u32_param(params: &Value, key: &str, default: u32) -> Result<u32, DevToolboxError> {
+fn u32_param(params: &Value, key: &str, default: u32) -> Result<u32, DevDeckError> {
     match params.get(key) {
         None => Ok(default),
         Some(value) => value
             .as_u64()
             .and_then(|number| u32::try_from(number).ok())
             .ok_or_else(|| {
-                DevToolboxError::InvalidArgument(format!("'{key}' must be a non-negative integer"))
+                DevDeckError::InvalidArgument(format!("'{key}' must be a non-negative integer"))
             }),
     }
 }
 
 /// Accept the v2 `channelId` and the SDK 1.x `terminalId`.
-fn ssh_channel_param(params: &Value) -> Result<String, DevToolboxError> {
+fn ssh_channel_param(params: &Value) -> Result<String, DevDeckError> {
     optional_string(params, "channelId")
         .or_else(|| optional_string(params, "terminalId"))
         .map(str::to_string)
         .ok_or_else(|| {
-            DevToolboxError::InvalidArgument("missing 'channelId' (or 'terminalId')".to_string())
+            DevDeckError::InvalidArgument("missing 'channelId' (or 'terminalId')".to_string())
         })
 }
 

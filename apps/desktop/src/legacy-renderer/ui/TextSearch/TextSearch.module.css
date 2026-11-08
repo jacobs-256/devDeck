@@ -1,33 +1,36 @@
 /* Search bar */
 .searchBar {
   position: absolute;
-  top: 4px;
+  top: 5px;
   right: 12px;
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  background-color: var(--bg-panel);
-  border: 1px solid var(--bg-active);
-  border-radius: 6px;
+  gap: 5px;
+  padding: 4px 9px;
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
   z-index: 10;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .searchInput {
   width: 140px;
-  padding: 2px 6px;
-  border: 1px solid var(--bg-active);
-  border-radius: 4px;
+  padding: 3px 7px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-small);
   outline: none;
-  font-size: 12px;
+  font-size: 11px;
   font-family: inherit;
-  background-color: var(--bg-primary);
+  background-color: var(--bg-tertiary);
   color: var(--text-primary);
 }
 
 .searchInput:focus {
-  border-color: var(--accent-color);
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-color-weak);
 }
 
 .searchInfo {
@@ -53,7 +56,7 @@
 }
 
 .searchBtn:hover {
-  background-color: var(--bg-active);
+  background-color: var(--bg-hover);
   color: var(--text-primary);
 }
 

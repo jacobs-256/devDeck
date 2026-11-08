@@ -2,11 +2,11 @@ export type SdkError = { code: string; message: string; details?: unknown };
 export type SdkResult<T> = { ok: true; data?: T } | { ok: false; error: SdkError };
 
 type ResponseMessage =
-  | { type: 'devtoolbox:sdk:response'; requestId: string; ok: true; data?: unknown }
-  | { type: 'devtoolbox:sdk:response'; requestId: string; ok: false; error: SdkError };
+  | { type: 'devdeck:sdk:response'; requestId: string; ok: true; data?: unknown }
+  | { type: 'devdeck:sdk:response'; requestId: string; ok: false; error: SdkError };
 
-type EventMessage = { type: 'devtoolbox:sdk:event'; domain: string; payload?: unknown };
-type ReadyAckMessage = { type: 'devtoolbox:plugin:ready:ack' };
+type EventMessage = { type: 'devdeck:sdk:event'; domain: string; payload?: unknown };
+type ReadyAckMessage = { type: 'devdeck:plugin:ready:ack' };
 
 const pending = new Map<string, (res: SdkResult<unknown>) => void>();
 const socketListeners = new Set<(ev: unknown) => void>();
@@ -19,7 +19,7 @@ function initReadyHandshake() {
   if (readyTimer !== null) return;
   const send = () => {
     if (readyAcked) return;
-    window.parent.postMessage({ type: 'devtoolbox:plugin:ready' }, '*');
+    window.parent.postMessage({ type: 'devdeck:plugin:ready' }, '*');
   };
   send();
   readyTimer = window.setInterval(send, 1000);
@@ -36,7 +36,7 @@ export function initSdkEvents(): void {
   window.addEventListener('message', (event: MessageEvent) => {
     const data = event.data as unknown;
     const msg = data as ResponseMessage;
-    if (msg && msg.type === 'devtoolbox:sdk:response') {
+    if (msg && msg.type === 'devdeck:sdk:response') {
       const cb = pending.get(msg.requestId);
       if (!cb) return;
       pending.delete(msg.requestId);
@@ -46,7 +46,7 @@ export function initSdkEvents(): void {
     }
 
     const ev = data as EventMessage;
-    if (ev && ev.type === 'devtoolbox:sdk:event' && ev.domain === 'socket') {
+    if (ev && ev.type === 'devdeck:sdk:event' && ev.domain === 'socket') {
       socketListeners.forEach((fn) => {
         try {
           fn(ev.payload);
@@ -58,7 +58,7 @@ export function initSdkEvents(): void {
     }
 
     const ack = data as ReadyAckMessage;
-    if (ack && ack.type === 'devtoolbox:plugin:ready:ack') {
+    if (ack && ack.type === 'devdeck:plugin:ready:ack') {
       readyAcked = true;
       if (readyTimer !== null) window.clearInterval(readyTimer);
       readyTimer = null;
@@ -71,7 +71,7 @@ export function initSdkEvents(): void {
 export function callSdk<T = unknown>(method: string, params?: unknown, timeoutMs = 15000): Promise<SdkResult<T>> {
   initSdkEvents();
   const requestId = `${Date.now()}_${Math.random().toString(16).slice(2)}`;
-  const payload = { type: 'devtoolbox:sdk:request', requestId, method, params };
+  const payload = { type: 'devdeck:sdk:request', requestId, method, params };
   window.parent.postMessage(payload, '*');
   return new Promise((resolve) => {
     pending.set(requestId, (res) => resolve(res as SdkResult<T>));

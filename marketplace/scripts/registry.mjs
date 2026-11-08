@@ -10,7 +10,7 @@
  *   .local-dist/<id>-<version>.zip          (from `pnpm pack`)
  *   .local-dist/<id>-<version>.zip.sig      (optional, from `pnpm sign`)
  *
- * The Rust crate `devtoolbox-market` is the authoritative validator at install
+ * The Rust crate `devdeck-market` is the authoritative validator at install
  * time; this script performs the same structural checks early so a broken
  * release fails before it is published.
  */
@@ -101,7 +101,7 @@ const outFile = path.resolve(
   root,
   typeof flags.get('out') === 'string' ? flags.get('out') : 'release-dist/registry.json',
 );
-const registryName = typeof flags.get('name') === 'string' ? flags.get('name') : 'DevToolBox Local Registry';
+const registryName = typeof flags.get('name') === 'string' ? flags.get('name') : 'DevDeck Local Registry';
 
 const resolvedIds = all
   ? fs.readdirSync(modulesDir).filter((name) => fs.existsSync(path.join(modulesDir, name, 'manifest.json')))

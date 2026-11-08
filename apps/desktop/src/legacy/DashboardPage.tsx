@@ -10,6 +10,7 @@ import {
 import styles from './DashboardPage.module.css';
 import { categoryColor, type Category } from './data';
 import { loadModuleUsage, scoreUsage } from './moduleUsage';
+import { useI18n } from '../legacy-renderer/i18n';
 
 type FlatTool = {
   categoryId: string;
@@ -29,6 +30,7 @@ export default function DashboardPage({
   onOpenTool: (categoryId: string, moduleId: string) => void;
   onCategorySelect: (categoryId: string) => void;
 }) {
+  const { t } = useI18n();
   const [query, setQuery] = useState('');
   const [focused, setFocused] = useState(false);
   const [activeSearchIndex, setActiveSearchIndex] = useState(0);
@@ -97,7 +99,7 @@ export default function DashboardPage({
               <div className={styles.headerIcon}>
                 <VscSparkle size={15} />
               </div>
-              <span className={styles.headerKicker}>Dashboard</span>
+              <span className={styles.headerKicker}>{t('dashboard.label')}</span>
             </div>
 
             <div className={styles.searchWrap} data-focused={focused ? '1' : '0'}>
@@ -107,7 +109,7 @@ export default function DashboardPage({
                   ref={searchInputRef}
                   className={styles.searchInput}
                   value={query}
-                  placeholder="Search tools…"
+                  placeholder={t('dashboard.searchPlaceholder')}
                   onChange={(e) => {
                     setQuery(e.target.value);
                     setActiveSearchIndex(0);
@@ -204,7 +206,7 @@ export default function DashboardPage({
             </div>
           </div>
 
-          <h1 className={styles.headerTitle}>Welcome back 👋</h1>
+          <h1 className={styles.headerTitle}>{t('dashboard.welcome')}</h1>
           <p className={styles.headerSub}>
             {now.toLocaleDateString(undefined, {
               weekday: 'long',
@@ -236,10 +238,10 @@ export default function DashboardPage({
           <div className={styles.sectionHeader}>
             <div className={styles.sectionTitle}>
               <VscSparkle />
-              <h2>Frequently used</h2>
+              <h2>{t('dashboard.frequentUsed')}</h2>
             </div>
             <button type="button" className={styles.sectionAction} onClick={() => onCategorySelect('all')}>
-              View all tools
+              {t('dashboard.viewAllTools')}
               <VscChevronRight />
             </button>
           </div>
@@ -285,15 +287,21 @@ export default function DashboardPage({
                 <span className={styles.widgetIcon} style={{ color: 'var(--accent-warning)' }}>
                   <VscInfo />
                 </span>
-                <span className={styles.widgetTitle}>App info</span>
+                <span className={styles.widgetTitle}>{t('dashboard.appInfoTitle')}</span>
               </div>
             </div>
             <div className={styles.widgetBody}>
               <div className={styles.infoBody}>
-                <InfoRow label="Version" value={appInfo?.version ?? '-'} />
-                <InfoRow label="Platform" value={appInfo ? `${appInfo.platform} / ${appInfo.arch}` : '-'} />
-                <InfoRow label="Local time" value={now.toLocaleString()} />
-                <InfoRow label="Timezone" value={Intl.DateTimeFormat().resolvedOptions().timeZone} />
+                <InfoRow label={t('dashboard.version')} value={appInfo?.version ?? '-'} />
+                <InfoRow
+                  label={t('dashboard.platform')}
+                  value={appInfo ? `${appInfo.platform} / ${appInfo.arch}` : '-'}
+                />
+                <InfoRow label={t('dashboard.localTime')} value={now.toLocaleString()} />
+                <InfoRow
+                  label={t('dashboard.timezone')}
+                  value={Intl.DateTimeFormat().resolvedOptions().timeZone}
+                />
               </div>
             </div>
           </div>
@@ -304,15 +312,21 @@ export default function DashboardPage({
                 <span className={styles.widgetIcon} style={{ color: 'var(--accent-success)' }}>
                   <VscScreenFull />
                 </span>
-                <span className={styles.widgetTitle}>Screen</span>
+                <span className={styles.widgetTitle}>{t('dashboard.screen')}</span>
               </div>
             </div>
             <div className={styles.widgetBody}>
               <div className={styles.infoBody}>
-                <InfoRow label="Screen size" value={`${window.screen.width} × ${window.screen.height}`} />
-                <InfoRow label="Window size" value={`${window.innerWidth} × ${window.innerHeight}`} />
-                <InfoRow label="Color depth" value={`${window.screen.colorDepth} bits`} />
-                <InfoRow label="Pixel ratio" value={`${window.devicePixelRatio} dppx`} />
+                <InfoRow
+                  label={t('dashboard.screenSize')}
+                  value={`${window.screen.width} × ${window.screen.height}`}
+                />
+                <InfoRow
+                  label={t('dashboard.windowSize')}
+                  value={`${window.innerWidth} × ${window.innerHeight}`}
+                />
+                <InfoRow label={t('dashboard.colorDepth')} value={`${window.screen.colorDepth} bits`} />
+                <InfoRow label={t('dashboard.pixelRatio')} value={`${window.devicePixelRatio} dppx`} />
               </div>
             </div>
           </div>
@@ -323,14 +337,20 @@ export default function DashboardPage({
                 <span className={styles.widgetIcon} style={{ color: 'var(--accent-secondary)' }}>
                   <VscBroadcast />
                 </span>
-                <span className={styles.widgetTitle}>Runtime</span>
+                <span className={styles.widgetTitle}>{t('dashboard.runtime')}</span>
               </div>
             </div>
             <div className={styles.widgetBody}>
               <div className={styles.infoBody}>
-                <InfoRow label="Online" value={navigator.onLine ? 'Connected' : 'Disconnected'} />
-                <InfoRow label="Languages" value={navigator.languages.join(', ') || navigator.language} />
-                <InfoRow label="Vendor" value={navigator.vendor || '-'} />
+                <InfoRow
+                  label={t('dashboard.online')}
+                  value={navigator.onLine ? t('dashboard.connected') : t('dashboard.disconnected')}
+                />
+                <InfoRow
+                  label={t('dashboard.languages')}
+                  value={navigator.languages.join(', ') || navigator.language}
+                />
+                <InfoRow label={t('dashboard.vendor')} value={navigator.vendor || '-'} />
               </div>
             </div>
           </div>

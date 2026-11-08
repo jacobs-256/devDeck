@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { VscClose, VscEllipsis } from 'react-icons/vsc';
 import styles from './ToolTabs.module.css';
 import { categoryColor, type Category, type LegacyModule } from './data';
+import { useI18n } from '../legacy-renderer/i18n';
 
 export type OpenTool = { categoryId: string; module: LegacyModule };
 
@@ -20,6 +21,7 @@ export default function ToolTabs({
   onClose: (toolId: string) => void;
   onCloseAll?: () => void;
 }) {
+  const { t: tr } = useI18n();
   const categoryMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const [showMenu, setShowMenu] = useState(false);
   const tabRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -49,7 +51,7 @@ export default function ToolTabs({
   return (
     <div className={styles.bar}>
       <div className={styles.tabs}>
-        {opened.map((t, idx) => {
+        {opened.map((t) => {
           const isActive = t.module.id === activeToolId;
           const color = categoryColor(t.categoryId);
           const cat = categoryMap.get(t.categoryId as never);
@@ -60,16 +62,12 @@ export default function ToolTabs({
                 tabRefs.current[t.module.id] = el;
               }}
               className={styles.tabWrap}
-              style={{
-                background: isActive ? 'var(--bg-primary)' : 'var(--bg-secondary)',
-                borderLeft: idx > 0 ? '1px solid var(--border-subtle)' : 'none',
-              }}
+              data-active={isActive ? '1' : '0'}
             >
               <button
                 type="button"
                 className={styles.tab}
                 onClick={() => onActivate(t.module.id)}
-                style={{ color: isActive ? 'var(--text-primary)' : 'var(--text-quaternary)' }}
                 title={cat ? `${cat.name} · ${t.module.name}` : t.module.name}
               >
                 <span className={styles.dot} style={{ background: `${color}15`, color }}>
@@ -84,7 +82,7 @@ export default function ToolTabs({
                   e.stopPropagation();
                   onClose(t.module.id);
                 }}
-                aria-label="Close tab"
+                aria-label={tr('tabs.close')}
               >
                 <VscClose />
               </button>
@@ -156,7 +154,7 @@ export default function ToolTabs({
                       <button
                         type="button"
                         className={styles.menuClose}
-                        aria-label="Close tab"
+                        aria-label={tr('tabs.close')}
                         onClick={(e) => {
                           e.stopPropagation();
                           onClose(t.module.id);

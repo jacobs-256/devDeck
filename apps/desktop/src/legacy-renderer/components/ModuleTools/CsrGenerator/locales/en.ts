@@ -9,6 +9,12 @@ export default {
   placeholderOU: 'Department name',
   placeholderState: 'Province / State',
   placeholderCity: 'City',
+  commonName: 'Common Name (CN)',
+  organization: 'Organization (O)',
+  organizationalUnit: 'Organizational Unit (OU)',
+  country: 'Country (C)',
+  state: 'State (ST)',
+  locality: 'Locality (L)',
   keySize: 'Key Size',
   // buttons
   generating: 'Generating...',

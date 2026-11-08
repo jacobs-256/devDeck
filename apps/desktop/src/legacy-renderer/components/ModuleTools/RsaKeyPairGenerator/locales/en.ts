@@ -6,6 +6,7 @@ export default {
   subtitle: 'Generate RSA private key and public key in PEM format.',
   bits: 'Bits:',
   refresh: 'Refresh key-pair',
+  generating: 'Generating…',
   publicKey: 'Public key',
   privateKey: 'Private key',
   copy: 'Copy',

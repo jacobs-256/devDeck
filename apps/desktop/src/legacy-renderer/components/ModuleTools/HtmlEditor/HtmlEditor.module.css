@@ -52,18 +52,18 @@
 }
 
 .divider:hover::before {
-  background-color: rgba(97, 175, 239, 0.9);
+  background-color: var(--accent-secondary);
   box-shadow:
-    0 -8px 0 rgba(97, 175, 239, 0.9),
-    0 8px 0 rgba(97, 175, 239, 0.9);
+    0 -8px 0 var(--accent-secondary),
+    0 8px 0 var(--accent-secondary);
   opacity: 1;
 }
 
 .divider:active::before {
-  background-color: rgba(97, 175, 239, 0.95);
+  background-color: var(--accent-secondary);
   box-shadow:
-    0 -8px 0 rgba(97, 175, 239, 0.95),
-    0 8px 0 rgba(97, 175, 239, 0.95);
+    0 -8px 0 var(--accent-secondary),
+    0 8px 0 var(--accent-secondary);
 }
 
 .editorBodyWrap {

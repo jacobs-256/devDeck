@@ -2,12 +2,12 @@
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use std::sync::{Mutex, RwLock};
+use std::sync::{Arc, Mutex, RwLock};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use devtoolbox_capability::CapabilityBroker;
-use devtoolbox_contract::{DevToolboxError, PluginId, RegistryIndex};
-use devtoolbox_market::{InstalledPlugin, MarketplaceService, SourceStore};
+use devdeck_capability::CapabilityBroker;
+use devdeck_contract::{DevDeckError, PluginId, RegistryIndex};
+use devdeck_market::{InstalledPlugin, MarketplaceService, SourceStore};
 
 use crate::files::FileAccess;
 use crate::mqtt::MqttManager;
@@ -37,7 +37,7 @@ pub struct AppState {
     broker: RwLock<CapabilityBroker>,
     sources: Mutex<SourceStore>,
     registry_cache: Mutex<HashMap<String, CachedRegistry>>,
-    storage: PluginStorage,
+    storage: Arc<PluginStorage>,
     files: FileAccess,
     sockets: SocketManager,
     ssh: SshManager,
@@ -51,7 +51,7 @@ impl AppState {
         root: impl Into<PathBuf>,
         emit: EventSink,
         tool_emit: EventSink,
-    ) -> Result<Self, DevToolboxError> {
+    ) -> Result<Self, DevDeckError> {
         let root = root.into();
         std::fs::create_dir_all(&root)?;
 
@@ -69,7 +69,7 @@ impl AppState {
             }
         }
 
-        let storage = PluginStorage::new(root.join("plugin-data"))?;
+        let storage = Arc::new(PluginStorage::new(root.join("plugin-data"))?);
         let files = FileAccess::new(root.join("plugin-data"))?;
         let sources = SourceStore::open(&root)?;
         let sockets = SocketManager::new(emit.clone());
@@ -97,32 +97,30 @@ impl AppState {
         &self.root
     }
 
-    pub fn market(&self) -> Result<std::sync::MutexGuard<'_, MarketplaceService>, DevToolboxError> {
+    pub fn market(&self) -> Result<std::sync::MutexGuard<'_, MarketplaceService>, DevDeckError> {
         self.market
             .lock()
-            .map_err(|_| DevToolboxError::Internal("marketplace lock poisoned".to_string()))
+            .map_err(|_| DevDeckError::Internal("marketplace lock poisoned".to_string()))
     }
 
-    pub fn broker(
-        &self,
-    ) -> Result<std::sync::RwLockReadGuard<'_, CapabilityBroker>, DevToolboxError> {
+    pub fn broker(&self) -> Result<std::sync::RwLockReadGuard<'_, CapabilityBroker>, DevDeckError> {
         self.broker
             .read()
-            .map_err(|_| DevToolboxError::Internal("capability lock poisoned".to_string()))
+            .map_err(|_| DevDeckError::Internal("capability lock poisoned".to_string()))
     }
 
     pub fn broker_mut(
         &self,
-    ) -> Result<std::sync::RwLockWriteGuard<'_, CapabilityBroker>, DevToolboxError> {
+    ) -> Result<std::sync::RwLockWriteGuard<'_, CapabilityBroker>, DevDeckError> {
         self.broker
             .write()
-            .map_err(|_| DevToolboxError::Internal("capability lock poisoned".to_string()))
+            .map_err(|_| DevDeckError::Internal("capability lock poisoned".to_string()))
     }
 
-    pub fn sources(&self) -> Result<std::sync::MutexGuard<'_, SourceStore>, DevToolboxError> {
+    pub fn sources(&self) -> Result<std::sync::MutexGuard<'_, SourceStore>, DevDeckError> {
         self.sources
             .lock()
-            .map_err(|_| DevToolboxError::Internal("registry sources lock poisoned".to_string()))
+            .map_err(|_| DevDeckError::Internal("registry sources lock poisoned".to_string()))
     }
 
     /// Remember a freshly fetched registry for this session.
@@ -145,8 +143,9 @@ impl AppState {
         }
     }
 
-    pub fn storage(&self) -> &PluginStorage {
-        &self.storage
+    /// Cloneable handle so storage work can move to the blocking thread pool.
+    pub fn storage_handle(&self) -> Arc<PluginStorage> {
+        Arc::clone(&self.storage)
     }
 
     pub fn files(&self) -> &FileAccess {
@@ -169,52 +168,85 @@ impl AppState {
         self.settings
             .lock()
             .map(|store| store.theme())
-            .unwrap_or_else(|_| "dark".to_string())
+            .unwrap_or_else(|_| "auto".to_string())
     }
 
     pub fn language(&self) -> String {
         self.settings
             .lock()
             .map(|store| store.language())
-            .unwrap_or_else(|_| "en".to_string())
+            .unwrap_or_else(|_| "auto".to_string())
     }
 
-    pub fn set_language(&self, language: &str) -> Result<(), DevToolboxError> {
+    pub fn set_language(&self, language: &str) -> Result<(), DevDeckError> {
         self.settings
             .lock()
-            .map_err(|_| DevToolboxError::Internal("settings lock poisoned".to_string()))?
+            .map_err(|_| DevDeckError::Internal("settings lock poisoned".to_string()))?
             .set_language(language)
     }
 
-    pub fn set_theme(&self, theme: &str) -> Result<(), DevToolboxError> {
+    pub fn set_theme(&self, theme: &str) -> Result<(), DevDeckError> {
         self.settings
             .lock()
-            .map_err(|_| DevToolboxError::Internal("settings lock poisoned".to_string()))?
+            .map_err(|_| DevDeckError::Internal("settings lock poisoned".to_string()))?
             .set_theme(theme)
     }
 
+    pub fn text_size(&self) -> String {
+        self.settings
+            .lock()
+            .map(|store| store.text_size())
+            .unwrap_or_else(|_| "default".to_string())
+    }
+
+    pub fn set_text_size(&self, size: &str) -> Result<(), DevDeckError> {
+        self.settings
+            .lock()
+            .map_err(|_| DevDeckError::Internal("settings lock poisoned".to_string()))?
+            .set_text_size(size)
+    }
+
+    pub fn desktop_settings(&self) -> crate::settings::DesktopSettings {
+        self.settings.lock().map(|store| store.desktop()).unwrap_or(
+            crate::settings::DesktopSettings {
+                close_behavior: "ask".to_string(),
+                tray_enabled: true,
+                service_port: 8765,
+                service_auto_port: true,
+            },
+        )
+    }
+
+    pub fn set_desktop_settings(
+        &self,
+        settings: &crate::settings::DesktopSettings,
+    ) -> Result<(), DevDeckError> {
+        self.settings
+            .lock()
+            .map_err(|_| DevDeckError::Internal("settings lock poisoned".to_string()))?
+            .set_desktop(settings)
+    }
+
     /// Parse a plugin id coming from the renderer.
-    pub fn parse_plugin_id(&self, raw: &str) -> Result<PluginId, DevToolboxError> {
+    pub fn parse_plugin_id(&self, raw: &str) -> Result<PluginId, DevDeckError> {
         PluginId::new(raw)
     }
 
     /// Require that a plugin is installed and enabled before running any SDK
     /// method on its behalf.
-    pub fn require_active(&self, id: &PluginId) -> Result<InstalledPlugin, DevToolboxError> {
+    pub fn require_active(&self, id: &PluginId) -> Result<InstalledPlugin, DevDeckError> {
         let market = self.market()?;
         let plugin = market
             .get(id)
-            .ok_or_else(|| DevToolboxError::NotFound(format!("plugin '{id}' is not installed")))?;
+            .ok_or_else(|| DevDeckError::NotFound(format!("plugin '{id}' is not installed")))?;
         if !plugin.enabled {
-            return Err(DevToolboxError::denied(format!(
-                "plugin '{id}' is disabled"
-            )));
+            return Err(DevDeckError::denied(format!("plugin '{id}' is disabled")));
         }
         Ok(plugin)
     }
 
     /// Recompute grants for every installed plugin.
-    pub fn rebuild_grants(&self) -> Result<(), DevToolboxError> {
+    pub fn rebuild_grants(&self) -> Result<(), DevDeckError> {
         let plugins = self.market()?.list();
         let mut broker = self.broker_mut()?;
         for plugin in plugins {

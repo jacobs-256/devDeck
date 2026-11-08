@@ -1,21 +1,21 @@
 # Plugin SDK Reference (2.0)
 
-The SDK is published as `@devtoolbox/plugin-sdk`. Plugins import typed helpers
+The SDK is published as `@devdeck/plugin-sdk`. Plugins import typed helpers
 instead of talking to the host directly. The host gates every call with the
 plugin's manifest permissions.
 
 ```bash
-pnpm add @devtoolbox/plugin-sdk@2
+pnpm add @devdeck/plugin-sdk@2
 ```
 
 ```ts
-import { sdk, followHostTheme, onSocketEvent } from '@devtoolbox/plugin-sdk';
+import { sdk, followHostTheme, onSocketEvent } from '@devdeck/plugin-sdk';
 ```
 
 ## 1. Call model
 
 ```ts
-import { callSdk } from '@devtoolbox/plugin-sdk';
+import { callSdk } from '@devdeck/plugin-sdk';
 
 const result = await callSdk<{ value: string | null }>('storage.get', { key: 'k' });
 if (!result.ok) {
@@ -53,6 +53,11 @@ sdk.storage.clear(); // T = { cleared: boolean }
 ```
 
 Storage is host-owned JSON scoped to the plugin id and survives updates.
+
+Values are capped at 1 MiB and each plugin at 8 MiB. Keep settings and small
+state here; for datasets, caches, and other blobs larger than a few hundred KiB
+use `sdk.fs.writePluginData` so one large value does not compete with settings
+for the quota or slow down every save.
 
 ### `sdk.http` — `http:proxy` / `http:external`
 

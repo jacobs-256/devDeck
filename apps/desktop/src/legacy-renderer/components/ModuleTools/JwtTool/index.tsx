@@ -2,7 +2,15 @@
 import { useState, useMemo, useCallback, useEffect, useRef, type ChangeEvent } from 'react';
 import { useI18n, getModuleLocale } from '../../../i18n';
 import styles from './JwtTool.module.css';
-import { ToolButton, ToolField, ToolInput, ToolSection, ToolSelect, ToolTextarea } from '@@components';
+import {
+  JsonEditor,
+  ToolButton,
+  ToolField,
+  ToolInput,
+  ToolSection,
+  ToolSelect,
+  ToolTextarea,
+} from '@@components';
 import { VscCopy, VscKey, VscSearch, VscShield } from 'react-icons/vsc';
 function b64d(s: string) {
   let r = s.replace(/-/g, '+').replace(/_/g, '/');
@@ -196,36 +204,9 @@ function JsonArea({
   rows: number;
   label: string;
 }) {
-  const [editing, setEditing] = useState(false);
-  const isValid = useMemo(() => {
-    try {
-      JSON.parse(value);
-      return true;
-    } catch {
-      return false;
-    }
-  }, [value]);
-  if (editing || !isValid) {
-    return (
-      <ToolField label={label}>
-        <ToolTextarea
-          mono
-          value={value}
-          onChange={(e: ChangeEvent<HTMLTextAreaElement>) => onChange(e.target.value)}
-          onBlur={() => setEditing(false)}
-          spellCheck={false}
-          rows={rows}
-          autoFocus={editing}
-        />
-      </ToolField>
-    );
-  }
-  const formatted = JSON.stringify(JSON.parse(value), null, 2);
   return (
     <ToolField label={label}>
-      <div className={styles.jsonPreview} onClick={() => setEditing(true)}>
-        <pre className={styles.hl} dangerouslySetInnerHTML={{ __html: hl(formatted) }} />
-      </div>
+      <JsonEditor value={value} onChange={onChange} rows={rows} ariaLabel={label} />
     </ToolField>
   );
 }

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useI18n, getModuleLocale } from '../../../i18n';
 import styles from './ClientCertGenerator.module.css';
+import { VscCloudDownload } from 'react-icons/vsc';
 
 const KEY_SIZES = [2048, 3072, 4096];
 const VALIDITY_KEYS: { labelKey: string; days: number }[] = [
@@ -127,52 +128,55 @@ export default function ClientCertGenerator() {
         <div className={styles.form}>
           <div className={styles.section}>{mt('sectionCA')}</div>
           <div className={styles.field}>
-            <label className={styles.label}>{mt('caCertLabel')}</label>
-            <div className={styles.fileRow}>
-              <textarea
-                className={styles.textarea}
-                value={caCert}
-                onChange={(e) => setCaCert(e.target.value)}
-                placeholder={mt('caCertPlaceholder')}
-                spellCheck={false}
-              />
+            <div className={styles.labelRow}>
+              <label className={styles.label}>{mt('caCertLabel')}</label>
               <button className={styles.loadBtn} onClick={() => loadFile(setCaCert)}>
+                <VscCloudDownload />
                 {mt('import')}
               </button>
             </div>
+            <textarea
+              className={styles.textarea}
+              value={caCert}
+              onChange={(e) => setCaCert(e.target.value)}
+              placeholder={mt('caCertPlaceholder')}
+              spellCheck={false}
+            />
           </div>
           <div className={styles.field}>
-            <label className={styles.label}>{mt('caKeyLabel')}</label>
-            <div className={styles.fileRow}>
-              <textarea
-                className={styles.textarea}
-                value={caKey}
-                onChange={(e) => setCaKey(e.target.value)}
-                placeholder={mt('caKeyPlaceholder')}
-                spellCheck={false}
-              />
+            <div className={styles.labelRow}>
+              <label className={styles.label}>{mt('caKeyLabel')}</label>
               <button className={styles.loadBtn} onClick={() => loadFile(setCaKey)}>
+                <VscCloudDownload />
                 {mt('import')}
               </button>
             </div>
+            <textarea
+              className={styles.textarea}
+              value={caKey}
+              onChange={(e) => setCaKey(e.target.value)}
+              placeholder={mt('caKeyPlaceholder')}
+              spellCheck={false}
+            />
           </div>
 
-          <div className={styles.section}>
-            {mt('sectionCSR')} <span className={styles.optional}>{mt('csrHint')}</span>
+          <div className={styles.sectionRow}>
+            <div className={styles.section}>
+              {mt('sectionCSR')} <span className={styles.optional}>{mt('csrHint')}</span>
+            </div>
+            <button className={styles.loadBtn} onClick={() => loadFile(setCsrInput)}>
+              <VscCloudDownload />
+              {mt('import')}
+            </button>
           </div>
           <div className={styles.field}>
-            <div className={styles.fileRow}>
-              <textarea
-                className={styles.textarea}
-                value={csrInput}
-                onChange={(e) => setCsrInput(e.target.value)}
-                placeholder={mt('csrPlaceholder')}
-                spellCheck={false}
-              />
-              <button className={styles.loadBtn} onClick={() => loadFile(setCsrInput)}>
-                {mt('import')}
-              </button>
-            </div>
+            <textarea
+              className={styles.textarea}
+              value={csrInput}
+              onChange={(e) => setCsrInput(e.target.value)}
+              placeholder={mt('csrPlaceholder')}
+              spellCheck={false}
+            />
           </div>
 
           {!hasCSR && (
@@ -180,7 +184,7 @@ export default function ClientCertGenerator() {
               <div className={styles.section}>{mt('sectionClient')}</div>
               <div className={styles.field}>
                 <label className={styles.label}>
-                  Common Name (CN) <span className={styles.optional}>{mt('optional')}</span>
+                  {mt('commonName')} <span className={styles.optional}>{mt('optional')}</span>
                 </label>
                 <input
                   className={styles.input}
@@ -192,7 +196,7 @@ export default function ClientCertGenerator() {
               </div>
               <div className={styles.field}>
                 <label className={styles.label}>
-                  Organization (O) <span className={styles.optional}>{mt('optional')}</span>
+                  {mt('organization')} <span className={styles.optional}>{mt('optional')}</span>
                 </label>
                 <input
                   className={styles.input}
@@ -204,7 +208,7 @@ export default function ClientCertGenerator() {
               </div>
               <div className={styles.field}>
                 <label className={styles.label}>
-                  Organizational Unit (OU) <span className={styles.optional}>{mt('optional')}</span>
+                  {mt('organizationalUnit')} <span className={styles.optional}>{mt('optional')}</span>
                 </label>
                 <input
                   className={styles.input}
@@ -216,7 +220,7 @@ export default function ClientCertGenerator() {
               </div>
               <div className={styles.field}>
                 <label className={styles.label}>
-                  Country (C) <span className={styles.optional}>{mt('optionalCountry')}</span>
+                  {mt('country')} <span className={styles.optional}>{mt('optionalCountry')}</span>
                 </label>
                 <input
                   className={styles.input}
@@ -229,7 +233,7 @@ export default function ClientCertGenerator() {
               </div>
               <div className={styles.field}>
                 <label className={styles.label}>
-                  State (ST) <span className={styles.optional}>{mt('optional')}</span>
+                  {mt('state')} <span className={styles.optional}>{mt('optional')}</span>
                 </label>
                 <input
                   className={styles.input}
@@ -241,7 +245,7 @@ export default function ClientCertGenerator() {
               </div>
               <div className={styles.field}>
                 <label className={styles.label}>
-                  Locality (L) <span className={styles.optional}>{mt('optional')}</span>
+                  {mt('locality')} <span className={styles.optional}>{mt('optional')}</span>
                 </label>
                 <input
                   className={styles.input}

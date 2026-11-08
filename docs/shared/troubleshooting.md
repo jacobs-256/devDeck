@@ -20,7 +20,7 @@
 
 - Confirm the Tauri prerequisites: Xcode command line tools on macOS, WebView2
   and MSVC build tools on Windows, and the WebKitGTK packages on Linux.
-- Run `./cli.sh doctor` and `cargo check -p devtoolbox-desktop` to surface Rust
+- Run `./cli.sh doctor` and `cargo check -p devdeck-desktop` to surface Rust
   errors.
 - Delete `apps/desktop/src-tauri/gen/` and retry if the generated context is
   stale.
@@ -33,7 +33,8 @@
 
 ## Build or launch has no plugins / empty Marketplace
 
-DevToolBox has no default registry. Add a `registry.json` URL in **Marketplace**.
+DevDeck adds the official GitHub registry on first launch. If it is missing,
+add `https://github.com/XthingsJacobs/devToolBox/releases/download/marketplace/registry.json` in **Marketplace** and click **Refresh**.
 Use HTTPS, or `http://localhost` / `http://127.0.0.1` for local testing. If a
 local registry is not loading, confirm the Python/Node server is running and the
 URL points at the JSON file.
@@ -55,7 +56,7 @@ verify` (registry).
 
 ## SSH connection refused or host key changed
 
-- DevToolBox pins host keys in `known-hosts.json` on first use. A changed key is
+- DevDeck pins host keys in `known-hosts.json` on first use. A changed key is
   rejected with `permission_denied`; ask the user to forget the host before
   reconnecting.
 - Password and OpenSSH key auth are supported; keyboard-interactive prompts are
@@ -70,8 +71,8 @@ verify` (registry).
 
 ## Where are logs and data?
 
-- macOS: `~/Library/Application Support/com.devtoolbox.app`
-- Windows: `%APPDATA%\com.devtoolbox.app`
+- macOS: `~/Library/Application Support/com.devdeck.desktop`
+- Windows: `%APPDATA%\com.devdeck.desktop`
 
 Useful files: `settings.json`, `marketplace-state.json`,
 `marketplace-sources.json`, `known-hosts.json`, `logs/plugins.log`.

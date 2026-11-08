@@ -1,6 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import styles from './AppShell.module.css';
 import type { Category } from './data';
+import { useI18n } from '../legacy-renderer/i18n';
 
 export type AppShellNavItemId = 'dashboard' | 'tools' | 'modules' | 'settings';
 
@@ -34,6 +35,7 @@ export default function AppShell({
   onCollapsedChange?: (v: boolean) => void;
   children: ReactNode;
 }) {
+  const { t } = useI18n();
   const [collapsedState, setCollapsedState] = useState(false);
   const collapsed = collapsedProp ?? collapsedState;
   const setCollapsed = (v: boolean | ((prev: boolean) => boolean)) => {
@@ -59,7 +61,7 @@ export default function AppShell({
     <div className={styles.shell}>
       <div className={styles.body}>
         {!sidebarHidden && (
-          <aside className={styles.sidebar} style={{ width: collapsed ? 52 : 180 }}>
+          <aside className={styles.sidebar} style={{ width: collapsed ? 52 : 210 }}>
             <div className={styles.scrollArea}>
               <div className={styles.navSection}>
                 {navItems.map((item) => {
@@ -155,10 +157,10 @@ export default function AppShell({
                 type="button"
                 className={styles.collapseBtn}
                 onClick={() => setCollapsed((v) => !v)}
-                title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                title={collapsed ? t('app.expandSidebar') : t('app.collapseSidebar')}
               >
                 <span className={styles.collapseIcon}>{collapsed ? '›' : '‹'}</span>
-                {!collapsed && <span className={styles.collapseLabel}>Collapse</span>}
+                {!collapsed && <span className={styles.collapseLabel}>{t('app.collapse')}</span>}
               </button>
             </div>
           </aside>

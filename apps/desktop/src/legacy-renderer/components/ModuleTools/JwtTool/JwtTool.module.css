@@ -11,42 +11,51 @@
   display: flex;
   align-items: center;
   padding: 0 14px;
-  height: 41px;
+  height: 52px;
   box-sizing: border-box;
-  border-bottom: 1px solid var(--bg-active);
+  border-bottom: 1px solid var(--glass-border);
   flex-shrink: 0;
 }
 
 .tabs {
   display: flex;
-  gap: 0;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  flex-shrink: 0;
 }
 
 .tab {
-  padding: 8px 14px;
-  border: none;
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 9px;
   background: none;
-  color: var(--text-secondary);
-  font-size: 13px;
+  color: var(--text-tertiary);
+  font-size: 12px;
   font-family: inherit;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
   transition:
-    color 0.15s,
-    border-color 0.15s;
+    color var(--motion-fast),
+    background var(--motion-fast),
+    border-color var(--motion-fast);
 }
 
 .tab:hover {
   color: var(--text-primary);
+  background: var(--bg-hover);
 }
 
 .tabActive {
-  color: var(--text-active);
-  border-bottom-color: var(--accent-color);
+  color: var(--text-primary);
+  background: var(--accent-color-weak);
+  border-color: var(--glass-border);
 }
 
 .body {
-  height: calc(100% - 41px);
+  height: calc(100% - 52px);
   overflow: auto;
   padding: 14px;
   display: flex;
@@ -101,10 +110,10 @@
 }
 
 .blk {
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius);
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--glass-bg);
 }
 
 .blkH {
@@ -112,11 +121,11 @@
   align-items: center;
   justify-content: space-between;
   padding: 4px 10px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass-bg);
   font-size: var(--font-size-small);
   font-weight: 600;
   color: var(--text-secondary);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--glass-border);
 }
 
 .blkB {
@@ -142,7 +151,7 @@
   padding: 8px 10px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-small);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--glass-bg);
   cursor: text;
   min-height: 60px;
 }
@@ -169,7 +178,7 @@
 }
 
 .err {
-  color: #e74c3c;
+  color: var(--accent-error);
   font-size: var(--font-size-small);
 }
 
@@ -181,38 +190,44 @@
 
 .badge {
   padding: 5px 12px;
-  border-radius: 4px;
+  border-radius: var(--radius-small);
   font-size: 12px;
   font-weight: 500;
 }
 
 .b_success {
   background: rgba(39, 174, 96, 0.12);
-  color: #27ae60;
+  color: var(--accent-success);
 }
 
 .b_error {
   background: rgba(231, 76, 60, 0.12);
-  color: #e74c3c;
+  color: var(--accent-error);
 }
 
 .b_warning {
   background: rgba(243, 156, 18, 0.12);
-  color: #f39c12;
+  color: var(--accent-warning);
 }
 
 .hl :global(.json-key) {
-  color: #e06c75;
+  color: var(--syntax-boolean);
 }
 .hl :global(.json-str) {
-  color: #98c379;
+  color: var(--syntax-string);
 }
 .hl :global(.json-num) {
-  color: #d19a66;
+  color: var(--syntax-number);
 }
 .hl :global(.json-bool) {
-  color: #56b6c2;
+  color: var(--syntax-key);
 }
 .hl :global(.json-null) {
-  color: #7c8495;
+  color: var(--syntax-null);
+}
+
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

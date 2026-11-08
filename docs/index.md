@@ -1,6 +1,6 @@
-# DevToolBox Documentation
+# DevDeck Documentation
 
-DevToolBox is a Rust + Tauri 2 desktop toolbox with 27 built-in utilities and a
+DevDeck is a Rust + Tauri 2 desktop toolbox with 27 built-in utilities and a
 signed plugin marketplace. These docs cover using the app, building plugins, and
 working on the host itself.
 
