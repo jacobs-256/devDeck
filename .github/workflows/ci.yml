@@ -4,11 +4,9 @@ on:
   push:
     branches:
       - main
-      - rust
   pull_request:
     branches:
       - main
-      - rust
 
 permissions:
   contents: read
