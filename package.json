@@ -1,6 +1,6 @@
 {
   "name": "devdeck",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "Plugin-first desktop toolbox built with Rust, React, and Tauri 2",
   "author": "Jacobs",
   "license": "Apache-2.0",

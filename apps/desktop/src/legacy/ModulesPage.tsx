@@ -70,7 +70,7 @@ export default function ModulesPage({
       const officialId = sourceList.find((source) => source.url === DEFAULT_REGISTRY_URL)?.id;
       setErrors(
         catalogResult.errors
-          .filter((e) => IS_DEV || e.sourceId === officialId)
+          .filter((e) => IS_DEV || !officialId || e.sourceId === officialId)
           .map((e) => `${e.sourceName}: ${e.message}`),
       );
     } catch (reason) {
@@ -81,6 +81,18 @@ export default function ModulesPage({
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  // The app shell seeds the official registry asynchronously. If this page
+  // mounted first, refresh again once the source has been added.
+  useEffect(() => {
+    const onRegistryUpdated = () => void refresh();
+    window.addEventListener('devdeck:registry-updated', onRegistryUpdated);
+    return () => window.removeEventListener('devdeck:registry-updated', onRegistryUpdated);
+  }, [refresh]);
+
+  useEffect(() => {
+    if (sources.length > 0 && catalog.length === 0) void refresh();
+  }, [sources.length, catalog.length, refresh]);
 
   const officialSourceId = sources.find((source) => source.url === DEFAULT_REGISTRY_URL)?.id;
   const visibleSources = IS_DEV ? sources : sources.filter((source) => source.url === DEFAULT_REGISTRY_URL);

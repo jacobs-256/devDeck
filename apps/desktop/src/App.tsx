@@ -5,6 +5,7 @@ import {
   DEFAULT_REGISTRY_URL,
   addSource,
   appInfo,
+  removeSource,
   listPlugins,
   listSources,
   setLanguage,
@@ -104,10 +105,21 @@ export default function App() {
     void (async () => {
       try {
         const sources = await listSources();
+        const legacyOfficialUrls = [
+          'https://github.com/XthingsJacobs/devToolBox/releases/download/marketplace/registry.json',
+          'https://github.com/jacobs-256/devToolBox/releases/download/marketplace/registry.json',
+          'https://github.com/XthingsJacobs/devDeck/releases/download/marketplace/registry.json',
+        ];
+        for (const source of sources) {
+          if (legacyOfficialUrls.includes(source.url) && source.url !== DEFAULT_REGISTRY_URL) {
+            await removeSource(source.id);
+          }
+        }
         if (!sources.some((source) => source.url === DEFAULT_REGISTRY_URL)) {
           await addSource(DEFAULT_REGISTRY_URL, { name: 'DevDeck Marketplace' });
         }
         window.localStorage.removeItem('devdeck.defaultRegistrySeeded');
+        window.dispatchEvent(new Event('devdeck:registry-updated'));
       } catch {
         // Offline or validation failure: retry on the next launch.
       }
