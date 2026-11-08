@@ -21,6 +21,7 @@ marketplace/.local-dist/
 marketplace/.signing/
 marketplace/registry.local.json
 .signing/
+.signing.bak/
 
 # OS files
 .DS_Store

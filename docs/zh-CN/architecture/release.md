@@ -10,7 +10,7 @@ DevDeck 通过 GitHub Releases 分发，并附带**签名的更新产物**，已
 
 ```bash
 pnpm --filter @devdeck/desktop exec tauri signer generate \
-  -w .signing/devdeck.key
+  -w ../../.signing/devdeck.key
 ```
 
 - **公钥**写入 `apps/desktop/src-tauri/tauri.conf.json` 的 `plugins.updater.pubkey`，会内嵌进应用；轮换公钥必须先发布一个用旧密钥签名的版本。

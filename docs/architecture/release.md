@@ -9,7 +9,7 @@ Generate an updater keypair (minisign):
 
 ```bash
 pnpm --filter @devdeck/desktop exec tauri signer generate \
-  -w .signing/devdeck.key
+  -w ../../.signing/devdeck.key
 ```
 
 - The **public key** goes into `apps/desktop/src-tauri/tauri.conf.json` at
