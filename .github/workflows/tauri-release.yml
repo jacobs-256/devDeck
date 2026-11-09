@@ -265,6 +265,6 @@ jobs:
           tagName: ${{ inputs.tag || github.ref_name }}
           releaseName: DevDeck ${{ inputs.tag || github.ref_name }}
           releaseBody: 'See CHANGELOG.md for details.'
-          releaseDraft: true
+          releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }} ${{ steps.updater.outputs.extra }}
